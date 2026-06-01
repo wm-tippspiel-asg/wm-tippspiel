@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
-import { GroupStandings } from '@/components/dashboard/GroupStandings'
+import { GroupStandingsServer } from '@/components/dashboard/GroupStandingsServer'
 import { Trophy } from 'lucide-react'
 import type { Metadata } from 'next'
 
@@ -24,7 +24,7 @@ export default async function GroupsPage() {
         </p>
       </div>
 
-      <GroupStandings />
+      <GroupStandingsServer />
     </div>
   )
 }
