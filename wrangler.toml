@@ -4,14 +4,13 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [[d1_databases]]
-binding = "wm_tippspiel_db"
+binding = "DB"
 database_name = "wm-tippspiel-db"
-database_id = "a1761565-0dc5-4bef-8647-3c48517cb412"
+database_id = "9f270af0-845b-4cea-b3ed-4842be7b235f"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
 id = "94c3c8aa214e40d78b618f13e0470743"
 
 [vars]
-NEXTAUTH_URL = "http://localhost:3000"
-NODE_ENV = "development"
+NODE_ENV = "production"
