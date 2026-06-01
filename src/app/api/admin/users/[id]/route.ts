@@ -113,6 +113,11 @@ export async function DELETE(request: NextRequest, { params }: Params): Promise<
   }
 
   await invalidateAllUserSessions(id)
+  // Bereinige abhängige Daten vor dem Löschen
+  await execute(db, `DELETE FROM code_usages WHERE user_id = ?`, [id])
+  await execute(db, `UPDATE registration_codes SET created_by = (SELECT id FROM users WHERE role = 'admin' LIMIT 1) WHERE created_by = ?`, [id])
+  await execute(db, `DELETE FROM predictions WHERE user_id = ?`, [id])
+  await execute(db, `DELETE FROM leaderboard WHERE user_id = ?`, [id])
   await execute(db, 'DELETE FROM users WHERE id = ?', [id])
 
   await audit({

@@ -84,7 +84,7 @@ export function AdminUsersClient({ initialUsers }: AdminUsersClientProps) {
               className="input-base pl-9"
             />
           </div>
-          {msg && <p className="mt-2 text-xs text-slate-500">{msg}</p>}
+          {msg && <p style={{ marginTop: 8, fontSize: 13, color: 'var(--ink-2)' }}>{msg}</p>}
         </div>
 
         {/* Table */}
