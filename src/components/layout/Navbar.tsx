@@ -8,139 +8,112 @@ import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import type { AuthUser } from '@/types'
 
-interface NavLink {
-  href: string
-  label: string
-}
-
-const userLinks: NavLink[] = [
-  { href: '/dashboard', label: 'Dashboard' },
+const userLinks = [
+  { href: '/dashboard',   label: 'Dashboard' },
   { href: '/predictions', label: 'Meine Tipps' },
   { href: '/leaderboard', label: 'Rangliste' },
-  { href: '/about', label: 'Über das Spiel' },
+  { href: '/about',       label: 'Regeln' },
 ]
 
-const adminLinks: NavLink[] = [
-  { href: '/admin', label: 'Übersicht' },
+const adminLinks = [
+  { href: '/admin',         label: 'Übersicht' },
   { href: '/admin/matches', label: 'Spiele' },
-  { href: '/admin/users', label: 'Nutzer' },
-  { href: '/admin/codes', label: 'Zugangscodes' },
-  { href: '/admin/logs', label: 'Audit-Logs' },
+  { href: '/admin/users',   label: 'Nutzer' },
+  { href: '/admin/codes',   label: 'Codes' },
+  { href: '/admin/logs',    label: 'Logs' },
 ]
 
-interface NavbarProps {
-  user: AuthUser
-}
-
-export function Navbar({ user }: NavbarProps) {
+export function Navbar({ user }: { user: AuthUser }) {
   const pathname = usePathname()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [open, setOpen] = useState(false)
   const links = user.role === 'admin' ? adminLinks : userLinks
 
-  async function handleLogout() {
+  async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
   }
 
+  const isActive = (href: string) =>
+    pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(href))
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0a0a0f]/80 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-14 gap-4">
+    <header className="sticky top-0 z-40 bg-white dark:bg-[#111111] border-b border-gray-200 dark:border-[#2a2a2a]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center h-16 gap-6">
+
           {/* Logo */}
-          <Link href={user.role === 'admin' ? '/admin' : '/dashboard'} className="flex items-center gap-2 mr-2">
-            <div className="h-7 w-7 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <Trophy className="h-4 w-4 text-white" />
+          <Link href={user.role === 'admin' ? '/admin' : '/dashboard'}
+            className="flex items-center gap-2.5 shrink-0 font-bold text-gray-900 dark:text-gray-100">
+            <div className="h-8 w-8 rounded-lg bg-green-600 flex items-center justify-center">
+              <Trophy className="h-4.5 w-4.5 text-white" aria-hidden />
             </div>
-            <span className="font-semibold text-sm hidden sm:block text-slate-900 dark:text-slate-100">
-              WM-Tippspiel
-            </span>
+            <span className="hidden sm:block text-base">WM 2026</span>
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
+            {links.map((l) => (
+              <Link key={l.href} href={l.href}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-sm transition-colors',
-                  pathname === link.href || pathname.startsWith(link.href + '/')
-                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/50',
-                )}
-              >
-                {link.label}
+                  'px-4 py-2 rounded-lg text-base font-medium transition-colors',
+                  isActive(l.href)
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#222]',
+                )}>
+                {l.label}
               </Link>
             ))}
           </nav>
 
           <div className="flex-1 md:hidden" />
 
-          {/* Right side */}
+          {/* Right */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
-
-            {/* User menu (desktop) */}
             <div className="hidden md:flex items-center gap-2">
-              <Link
-                href={user.role === 'admin' ? '/admin' : '/profile'}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm text-slate-600 dark:text-slate-400
-                           hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
+              <Link href={user.role === 'admin' ? '/admin' : '/profile'}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium
+                           text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors">
                 <User className="h-4 w-4" />
-                <span className="font-medium">{user.username}</span>
+                {user.username}
               </Link>
-
-              <button
-                onClick={handleLogout}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200
-                           hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Abmelden"
-              >
+              <button onClick={logout} aria-label="Abmelden"
+                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors">
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              className="md:hidden p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menü öffnen"
-            >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {/* Mobile toggle */}
+            <button className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"
+              onClick={() => setOpen(!open)} aria-label="Menü">
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile nav */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0f] animate-fade-in">
-          <nav className="p-3 space-y-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden border-t border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#111111] fade-in">
+          <nav className="p-3 space-y-0.5">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
                 className={cn(
-                  'block px-3 py-2 rounded-lg text-sm transition-colors',
-                  pathname === link.href
-                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-medium'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800',
-                )}
-              >
-                {link.label}
+                  'flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors',
+                  isActive(l.href)
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222]',
+                )}>
+                {l.label}
               </Link>
             ))}
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-              <div className="px-3 py-1.5 text-xs text-slate-400">
-                Angemeldet als <span className="font-medium">{user.username}</span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 dark:text-red-400
-                           hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-              >
+            <div className="pt-2 mt-2 border-t border-gray-200 dark:border-[#2a2a2a]">
+              <p className="px-4 py-1.5 text-sm text-gray-500">
+                Eingeloggt als <strong>{user.username}</strong>
+              </p>
+              <button onClick={logout}
+                className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium
+                           text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors">
                 <LogOut className="h-4 w-4" />
                 Abmelden
               </button>

@@ -3,122 +3,89 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, LogIn } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { Alert } from '@/components/ui/Alert'
 
 export default function LoginPage() {
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [banned, setBanned] = useState(false)
 
-  // Read query params without useSearchParams (no Suspense needed)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('banned') === '1') setBanned(true)
+    if (new URLSearchParams(window.location.search).get('banned') === '1') setBanned(true)
   }, [])
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
-    setLoading(true)
-
+    setError(''); setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
       })
-
-      const data = await res.json() as { success: boolean; data?: { role: string }; error?: string }
-
-      if (!res.ok || !data.success) {
-        setError(data.error ?? 'Login fehlgeschlagen.')
-        return
-      }
-
-      router.push(data.data?.role === 'admin' ? '/admin' : '/dashboard')
+      const d = await res.json() as { success: boolean; data?: { role: string }; error?: string }
+      if (!d.success) { setError(d.error ?? 'Ungültige Anmeldedaten.'); return }
+      router.push(d.data?.role === 'admin' ? '/admin' : '/dashboard')
     } catch {
       setError('Verbindungsfehler. Bitte erneut versuchen.')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   return (
-    <div className="w-full max-w-sm animate-slide-up">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          Willkommen zurück
-        </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Melde dich mit deinem Konto an
+    <div className="w-full max-w-md slide-up">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Anmelden</h1>
+        <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
+          Melde dich an um mitzuspielen
         </p>
       </div>
 
-      <div className="card p-6 shadow-sm">
+      <div className="card p-8">
         {banned && (
-          <div className="mb-4">
-            <Alert variant="error" title="Konto gesperrt"
-              message="Dein Konto wurde gesperrt. Bitte wende dich an einen Admin." />
+          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 text-base">
+            Dein Konto wurde gesperrt. Bitte wende dich an einen Admin.
           </div>
         )}
-        {error && <div className="mb-4"><Alert variant="error" message={error} /></div>}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 text-base">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <Input
-            label="Benutzername"
-            type="text"
-            value={username}
+        <form onSubmit={submit} className="space-y-5" noValidate>
+          <Input label="Benutzername" type="text" value={username}
             onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            autoFocus
-            required
-            placeholder="dein-benutzername"
-          />
+            autoComplete="username" autoFocus required placeholder="dein-benutzername" />
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Passwort
-            </label>
+            <label className="label">Passwort</label>
             <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
+              <input type={showPw ? 'text' : 'password'} value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                className="input-base pr-10"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                autoComplete="current-password" required
+                className="input-base pr-12" placeholder="••••••••" />
+              <button type="button" onClick={() => setShowPw(!showPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
 
           <Button type="submit" className="w-full" loading={loading}>
-            <LogIn className="h-4 w-4" />
             Anmelden
           </Button>
         </form>
       </div>
 
-      <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">
+      <p className="mt-6 text-center text-base text-gray-500 dark:text-gray-400">
         Noch kein Konto?{' '}
-        <Link href="/register" className="link font-medium">
-          Jetzt registrieren
-        </Link>
+        <Link href="/register" className="link font-semibold">Jetzt registrieren</Link>
       </p>
     </div>
   )

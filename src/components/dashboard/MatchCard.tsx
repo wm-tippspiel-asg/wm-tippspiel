@@ -1,8 +1,7 @@
-import { CalendarDays, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { formatDateTime, getRoundLabel } from '@/lib/utils'
 import { CountdownTimer } from './CountdownTimer'
 import { PredictionForm } from './PredictionForm'
-import { Badge } from '@/components/ui/Badge'
 import type { Match, Prediction } from '@/types'
 
 interface MatchCardProps {
@@ -11,86 +10,85 @@ interface MatchCardProps {
   showPredictionForm?: boolean
 }
 
-const statusBadge: Record<string, { variant: 'green' | 'yellow' | 'slate' | 'red' | 'blue'; label: string }> = {
-  scheduled: { variant: 'slate', label: 'Geplant' },
-  live: { variant: 'green', label: 'Live' },
-  finished: { variant: 'blue', label: 'Beendet' },
-  locked: { variant: 'yellow', label: 'Gesperrt' },
-  cancelled: { variant: 'red', label: 'Abgesagt' },
+const statusStyles: Record<string, { dot: string; label: string }> = {
+  scheduled: { dot: 'bg-gray-400',   label: 'Geplant' },
+  live:       { dot: 'bg-green-500 animate-pulse', label: 'Live' },
+  finished:   { dot: 'bg-blue-500',  label: 'Beendet' },
+  locked:     { dot: 'bg-amber-500', label: 'Gesperrt' },
+  cancelled:  { dot: 'bg-red-500',   label: 'Abgesagt' },
 }
 
 export function MatchCard({ match, prediction, showPredictionForm = true }: MatchCardProps) {
-  const badge = statusBadge[match.status] ?? statusBadge['scheduled']!
+  const st = statusStyles[match.status] ?? statusStyles['scheduled']!
+  const isFinished = match.status === 'finished' && match.home_score !== null
 
   return (
-    <div className="card hover:shadow-card-hover transition-shadow">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            {getRoundLabel(match.round)}
-            {match.group_name && ` · Gruppe ${match.group_name}`}
-          </span>
-        </div>
-        <Badge variant={badge.variant}>{badge.label}</Badge>
+    <div className="card overflow-hidden">
+      {/* Top bar: round + status */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#181818]">
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          {getRoundLabel(match.round)}
+          {match.group_name && <span className="ml-1 text-gray-400">· Gruppe {match.group_name}</span>}
+        </span>
+        <span className="flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-gray-400">
+          <span className={`inline-block h-2 w-2 rounded-full ${st.dot}`} />
+          {st.label}
+        </span>
       </div>
 
-      {/* Match info */}
-      <div className="px-4 py-4">
+      {/* Match */}
+      <div className="px-5 py-5">
         <div className="flex items-center justify-between gap-4">
-          {/* Home team */}
-          <div className="flex-1 text-right">
-            <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
-              {match.home_team_flag && <span className="mr-1.5">{match.home_team_flag}</span>}
+          {/* Home */}
+          <div className="flex-1 flex flex-col items-end gap-1">
+            <span className="text-3xl">{match.home_team_flag ?? '🏳️'}</span>
+            <span className="font-semibold text-base text-center leading-tight text-gray-900 dark:text-gray-100">
               {match.home_team}
-            </div>
+            </span>
           </div>
 
-          {/* Score / vs */}
-          <div className="shrink-0 text-center min-w-[4rem]">
-            {match.status === 'finished' && match.home_score !== null ? (
-              <div className="font-bold text-xl text-slate-900 dark:text-slate-100 font-mono">
+          {/* Score / VS */}
+          <div className="shrink-0 text-center px-4">
+            {isFinished ? (
+              <div className="text-3xl font-bold font-mono text-gray-900 dark:text-gray-100 tracking-tight">
                 {match.home_score} : {match.away_score}
               </div>
             ) : (
-              <div className="text-slate-400 dark:text-slate-500 font-semibold">vs</div>
+              <div className="text-xl font-bold text-gray-300 dark:text-gray-600">vs</div>
             )}
+            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {formatDateTime(match.match_time)}
+            </div>
           </div>
 
-          {/* Away team */}
-          <div className="flex-1 text-left">
-            <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
-              {match.away_team_flag && <span className="mr-1.5">{match.away_team_flag}</span>}
+          {/* Away */}
+          <div className="flex-1 flex flex-col items-start gap-1">
+            <span className="text-3xl">{match.away_team_flag ?? '🏳️'}</span>
+            <span className="font-semibold text-base leading-tight text-gray-900 dark:text-gray-100">
               {match.away_team}
-            </div>
+            </span>
           </div>
         </div>
 
         {/* Meta */}
-        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {formatDateTime(match.match_time)}
-            </span>
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 dark:border-[#2a2a2a]">
+          <div className="flex items-center gap-1.5 text-sm text-gray-400">
             {match.venue && (
-              <span className="flex items-center gap-1">
+              <>
                 <MapPin className="h-3.5 w-3.5" />
-                {match.venue}
-              </span>
+                <span>{match.venue}</span>
+              </>
             )}
           </div>
           <CountdownTimer matchTime={match.match_time} />
         </div>
       </div>
 
-      {/* Prediction form */}
+      {/* Prediction */}
       {showPredictionForm && (
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/30 rounded-b-xl">
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#181818]">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Mein Tipp:
-            </span>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Mein Tipp</span>
             <PredictionForm match={match} existing={prediction} />
           </div>
         </div>

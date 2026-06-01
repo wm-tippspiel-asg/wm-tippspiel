@@ -7,7 +7,15 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(npx wrangler *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "WebSearch",
+      "WebFetch(domain:www.nbcsports.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.fifa.com)",
+      "WebFetch(domain:sports.yahoo.com)",
+      "WebFetch(domain:www.skysports.com)",
+      "WebFetch(domain:fwcschedule.com)",
+      "WebFetch(domain:www.toffeeweb.com)"
     ]
   }
 }
