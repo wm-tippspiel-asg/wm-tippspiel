@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  // All pages are dynamic (Cloudflare D1 is only available at runtime, not build time)
+  experimental: {
+    // @ts-expect-error - valid Next.js config
+    missingSuspenseWithCSRBailout: false,
+  },
 
   // Image optimization - use unoptimized for CF Pages
   images: {
