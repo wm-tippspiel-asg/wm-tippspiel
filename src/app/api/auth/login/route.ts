@@ -40,7 +40,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const { username, password } = parsed.data
   const db = getDb()
 
-  const user = await queryOne<User>(
+  const user = await queryOne<User & { password_hash: string }>(
     db,
     'SELECT * FROM users WHERE username = ? COLLATE NOCASE',
     [username],
