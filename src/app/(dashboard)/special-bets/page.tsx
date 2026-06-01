@@ -95,7 +95,7 @@ export default function SpecialBetsPage() {
           WM-Prognosen
         </h1>
         <p style={{ marginTop: 8, fontSize: 15, color: 'var(--muted)' }}>
-          Tippe auf den Turniersieger und den Torschützenkönig — nur bis zum Anpfiff des ersten Spiels.
+          Tippe auf den Turniersieger und den Torschützenkönig.Nur bis zum Anpfiff des ersten Spiels möglich.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export default function SpecialBetsPage() {
         borderColor: locked ? 'color-mix(in oklab, var(--live) 25%, var(--bg))' : 'var(--accent-line)',
         display: 'flex', alignItems: 'center', gap: 14,
       }}>
-        <div style={{ fontSize: 28 }}>{locked ? '🔒' : '⏱️'}</div>
+        <div style={{ fontSize: 28 }}>{locked ? '🔒' : ''}</div>
         <div>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>
             {locked ? 'Tipps gesperrt — WM hat begonnen!' : `Noch ${timeLeft} Zeit`}
