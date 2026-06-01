@@ -6,7 +6,7 @@ pages_build_output_dir = ".vercel/output/static"
 [[d1_databases]]
 binding = "DB"
 database_name = "wm-tippspiel-db"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "a1761565-0dc5-4bef-8647-3c48517cb412"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
