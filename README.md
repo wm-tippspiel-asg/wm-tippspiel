@@ -250,17 +250,19 @@ Verbessere die Übersichtlichkeit. Außerdem zeige die Spiele der WM 2026 automa
 
 ## Bugs & Report
 
-Gefundene Bugs oder Sicherheitslücken bitte hier melden:
+Falls du einen Bug oder eine Sicherheitslücke findest, melde sie bitte hier oder sprich uns direkt in der Schule an.
+Besonders wenn du einen Fehler findest, der dir einen unfairen Vorteil verschafft oder das Tippspiel beeinflussen kann, würden wir uns über eine Meldung freuen.
+Es gibt zwar keine Belohnung dafür, aber das Projekt wurde für die Schule entwickelt und soll allen Beteiligten Spaß machen und fair bleiben.
+Wir wissen, dass es lusting oder verlockend sein kann, solche Fehler auszunutzen, aber bitte sei nicht komisch und melde sie stattdessen.
 
 - **GitHub Issues:** [github.com/wm-tippspiel-asg/wm-tippspiel/issues](https://github.com/wm-tippspiel-asg/wm-tippspiel/issues)
 
 Bitte beim Melden folgende Informationen angeben:
 - Kurze Beschreibung des Problems
-- Schritte zur Reproduktion
 - Erwartetes vs. tatsächliches Verhalten
 - Screenshots (falls hilfreich)
 
-> Für sicherheitsrelevante Lücken bitte **kein öffentliches Issue** erstellen — stattdessen direkt per E-Mail melden.
+> Für sicherheitsrelevante Lücken bitte **kein öffentliches Issue** erstellen, stattdessen direkt per E-Mail auf IServ oder direkt in der Schule ansprechen.
 
 ---
 
