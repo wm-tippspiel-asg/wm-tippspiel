@@ -6,14 +6,13 @@ export const runtime = 'edge'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
-
   if (!user) redirect('/login')
   if (user.is_banned) redirect('/login?banned=1')
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f]">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Navbar user={user} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <main className="shell" style={{ paddingTop: 32, paddingBottom: 96 }}>
         {children}
       </main>
     </div>

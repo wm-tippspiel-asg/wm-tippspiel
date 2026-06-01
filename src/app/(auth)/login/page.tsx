@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -32,60 +30,62 @@ export default function LoginPage() {
       const d = await res.json() as { success: boolean; data?: { role: string }; error?: string }
       if (!d.success) { setError(d.error ?? 'Ungültige Anmeldedaten.'); return }
       router.push(d.data?.role === 'admin' ? '/admin' : '/dashboard')
-    } catch {
-      setError('Verbindungsfehler. Bitte erneut versuchen.')
-    } finally { setLoading(false) }
+    } catch { setError('Verbindungsfehler.') } finally { setLoading(false) }
   }
 
   return (
-    <div className="w-full max-w-md slide-up">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Anmelden</h1>
-        <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-          Melde dich an um mitzuspielen
+    <div style={{ width: '100%', maxWidth: 420 }} className="wm-fade-in">
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)', margin: 0 }}>
+          Anmelden
+        </h1>
+        <p style={{ margin: '8px 0 0', fontSize: 15, color: 'var(--muted)', fontWeight: 500 }}>
+          Melde dich an, um mitzuspielen
         </p>
       </div>
 
-      <div className="card p-8">
-        {banned && (
-          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 text-base">
-            Dein Konto wurde gesperrt. Bitte wende dich an einen Admin.
-          </div>
-        )}
-        {error && (
-          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300 text-base">
-            {error}
+      <div className="wm-card" style={{ padding: '28px 28px' }}>
+        {(banned || error) && (
+          <div style={{ marginBottom: 20, padding: '13px 16px', borderRadius: 12,
+            background: 'color-mix(in oklab, var(--live) 10%, var(--bg))',
+            border: '1px solid color-mix(in oklab, var(--live) 30%, var(--bg))',
+            color: 'var(--live)', fontSize: 14, fontWeight: 600 }}>
+            {banned ? 'Dein Konto wurde gesperrt. Bitte wende dich an einen Admin.' : error}
           </div>
         )}
 
-        <form onSubmit={submit} className="space-y-5" noValidate>
-          <Input label="Benutzername" type="text" value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username" autoFocus required placeholder="dein-benutzername" />
+        <form onSubmit={submit} style={{ display: 'grid', gap: 18 }} noValidate>
+          <div>
+            <label className="label">Benutzername</label>
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
+              className="input-base" autoFocus autoComplete="username" placeholder="dein-benutzername" />
+          </div>
 
-          <div className="space-y-1.5">
+          <div>
             <label className="label">Passwort</label>
-            <div className="relative">
+            <div style={{ position: 'relative' }}>
               <input type={showPw ? 'text' : 'password'} value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password" required
-                className="input-base pr-12" placeholder="••••••••" />
+                className="input-base" style={{ paddingRight: 48 }}
+                autoComplete="current-password" placeholder="••••••••" />
               <button type="button" onClick={() => setShowPw(!showPw)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                {showPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                  border: 0, background: 'transparent', color: 'var(--muted)', cursor: 'pointer', padding: 2 }}>
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <Button type="submit" className="w-full" loading={loading}>
-            Anmelden
-          </Button>
+          <button type="submit" className="wm-btn wm-btn-primary" disabled={loading}
+            style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}>
+            {loading ? 'Einen Moment…' : 'Anmelden'}
+          </button>
         </form>
       </div>
 
-      <p className="mt-6 text-center text-base text-gray-500 dark:text-gray-400">
+      <p style={{ marginTop: 20, textAlign: 'center', fontSize: 14, color: 'var(--muted)' }}>
         Noch kein Konto?{' '}
-        <Link href="/register" className="link font-semibold">Jetzt registrieren</Link>
+        <Link href="/register" className="link">Jetzt registrieren</Link>
       </p>
     </div>
   )

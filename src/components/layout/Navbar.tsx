@@ -2,125 +2,119 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Trophy, LogOut, User, Menu, X } from 'lucide-react'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
-import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import { LayoutDashboard, Trophy, Target, BookOpen, Users, Calendar, Key, FileText, LogOut, Moon, Sun } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import type { AuthUser } from '@/types'
 
 const userLinks = [
-  { href: '/dashboard',   label: 'Dashboard' },
-  { href: '/predictions', label: 'Meine Tipps' },
-  { href: '/leaderboard', label: 'Rangliste' },
-  { href: '/about',       label: 'Regeln' },
+  { href: '/dashboard',   label: 'Start',    icon: LayoutDashboard },
+  { href: '/predictions', label: 'Tippen',   icon: Target },
+  { href: '/leaderboard', label: 'Rangliste',icon: Trophy },
+  { href: '/about',       label: 'Regeln',   icon: BookOpen },
 ]
 
 const adminLinks = [
-  { href: '/admin',         label: 'Übersicht' },
-  { href: '/admin/matches', label: 'Spiele' },
-  { href: '/admin/users',   label: 'Nutzer' },
-  { href: '/admin/codes',   label: 'Codes' },
-  { href: '/admin/logs',    label: 'Logs' },
+  { href: '/admin',         label: 'Übersicht', icon: LayoutDashboard },
+  { href: '/admin/matches', label: 'Spiele',    icon: Calendar },
+  { href: '/admin/users',   label: 'Nutzer',    icon: Users },
+  { href: '/admin/codes',   label: 'Codes',     icon: Key },
+  { href: '/admin/logs',    label: 'Logs',      icon: FileText },
 ]
+
+function ThemeBtn() {
+  const [dark, setDark] = useState(false)
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'))
+    setReady(true)
+  }, [])
+  function toggle() {
+    const next = !dark
+    setDark(next)
+    document.documentElement.classList.toggle('dark', next)
+    try { localStorage.setItem('theme', next ? 'dark' : 'light') } catch {}
+  }
+  if (!ready) return <div style={{ width: 36, height: 36 }} />
+  return (
+    <button onClick={toggle} aria-label="Theme wechseln"
+      style={{ border: 0, background: 'var(--surface-2)', borderRadius: 10, width: 36, height: 36,
+               display: 'grid', placeItems: 'center', color: 'var(--ink-2)', cursor: 'pointer' }}>
+      {dark ? <Sun size={16} /> : <Moon size={16} />}
+    </button>
+  )
+}
 
 export function Navbar({ user }: { user: AuthUser }) {
   const pathname = usePathname()
-  const [open, setOpen] = useState(false)
   const links = user.role === 'admin' ? adminLinks : userLinks
+
+  const isActive = (href: string) =>
+    pathname === href || (href.length > 10 && pathname.startsWith(href))
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
   }
 
-  const isActive = (href: string) =>
-    pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(href))
+  const initials = user.username.slice(0, 2).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-40 bg-white dark:bg-[#111111] border-b border-gray-200 dark:border-[#2a2a2a]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center h-16 gap-6">
+    <>
+      {/* Desktop nav */}
+      <header className="wm-nav">
+        <div className="shell">
+          <div className="wm-nav-inner">
+            {/* Brand */}
+            <Link href={user.role === 'admin' ? '/admin' : '/dashboard'} className="wm-brand">
+              <div className="wm-brand-mark">⚽</div>
+              <div>
+                WM 2026
+                <small>Tippspiel</small>
+              </div>
+            </Link>
 
-          {/* Logo */}
-          <Link href={user.role === 'admin' ? '/admin' : '/dashboard'}
-            className="flex items-center gap-2.5 shrink-0 font-bold text-gray-900 dark:text-gray-100">
-            <div className="h-8 w-8 rounded-lg bg-green-600 flex items-center justify-center">
-              <Trophy className="h-4.5 w-4.5 text-white" aria-hidden />
-            </div>
-            <span className="hidden sm:block text-base">WM 2026</span>
-          </Link>
+            {/* Tabs */}
+            <nav className="wm-nav-tabs">
+              {links.map((l) => (
+                <button key={l.href} onClick={() => window.location.href = l.href}
+                  className={`wm-nav-tab ${isActive(l.href) ? 'active' : ''}`}>
+                  {l.label}
+                </button>
+              ))}
+            </nav>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 flex-1">
-            {links.map((l) => (
-              <Link key={l.href} href={l.href}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-base font-medium transition-colors',
-                  isActive(l.href)
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-[#222]',
-                )}>
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex-1 md:hidden" />
-
-          {/* Right */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <div className="hidden md:flex items-center gap-2">
+            {/* Right */}
+            <div className="wm-nav-right">
+              <ThemeBtn />
               <Link href={user.role === 'admin' ? '/admin' : '/profile'}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium
-                           text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors">
-                <User className="h-4 w-4" />
-                {user.username}
+                style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none',
+                         padding: '6px 12px 6px 6px', borderRadius: 99,
+                         border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="wm-avatar" style={{ width: 30, height: 30, fontSize: 12 }}>{initials}</div>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--ink)' }}>{user.username}</span>
               </Link>
               <button onClick={logout} aria-label="Abmelden"
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors">
-                <LogOut className="h-4 w-4" />
+                style={{ border: 0, background: 'transparent', color: 'var(--muted)', cursor: 'pointer', padding: 6, borderRadius: 8 }}>
+                <LogOut size={17} />
               </button>
             </div>
-
-            {/* Mobile toggle */}
-            <button className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"
-              onClick={() => setOpen(!open)} aria-label="Menü">
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden border-t border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#111111] fade-in">
-          <nav className="p-3 space-y-0.5">
-            {links.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-                className={cn(
-                  'flex items-center px-4 py-3 rounded-lg text-base font-medium transition-colors',
-                  isActive(l.href)
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222]',
-                )}>
-                {l.label}
-              </Link>
-            ))}
-            <div className="pt-2 mt-2 border-t border-gray-200 dark:border-[#2a2a2a]">
-              <p className="px-4 py-1.5 text-sm text-gray-500">
-                Eingeloggt als <strong>{user.username}</strong>
-              </p>
-              <button onClick={logout}
-                className="w-full flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium
-                           text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors">
-                <LogOut className="h-4 w-4" />
-                Abmelden
-              </button>
-            </div>
-          </nav>
-        </div>
-      )}
-    </header>
+      {/* Mobile bottom tabbar */}
+      <nav className="wm-tabbar">
+        {links.map((l) => {
+          const Icon = l.icon
+          return (
+            <button key={l.href} onClick={() => window.location.href = l.href}
+              className={`wm-tabbar-btn ${isActive(l.href) ? 'active' : ''}`}>
+              <Icon size={22} />
+              {l.label}
+            </button>
+          )
+        })}
+      </nav>
+    </>
   )
 }

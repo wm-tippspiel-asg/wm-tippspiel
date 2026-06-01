@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils'
 import type { LeaderboardEntry } from '@/types'
 
 interface Props {
@@ -6,77 +5,66 @@ interface Props {
   currentUserId: string
 }
 
+const medals = ['🥇', '🥈', '🥉']
+
 export function LeaderboardTable({ entries, currentUserId }: Props) {
   if (entries.length === 0) {
     return (
-      <p className="py-10 text-center text-base text-gray-500 dark:text-gray-400">
-        Noch keine Punkte vergeben — tippe auf Spiele und schau nach dem Abpfiff wieder rein.
+      <p style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 15 }}>
+        Noch keine Punkte — tippe auf Spiele und schau nach Spielende wieder rein.
       </p>
     )
   }
 
-  const medals = ['🥇', '🥈', '🥉']
-
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-200 dark:border-[#2a2a2a] text-sm text-gray-500 dark:text-gray-400">
-            <th className="text-left px-5 py-3 font-medium w-12">#</th>
-            <th className="text-left px-5 py-3 font-medium">Spieler</th>
-            <th className="text-right px-5 py-3 font-medium hidden sm:table-cell">Exakt</th>
-            <th className="text-right px-5 py-3 font-medium hidden md:table-cell">Differenz</th>
-            <th className="text-right px-5 py-3 font-medium hidden sm:table-cell">Gewinner</th>
-            <th className="text-right px-5 py-3 font-medium">Punkte</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-[#222]">
-          {entries.map((e) => {
-            const isMe = e.user_id === currentUserId
-            const rank = e.rank ?? 99
+    <div style={{ overflow: 'hidden' }}>
+      {entries.map((e, i) => {
+        const isMe = e.user_id === currentUserId
+        const rank = e.rank ?? i + 1
 
-            return (
-              <tr key={e.user_id}
-                className={cn(
-                  'transition-colors',
-                  isMe ? 'bg-green-50 dark:bg-green-950/20' : 'hover:bg-gray-50 dark:hover:bg-[#1a1a1a]',
-                )}>
-                <td className="px-5 py-4 text-base">
-                  {rank <= 3
-                    ? <span className="text-xl">{medals[rank - 1]}</span>
-                    : <span className="font-mono text-gray-400 text-sm">{rank}</span>
-                  }
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className={cn('font-semibold text-base', isMe && 'text-green-700 dark:text-green-400')}>
-                      {e.username}
-                    </span>
-                    {isMe && <span className="badge-green text-xs">Du</span>}
-                  </div>
-                </td>
-                <td className="px-5 py-4 text-right text-base text-gray-600 dark:text-gray-400 hidden sm:table-cell">
-                  {e.exact_results}
-                </td>
-                <td className="px-5 py-4 text-right text-base text-gray-600 dark:text-gray-400 hidden md:table-cell">
-                  {e.correct_diff}
-                </td>
-                <td className="px-5 py-4 text-right text-base text-gray-600 dark:text-gray-400 hidden sm:table-cell">
-                  {e.correct_winner}
-                </td>
-                <td className="px-5 py-4 text-right">
-                  <span className={cn(
-                    'text-xl font-bold font-mono',
-                    rank === 1 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100',
-                  )}>
-                    {e.total_points}
-                  </span>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+        return (
+          <div key={e.user_id} style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '13px 20px',
+            borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+            background: isMe ? 'var(--accent-soft)' : 'transparent',
+          }}>
+            {/* rank */}
+            <div style={{ width: 28, textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+              {rank <= 3
+                ? <span style={{ fontSize: 20 }}>{medals[rank - 1]}</span>
+                : <span style={{ fontSize: 14, color: 'var(--muted)' }}>{rank}</span>
+              }
+            </div>
+
+            {/* color dot */}
+            <span style={{
+              width: 9, height: 9, borderRadius: 99, flexShrink: 0,
+              background: rank === 1 ? 'var(--gold)' : rank === 2 ? 'var(--silver)' : rank === 3 ? 'var(--bronze)' : 'var(--surface-3)',
+            }} />
+
+            {/* name */}
+            <span style={{ flex: 1, fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 15 }}>
+              {e.username}
+              {isMe && (
+                <span className="wm-chip wm-chip-open" style={{ marginLeft: 8, fontSize: 10, padding: '2px 7px', verticalAlign: 'middle' }}>Du</span>
+              )}
+            </span>
+
+            {/* stats */}
+            <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600, display: 'none', alignItems: 'center', gap: 4 }}
+              className="md-show">
+              {e.exact_results}× Exakt
+            </span>
+
+            {/* points */}
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, width: 48, textAlign: 'right',
+              color: rank === 1 ? 'var(--good)' : 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
+              {e.total_points}
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }

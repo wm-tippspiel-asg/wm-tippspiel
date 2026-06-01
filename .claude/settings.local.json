@@ -15,7 +15,11 @@
       "WebFetch(domain:sports.yahoo.com)",
       "WebFetch(domain:www.skysports.com)",
       "WebFetch(domain:fwcschedule.com)",
-      "WebFetch(domain:www.toffeeweb.com)"
+      "WebFetch(domain:www.toffeeweb.com)",
+      "WebFetch(domain:claude.ai)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c \"/home/m/.claude/projects/-home-m-Coding-wm-tippspiel/4130c71b-6cc1-4fb3-9c97-88b22d15f973/tool-results/webfetch-1780342870029-o47oug.bin\")",
+      "Bash(tar -x --to-stdout \"wm-tippspiel/project/styles.css\")"
     ]
   }
 }
