@@ -266,8 +266,10 @@ Bitte beim Melden folgende Informationen angeben:
 
 ---
 
-## Updates
+## Updates/Live Logs
 Das Projekt ist noch nicht 100% fertig, es werden wahrscheinlich noch weitere Funktionen hinzukommen.
+
+**[01.06.2026- 23:42 Uhr]**: Erster Bug gefunden von Aaron. Zum Glück wissen wir das AI holy slop coded,und testen erstmal alles. Der Bug war eine Race Condition, dass heißt zwei User können den gleichen Access Token benutzen. Der Fix: Einfach eine Bedingung einbauen die das checkt.
 
 ---
 
