@@ -47,6 +47,7 @@ export async function DELETE(request: NextRequest, { params }: Params): Promise<
   const code = await queryOne<{ code: string }>(db, 'SELECT code FROM registration_codes WHERE id = ?', [id])
   if (!code) return NextResponse.json({ success: false, error: 'Code nicht gefunden.' }, { status: 404 })
 
+  await execute(db, 'DELETE FROM code_uses WHERE code_id = ?', [id])
   await execute(db, 'DELETE FROM registration_codes WHERE id = ?', [id])
 
   await audit({
