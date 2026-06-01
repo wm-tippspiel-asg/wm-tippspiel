@@ -1,143 +1,121 @@
-import { Card, CardBody, CardHeader } from '@/components/ui/Card'
-import { Trophy, Star, Target, Zap, Shield, BookOpen } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
-
-export const metadata: Metadata = { title: 'Über das Spiel' }
+export const metadata: Metadata = { title: 'About' }
 
 export default function AboutPage() {
   return (
-    <div className="max-w-3xl space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Über das Spiel</h1>
-        <p className="mt-2 text-slate-500 dark:text-slate-400">
-          Alles, was du über das WM-Tippspiel wissen musst.
+    <div className="wm-fade-in" style={{ maxWidth: 720, display: 'grid', gap: 28 }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <img src="/logo.png" alt="Logo"
+          style={{ width: 72, height: 72, borderRadius: 16, objectFit: 'contain', boxShadow: 'var(--shadow)' }} />
+        <div>
+          <div className="wm-eyebrow">Schulprojekt 2026</div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700,
+            letterSpacing: '-0.02em', color: 'var(--ink)', margin: '4px 0 0' }}>
+            WM-Tippspiel 2026
+          </h1>
+          <p style={{ marginTop: 6, fontSize: 15, color: 'var(--muted)', fontWeight: 500 }}>
+            Ein Projekt des Informatikkurses, Klasse 11
+          </p>
+        </div>
+      </div>
+
+      {/* Über uns */}
+      <div className="wm-card wm-card-pad">
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
+          color: 'var(--ink)', marginBottom: 12 }}>Über das Projekt</h2>
+        <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, margin: 0 }}>
+          Dieses Tippspiel ist eine Idee unseres Informatikkurses der Klasse 11, 2026.
+          Da die FIFA Weltmeisterschaft in Kanada, Mexiko und den USA kurz bevorstand,
+          haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen — und es einfach gemacht.
+        </p>
+        <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, marginTop: 12 }}>
+          Das Projekt wurde mit <strong style={{ color: 'var(--ink)' }}>Next.js</strong>,{' '}
+          <strong style={{ color: 'var(--ink)' }}>TypeScript</strong> und{' '}
+          <strong style={{ color: 'var(--ink)' }}>Cloudflare Pages</strong> gebaut
+          und läuft komplett kostenlos in der Cloud. Bei der Umsetzung wurde{' '}
+          <a href="https://claude.ai/code" target="_blank" rel="noopener"
+            style={{ color: 'var(--accent-strong)', fontWeight: 600, textDecoration: 'none' }}>
+            Claude Code
+          </a>{' '}von Anthropic als KI-Werkzeug eingesetzt.
         </p>
       </div>
 
-      {/* Rules */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-indigo-500" />
-            <h2 className="section-title">Regeln</h2>
-          </div>
-        </CardHeader>
-        <CardBody className="prose prose-sm dark:prose-invert max-w-none">
-          <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-            <li className="flex gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben.
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              Tipps können bis zum Anpfiff des Spiels geändert werden.
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              Nach Spielbeginn sind keine Änderungen mehr möglich.
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              Punkte werden automatisch nach Spielende berechnet.
-            </li>
-            <li className="flex gap-2">
-              <span className="mt-0.5 text-slate-400">•</span>
-              Bei Punktegleichstand zählen mehr exakte Treffer.
-            </li>
-          </ul>
-        </CardBody>
-      </Card>
-
-      {/* Scoring */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-amber-500" />
-            <h2 className="section-title">Punktesystem</h2>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg">
-                  <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm text-emerald-800 dark:text-emerald-300">Exaktes Ergebnis</div>
-                  <div className="text-xs text-emerald-600 dark:text-emerald-500">z.B. 2:1 getippt, 2:1 gespielt</div>
-                </div>
-              </div>
-              <span className="font-bold text-lg text-emerald-700 dark:text-emerald-300">+5</span>
+      {/* Regeln */}
+      <div className="wm-card wm-card-pad">
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
+          color: 'var(--ink)', marginBottom: 16 }}>Spielregeln</h2>
+        <div style={{ display: 'grid', gap: 10 }}>
+          {[
+            'Für jedes WM-Spiel kannst du ein Ergebnis tippen.',
+            'Tipps können bis zum offiziellen Anpfiff geändert werden.',
+            'Nach Spielbeginn sind keine Änderungen mehr möglich.',
+            'Punkte werden automatisch nach Spielende berechnet.',
+            'Bei Punktegleichstand entscheidet die Anzahl exakter Treffer.',
+          ].map((rule, i) => (
+            <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13,
+                color: 'var(--accent-strong)', background: 'var(--accent-soft)',
+                borderRadius: 6, padding: '2px 7px', flexShrink: 0, marginTop: 1 }}>
+                {i + 1}
+              </span>
+              <span style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.6 }}>{rule}</span>
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-                  <Star className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm text-blue-800 dark:text-blue-300">Richtige Differenz + Gewinner</div>
-                  <div className="text-xs text-blue-600 dark:text-blue-500">z.B. 3:1 getippt, 2:0 gespielt (beide +1)</div>
-                </div>
+      {/* Punktesystem */}
+      <div className="wm-card wm-card-pad">
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
+          color: 'var(--ink)', marginBottom: 16 }}>Punktesystem</h2>
+        <div style={{ display: 'grid', gap: 8 }}>
+          {[
+            { label: 'Exaktes Ergebnis', sub: 'z.B. 2:1 getippt → 2:1 erzielt', pts: 5, color: 'var(--good)' },
+            { label: 'Richtige Differenz & Gewinner', sub: 'z.B. 3:1 getippt → 2:0 erzielt', pts: 3, color: 'var(--accent-strong)' },
+            { label: 'Richtiger Gewinner oder Unentschieden', sub: 'Tendenz stimmt, Ergebnis nicht', pts: 2, color: 'var(--ink-2)' },
+            { label: 'Falscher Tipp', sub: 'Kein Treffer', pts: 0, color: 'var(--muted)' },
+          ].map((row) => (
+            <div key={row.label} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', borderRadius: 12,
+              background: 'var(--surface-2)', border: '1px solid var(--border)',
+            }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>{row.label}</div>
+                <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>{row.sub}</div>
               </div>
-              <span className="font-bold text-lg text-blue-700 dark:text-blue-300">+3</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22,
+                color: row.color, minWidth: 36, textAlign: 'right' }}>
+                {row.pts > 0 ? `+${row.pts}` : '0'}
+              </span>
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Target className="h-4 w-4 text-slate-500" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm text-slate-700 dark:text-slate-300">Richtiger Gewinner / Unentschieden</div>
-                  <div className="text-xs text-slate-500">z.B. Sieg getippt, Sieg erspielt</div>
-                </div>
-              </div>
-              <span className="font-bold text-lg text-slate-700 dark:text-slate-300">+2</span>
-            </div>
+      {/* Datenschutz */}
+      <div className="wm-card wm-card-pad">
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
+          color: 'var(--ink)', marginBottom: 12 }}>Datenschutz</h2>
+        <p style={{ fontSize: 14.5, color: 'var(--ink-2)', lineHeight: 1.7, margin: 0 }}>
+          Diese Anwendung ist ausschließlich für den internen Schulgebrauch bestimmt.
+          Es werden nur Benutzername und ein sicherer Passwort-Hash gespeichert.
+          Keine Daten werden an Dritte weitergegeben.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 12 }}>
+          Quellcode auf{' '}
+          <a href="https://github.com/wm-tippspiel-asg/wm-tippspiel" target="_blank" rel="noopener"
+            style={{ color: 'var(--accent-strong)', fontWeight: 600, textDecoration: 'none' }}>
+            GitHub
+          </a>
+          {' '}— Informatikkurs Klasse 11, 2026
+        </p>
+      </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                  <Shield className="h-4 w-4 text-red-500" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm text-red-700 dark:text-red-400">Falscher Tipp</div>
-                  <div className="text-xs text-red-500">Kein Punkt für falsche Ergebnisse</div>
-                </div>
-              </div>
-              <span className="font-bold text-lg text-red-600">0</span>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Privacy & Impressum */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-slate-500" />
-            <h2 className="section-title">Datenschutz & Impressum</h2>
-          </div>
-        </CardHeader>
-        <CardBody className="text-sm text-slate-600 dark:text-slate-400 space-y-3">
-          <p>
-            Diese Anwendung ist ausschließlich für den internen Schulgebrauch bestimmt.
-            Es werden nur die für den Spielbetrieb notwendigen Daten (Benutzername, Passwort-Hash)
-            gespeichert.
-          </p>
-          <p>
-            Es werden keine Daten an Dritte weitergegeben. Alle Daten werden sicher
-            und verschlüsselt gespeichert.
-          </p>
-          <p className="text-slate-400 dark:text-slate-500 text-xs">
-            Impressum: [Hier Schulname und Kontakt eintragen] — Version 1.0
-          </p>
-        </CardBody>
-      </Card>
     </div>
   )
 }

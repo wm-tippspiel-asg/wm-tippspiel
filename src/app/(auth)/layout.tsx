@@ -6,8 +6,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent)',
-            display: 'grid', placeItems: 'center', fontSize: 18, boxShadow: 'var(--shadow-sm)' }}>⚽</div>
+          <img src="/logo.png" alt="Logo"
+            style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--ink)', lineHeight: 1.1 }}>WM 2026</div>
             <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }}>Tippspiel</div>

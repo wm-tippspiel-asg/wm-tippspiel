@@ -67,7 +67,8 @@ export function Navbar({ user }: { user: AuthUser }) {
           <div className="wm-nav-inner">
             {/* Brand */}
             <Link href={user.role === 'admin' ? '/admin' : '/dashboard'} className="wm-brand">
-              <div className="wm-brand-mark">⚽</div>
+              <img src="/logo.png" alt="WM Tippspiel Logo"
+                style={{ height: 36, width: 36, borderRadius: 8, objectFit: 'contain' }} />
               <div>
                 WM 2026
                 <small>Tippspiel</small>
