@@ -10,7 +10,7 @@ database_id = "a1761565-0dc5-4bef-8647-3c48517cb412"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "94c3c8aa214e40d78b618f13e0470743"
 
 [vars]
 NEXTAUTH_URL = "http://localhost:3000"
