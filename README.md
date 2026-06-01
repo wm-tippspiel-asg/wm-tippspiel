@@ -1,6 +1,6 @@
 # WM-Tippspiel 2026
 
-Ein Tippspiel zur FIFA Weltmeisterschaft 2026 — gebaut von Schülerinnen und Schülern der Klasse 11.
+Ein Tippspiel zur FIFA Weltmeisterschaft 2026 von dem Informatikkurs der 11. Klasse 2026.
 
 ---
 
@@ -33,9 +33,9 @@ Ein großes Problem bei einem solchen Projekt war die **Token Usage**, auf die i
 
 ## Was ist dieses Projekt?
 
-Eine webbasierte Tippspiel-Plattform für die FIFA Weltmeisterschaft 2026. Schülerinnen und Schüler können sich mit einem Zugangscode registrieren und für alle WM-Spiele ihre Ergebnisse tippen. Nach Spielende werden Punkte automatisch vergeben und eine Rangliste gepflegt.
+Eine webbasierte Tippspiel-Plattform für die FIFA WM 2026. Schülerinnen und Schüler können sich mit einem Zugangscode registrieren und für alle WM-Spiele ihre Ergebnisse tippen. Nach jedem Spiel werden die Punkte automatisch verteilt und die Rangliste aktualisiert.
 
-**Live:** [wm-tippspiel.wm-tippspiel-asg.workers.dev](https://wm-tippspiel.wm-tippspiel-asg.workers.dev)
+**Live:** [wm-tippspiel-cz0.pages.dev](https://wm-tippspiel-cz0.pages.dev) // Ich weiß trash domain aber hoffentlich bald eine bessere.
 
 ---
 
