@@ -3,7 +3,9 @@
     "allow": [
       "Bash(mkdir -p /home/m/Coding/wm-tippspiel/src/app/api/admin/codes/\\\\[id\\\\])",
       "Bash(mkdir -p /home/m/Coding/wm-tippspiel/src/app/api/admin/matches/\\\\[id\\\\])",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

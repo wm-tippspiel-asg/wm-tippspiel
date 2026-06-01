@@ -1,16 +1,15 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
-  const params = useSearchParams()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -18,9 +17,11 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [banned, setBanned] = useState(false)
 
+  // Read query params without useSearchParams (no Suspense needed)
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
     if (params.get('banned') === '1') setBanned(true)
-  }, [params])
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -41,11 +42,7 @@ function LoginForm() {
         return
       }
 
-      if (data.data?.role === 'admin') {
-        router.push('/admin')
-      } else {
-        router.push('/dashboard')
-      }
+      router.push(data.data?.role === 'admin' ? '/admin' : '/dashboard')
     } catch {
       setError('Verbindungsfehler. Bitte erneut versuchen.')
     } finally {
@@ -67,19 +64,11 @@ function LoginForm() {
       <div className="card p-6 shadow-sm">
         {banned && (
           <div className="mb-4">
-            <Alert
-              variant="error"
-              title="Konto gesperrt"
-              message="Dein Konto wurde gesperrt. Bitte wende dich an einen Admin."
-            />
+            <Alert variant="error" title="Konto gesperrt"
+              message="Dein Konto wurde gesperrt. Bitte wende dich an einen Admin." />
           </div>
         )}
-
-        {error && (
-          <div className="mb-4">
-            <Alert variant="error" message={error} />
-          </div>
-        )}
+        {error && <div className="mb-4"><Alert variant="error" message={error} /></div>}
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <Input
@@ -132,13 +121,5 @@ function LoginForm() {
         </Link>
       </p>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="w-full max-w-sm animate-pulse h-64 card" />}>
-      <LoginForm />
-    </Suspense>
   )
 }
