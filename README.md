@@ -237,7 +237,7 @@ Bevorzugt:
 **Intention:** WM 2026 Spiele automatisch eintragen, Übersichtlichkeit erhöhen.
 
 ```
-Verbessere die Übersichtlichkeit. Außerdem zeige die Spiele der WM 2026 automatisch an.
+Verbessere die Übersichtlichkeit. Außerdem zeige die Spiele der WM 2026 automatisch an. Nutze dafür die API von football-data.org. Mache die Strucktur ich implementiere die API Tokens etc. dann selber.
 ```
 
 **Ergebnis:**
