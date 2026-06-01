@@ -5,7 +5,7 @@ import { getDb, queryAll, queryOne } from '@/lib/db'
 import { MatchCard } from '@/components/dashboard/MatchCard'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Calendar, Trophy } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import type { Match, Prediction, LeaderboardEntry } from '@/types'
 import type { Metadata } from 'next'
 
@@ -36,11 +36,6 @@ export default async function DashboardPage() {
 
   const totalParticipants = await queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM leaderboard`)
   const predMap = new Map(predictions.map((p) => [p.match_id, p]))
-
-  const openTipped = predictions.filter((p) => {
-    const m = upcomingMatches.find((m) => m.id === p.match_id)
-    return !!m
-  }).length
 
   return (
     <div className="wm-fade-in" style={{ display: 'grid', gap: 28 }}>
@@ -77,24 +72,28 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-        {[
-          {
-            k: 'Dein Rang',
-            v: userRank?.rank ? `${userRank.rank}.` : '–',
-            sub: `von ${totalParticipants?.count ?? 0} Teilnehmern`,
-            href: '/leaderboard',
-          },
-          { k: 'Punkte', v: stats?.total_points ?? 0, sub: 'Gesamtpunkte' },
-          { k: 'Exakte Tipps', v: stats?.exact_results ?? 0, sub: 'à 5 Punkte' },
-          { k: 'Tipps gesamt', v: stats?.total_tips ?? 0, sub: 'abgegeben' },
-        ].map((s, i) => (
-          <div key={i} className="wm-stat" style={s.href ? { cursor: 'pointer' } : {}}
-            onClick={s.href ? () => (window.location.href = s.href!) : undefined}>
-            <div className="k">{s.k}</div>
-            <div className="v" style={{ fontSize: 28 }}>{s.v}</div>
-            <div className="sub">{s.sub}</div>
+        <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
+          <div className="wm-stat" style={{ cursor: 'pointer' }}>
+            <div className="k">Dein Rang</div>
+            <div className="v" style={{ fontSize: 28 }}>{userRank?.rank ? `${userRank.rank}.` : '–'}</div>
+            <div className="sub">von {totalParticipants?.count ?? 0} Teilnehmern</div>
           </div>
-        ))}
+        </Link>
+        <div className="wm-stat">
+          <div className="k">Punkte</div>
+          <div className="v" style={{ fontSize: 28 }}>{stats?.total_points ?? 0}</div>
+          <div className="sub">Gesamtpunkte</div>
+        </div>
+        <div className="wm-stat">
+          <div className="k">Exakte Tipps</div>
+          <div className="v" style={{ fontSize: 28 }}>{stats?.exact_results ?? 0}</div>
+          <div className="sub">à 5 Punkte</div>
+        </div>
+        <div className="wm-stat">
+          <div className="k">Tipps gesamt</div>
+          <div className="v" style={{ fontSize: 28 }}>{stats?.total_tips ?? 0}</div>
+          <div className="sub">abgegeben</div>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }}>
