@@ -30,7 +30,8 @@ export default function AboutPage() {
         <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, margin: 0 }}>
           Dieses Tippspiel ist eine Idee unseres Informatikkurses der Klasse 11, 2026.
           Da die FIFA Weltmeisterschaft in Kanada, Mexiko und den USA kurz bevorstand,
-          haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen — und es einfach gemacht.
+          haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen. Wir hoffen 
+          euch gefällt es. Feedback gerne in der Schule persönlich oder per Mail.
         </p>
         <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, marginTop: 12 }}>
           Das Projekt wurde mit <strong style={{ color: 'var(--ink)' }}>Next.js</strong>,{' '}
@@ -112,7 +113,7 @@ export default function AboutPage() {
             style={{ color: 'var(--accent-strong)', fontWeight: 600, textDecoration: 'none' }}>
             GitHub
           </a>
-          {' '}— Informatikkurs Klasse 11, 2026
+          {' '}— Informatikkurs Klasse 11, 2026 - wm-tippspiel-asg@proton.me
         </p>
       </div>
 
