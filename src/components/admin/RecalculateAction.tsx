@@ -12,7 +12,7 @@ export function RecalculateAction() {
     setMsg('')
     try {
       const res = await fetch('/api/admin/leaderboard/recalculate', { method: 'POST' })
-      const d = await res.json()
+      const d = await res.json() as { success: boolean; message?: string }
       setMsg(d.message ?? (d.success ? 'Fertig!' : 'Fehler'))
     } catch {
       setMsg('Fehler')

@@ -34,7 +34,7 @@ export default function LoginPage() {
         body: JSON.stringify({ username: username.trim(), password }),
       })
 
-      const data = await res.json()
+      const data = await res.json() as { success: boolean; data?: { role: string }; error?: string }
 
       if (!res.ok || !data.success) {
         setError(data.error ?? 'Login fehlgeschlagen.')

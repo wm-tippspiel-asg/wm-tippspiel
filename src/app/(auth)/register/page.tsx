@@ -49,7 +49,7 @@ export default function RegisterPage() {
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json() as { success: boolean; error?: string }
 
       if (!res.ok || !data.success) {
         setErrors({ general: data.error ?? 'Registrierung fehlgeschlagen.' })

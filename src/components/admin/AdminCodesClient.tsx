@@ -46,13 +46,13 @@ export function AdminCodesClient({ initialCodes }: { initialCodes: CodeWithCreat
           expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : undefined,
         }),
       })
-      const d = await res.json()
+      const d = await res.json() as { success: boolean; data?: { code: string }; error?: string }
       if (!d.success) { setFormError(d.error ?? 'Fehler'); return }
 
-      setNewCodeResult(d.data.code)
+      setNewCodeResult(d.data?.code ?? '')
       setForm({ description: '', max_uses: '', expires_at: '' })
 
-      const all = await fetch('/api/admin/codes').then((r) => r.json())
+      const all = await fetch('/api/admin/codes').then((r) => r.json()) as { success: boolean; data: CodeWithCreator[] }
       if (all.success) setCodes(all.data)
     } catch {
       setFormError('Verbindungsfehler')
@@ -63,7 +63,7 @@ export function AdminCodesClient({ initialCodes }: { initialCodes: CodeWithCreat
 
   async function toggleCode(code: CodeWithCreator) {
     await fetch(`/api/admin/codes/${code.id}`, { method: 'PATCH' })
-    const all = await fetch('/api/admin/codes').then((r) => r.json())
+    const all = await fetch('/api/admin/codes').then((r) => r.json()) as { success: boolean; data: CodeWithCreator[] }
     if (all.success) setCodes(all.data)
   }
 

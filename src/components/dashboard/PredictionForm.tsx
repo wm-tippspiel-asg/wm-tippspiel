@@ -51,7 +51,7 @@ export function PredictionForm({ match, existing, onSaved }: PredictionFormProps
         body: JSON.stringify({ match_id: match.id, home_score: h, away_score: a }),
       })
 
-      const data = await res.json()
+      const data = await res.json() as { success: boolean; error?: string }
       if (!res.ok || !data.success) {
         setError(data.error ?? 'Fehler beim Speichern.')
         return

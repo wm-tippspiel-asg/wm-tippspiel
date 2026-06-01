@@ -44,7 +44,7 @@ export function AdminUsersClient({ initialUsers }: AdminUsersClientProps) {
         })
       }
 
-      const d = await res.json()
+      const d = await res.json() as { success: boolean; message?: string; error?: string }
       if (d.success) {
         if (confirm.type === 'delete') {
           setUsers((prev) => prev.filter((u) => u.id !== confirm.userId))

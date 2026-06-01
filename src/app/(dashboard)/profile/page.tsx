@@ -39,7 +39,7 @@ export default function ProfilePage() {
   useEffect(() => {
     fetch('/api/profile')
       .then((r) => r.json())
-      .then((d) => {
+      .then((d: { success: boolean; data?: ProfileData }) => {
         if (d.success) {
           setData(d.data)
           setNewUsername(d.data.user.username)
@@ -58,7 +58,7 @@ export default function ProfilePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: newUsername }),
     })
-    const d = await res.json()
+    const d = await res.json() as { success: boolean; message?: string; error?: string }
     setUsernameMsg({ type: d.success ? 'success' : 'error', text: d.message ?? d.error ?? '' })
     if (d.success && data) {
       setData({ ...data, user: { ...data.user, username: newUsername } })
@@ -84,7 +84,7 @@ export default function ProfilePage() {
         confirm_password: passwords.confirm,
       }),
     })
-    const d = await res.json()
+    const d = await res.json() as { success: boolean; message?: string; error?: string }
     setPasswordMsg({ type: d.success ? 'success' : 'error', text: d.message ?? d.error ?? '' })
     if (d.success) setPasswords({ current: '', new: '', confirm: '' })
     setPasswordLoading(false)

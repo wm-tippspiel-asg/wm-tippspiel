@@ -102,11 +102,11 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      const d = await res.json()
+      const d = await res.json() as { success: boolean; error?: string }
       if (!d.success) { setFormError(d.error ?? 'Fehler'); return }
 
       // Refresh
-      const all = await fetch('/api/admin/matches').then((r) => r.json())
+      const all = await fetch('/api/admin/matches').then((r) => r.json()) as { success: boolean; data: Match[] }
       if (all.success) setMatches(all.data)
       setShowForm(false)
     } catch {
@@ -132,10 +132,10 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ home_score: h, away_score: a }),
       })
-      const d = await res.json()
+      const d = await res.json() as { success: boolean; error?: string }
       if (!d.success) { setResultError(d.error ?? 'Fehler'); return }
 
-      const all = await fetch('/api/admin/matches').then((r) => r.json())
+      const all = await fetch('/api/admin/matches').then((r) => r.json()) as { success: boolean; data: Match[] }
       if (all.success) setMatches(all.data)
       setResultMatch(null)
     } catch {
@@ -152,7 +152,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action }),
     })
-    const all = await fetch('/api/admin/matches').then((r) => r.json())
+    const all = await fetch('/api/admin/matches').then((r) => r.json()) as { success: boolean; data: Match[] }
     if (all.success) setMatches(all.data)
   }
 
