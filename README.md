@@ -65,8 +65,8 @@ Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben. Tipps können bis zum
 | Richtige Tordifferenz & richtiger Gewinner (z.B. 3:1 getippt, 2:0 erzielt) | **3** |
 | Richtiger Gewinner oder Unentschieden | **2** |
 | Falsch | **0** |
-| 🏆 Sondertipp: Richtiger Turniersieger | **10** |
-| ⚽ Sondertipp: Richtiger Torschützenkönig | **7** |
+| Sondertipp: Richtiger Turniersieger | **10** |
+| Sondertipp: Richtiger Torschützenkönig | **7** |
 
 Bei Punktegleichstand entscheidet die Anzahl der exakten Treffer.
 
