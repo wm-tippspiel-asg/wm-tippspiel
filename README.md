@@ -141,7 +141,6 @@ Da KI-generierter Code oft Sicherheitslücken enthält, wurde bei diesem Projekt
 
 | Bedrohung | Maßnahme |
 |-----------|----------|
-| Passwort-Angriffe | PBKDF2-SHA256 mit 100.000 Iterationen (Web Crypto API) |
 | Session-Hijacking | HMAC-signierte Tokens, HttpOnly + Secure + SameSite=Strict Cookies |
 | Brute-Force | Rate-Limiting: 10 Login-Versuche / 15 min (Cloudflare KV) |
 | SQL Injection | Parametrisierte D1-Queries (kein String-Concatenation) |
