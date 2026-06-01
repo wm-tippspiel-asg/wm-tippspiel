@@ -4,8 +4,7 @@ export const runtime = 'edge'
 
 export async function GET(request: Request) {
   try {
-    const kv = (globalThis as any).RATE_LIMIT as KVNamespace
-    const standings = await fetchFootballStandings(kv)
+    const standings = await fetchFootballStandings()
 
     if (!standings) {
       return Response.json({ success: false, error: 'Failed to fetch standings' }, { status: 503 })

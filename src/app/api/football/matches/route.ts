@@ -1,12 +1,10 @@
 import { fetchFootballMatches } from '@/lib/football-api'
-import type { D1Database } from '@cloudflare/workers-types'
 
 export const runtime = 'edge'
 
 export async function GET(request: Request) {
   try {
-    const kv = (globalThis as any).RATE_LIMIT as KVNamespace
-    const matches = await fetchFootballMatches(kv)
+    const matches = await fetchFootballMatches()
 
     if (!matches) {
       return Response.json({ success: false, error: 'Failed to fetch matches' }, { status: 503 })

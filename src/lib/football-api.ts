@@ -3,12 +3,15 @@ const API_BASE = 'https://api.football-data.org/v4'
 const CACHE_KEY = 'wm2026_matches'
 const CACHE_TTL = 300 // 5 minutes
 
-export async function fetchFootballMatches(kv: KVNamespace) {
+export async function fetchFootballMatches(kv?: KVNamespace) {
   // Try cache first
-  const cached = await kv.get(CACHE_KEY, 'json')
-  if (cached) return cached
+  let cached = null
+  if (kv) {
+    cached = await kv.get(CACHE_KEY, 'json')
+    if (cached) return cached
+  }
 
-  const token = (globalThis as any).FOOTBALL_API_KEY
+  const token = process.env.FOOTBALL_API_KEY
   if (!token) throw new Error('FOOTBALL_API_KEY not set')
 
   try {
@@ -40,7 +43,9 @@ export async function fetchFootballMatches(kv: KVNamespace) {
       external_id: m.id,
     }))
 
-    await kv.put(CACHE_KEY, JSON.stringify(matches), { expirationTtl: CACHE_TTL })
+    if (kv) {
+      await kv.put(CACHE_KEY, JSON.stringify(matches), { expirationTtl: CACHE_TTL })
+    }
     return matches
   } catch (e) {
     console.error('Football API error:', e)
@@ -59,12 +64,15 @@ function mapStatus(apiStatus: string): string {
   return map[apiStatus] ?? 'scheduled'
 }
 
-export async function fetchFootballStandings(kv: KVNamespace) {
+export async function fetchFootballStandings(kv?: KVNamespace) {
   const cacheKey = 'wm2026_standings'
-  const cached = await kv.get(cacheKey, 'json')
-  if (cached) return cached
+  let cached = null
+  if (kv) {
+    cached = await kv.get(cacheKey, 'json')
+    if (cached) return cached
+  }
 
-  const token = (globalThis as any).FOOTBALL_API_KEY
+  const token = process.env.FOOTBALL_API_KEY
   if (!token) throw new Error('FOOTBALL_API_KEY not set')
 
   try {
@@ -107,7 +115,9 @@ export async function fetchFootballStandings(kv: KVNamespace) {
         })),
       }))
 
-    await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: CACHE_TTL })
+    if (kv) {
+      await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: CACHE_TTL })
+    }
     return standings
   } catch (e) {
     console.error('Football API standings error:', e)
