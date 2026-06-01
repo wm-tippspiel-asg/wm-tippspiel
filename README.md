@@ -1,6 +1,6 @@
 # WM-Tippspiel 2026
 
-Ein Tippspiel zur FIFA Weltmeisterschaft 2026 von dem Informatikkurs der 11. Klasse 2026.
+Ein Tippspiel zur FIFA Weltmeisterschaft 2026 von dem Informatikkurs der 11. Klasse 2026. 
 
 ---
 
@@ -263,6 +263,11 @@ Bitte beim Melden folgende Informationen angeben:
 - Screenshots (falls hilfreich)
 
 > Für sicherheitsrelevante Lücken bitte **kein öffentliches Issue** erstellen, stattdessen direkt per E-Mail auf IServ oder direkt in der Schule ansprechen.
+
+---
+
+## Updates
+Das Projekt ist noch nicht 100% fertig, es werden wahrscheinlich noch weitere Funktionen hinzukommen.
 
 ---
 
