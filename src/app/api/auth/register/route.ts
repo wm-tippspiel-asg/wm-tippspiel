@@ -91,7 +91,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const passwordHash = await hashPassword(password)
   const userId = generateToken(16)
 
-  // Transaction: create user + record code usage + increment counter
+  // Atomisch inkrementieren — schlägt fehl wenn Code zwischenzeitlich voll wurde (Race Condition Fix)
+  const incResult = await execute(
+    db,
+    `UPDATE registration_codes
+     SET uses_count = uses_count + 1
+     WHERE id = ? AND is_active = 1
+       AND (max_uses IS NULL OR uses_count < max_uses)`,
+    [regCode.id],
+  )
+
+  if ((incResult.meta.changes ?? 0) === 0) {
+    return NextResponse.json(
+      { success: false, error: 'Dieser Zugangscode wurde bereits zu oft verwendet.' },
+      { status: 400 },
+    )
+  }
+
   await execute(
     db,
     `INSERT INTO users (id, username, password_hash, role) VALUES (?, ?, ?, 'user')`,
@@ -102,12 +118,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     db,
     `INSERT INTO code_uses (code_id, user_id) VALUES (?, ?)`,
     [regCode.id, userId],
-  )
-
-  await execute(
-    db,
-    `UPDATE registration_codes SET uses_count = uses_count + 1 WHERE id = ?`,
-    [regCode.id],
   )
 
   await audit({
