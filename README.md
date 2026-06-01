@@ -61,10 +61,10 @@ Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben. Tipps können bis zum
 
 | Ergebnis | Punkte |
 |----------|:------:|
-| ✅ Exaktes Ergebnis (z.B. 2:1 getippt, 2:1 erzielt) | **5** |
-| 🎯 Richtige Tordifferenz & richtiger Gewinner (z.B. 3:1 → 2:0) | **3** |
-| ✔️ Richtiger Gewinner oder Unentschieden | **2** |
-| ❌ Falsch | **0** |
+| Exaktes Ergebnis (z.B. 2:1 getippt, 2:1 erzielt) | **5** |
+| Richtige Tordifferenz & richtiger Gewinner (z.B. 3:1 getippt, 2:0 erzielt) | **3** |
+| Richtiger Gewinner oder Unentschieden | **2** |
+| Falsch | **0** |
 
 Bei Punktegleichstand entscheidet die Anzahl der exakten Treffer.
 
