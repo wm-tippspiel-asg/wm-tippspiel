@@ -27,7 +27,7 @@ Dieses Projekt ist eine Idee des Informatikkurses der 11. Klasse 2026. Da die WM
 
 Bei der Erstellung dieses Projektes wurde die KI [Claude Code](https://code.claude.com/docs/de/overview) von Anthropic zur Hilfe genommen. Es ist beeindruckend, wie schnell KI so ein Projekt umsetzen kann, wenn man es richtig angeht, die richtigen Prompts formuliert und die richtige Arbeitsumgebung hat.
 
-Ein großes Problem bei einem solchen Projekt war die **Token Usage**, auf die ich in der [KI-Dokumentation](#ki-dokumentation) genauer eingehen werde. Außerdem war mir das Sicherheitsvorgehen ein wichtiges Anliegen. Da KI viel `slop` generiert, wird die Sicherheit oft vernachlässigt. Es ist wichtig, ein bisschen Coding-Knowledge zu haben, um den Code nochmal auf häufige Fehler (siehe [OWASP Top 10](https://owasp.org/www-project-top-ten/)) zu durchschauen. Klar wird es immer noch Bugs und Fehler im Code geben — für mehr Infos dazu siehe [Bugs & Report](#bugs--report).
+Ein großes Problem bei einem solchen Projekt war die **Token Usage**, auf die ich in der [KI-Dokumentation](#ki-dokumentation) genauer eingehen werde. Außerdem war uns das Sicherheitsvorgehen ein wichtiges Anliegen. Da KI viel `slop` generiert, wird die Sicherheit oft vernachlässigt. Es ist wichtig, ein bisschen Coding-Knowledge zu haben, um den Code nochmal auf häufige Fehler (siehe [OWASP Top 10](https://owasp.org/www-project-top-ten/)) zu durchschauen. Klar wird es immer noch Bugs und Fehler im Code geben, für mehr Infos dazu siehe [Bugs & Report](#bugs--report).
 
 ---
 
