@@ -71,7 +71,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      <div className="dashboard-stats-grid">
         <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
           <div className="wm-stat" style={{ cursor: 'pointer' }}>
             <div className="k">Dein Rang</div>
@@ -96,7 +96,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }}>
+      <div className="dashboard-main-grid">
 
         {/* Upcoming matches */}
         <div style={{ display: 'grid', gap: 16 }}>

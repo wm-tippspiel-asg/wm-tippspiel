@@ -9,11 +9,11 @@
    ============================================================ */
 
 :root {
-  --accent:        #14a05a;
-  --accent-strong: #0f8a4c;
+  --accent:        #2563eb;
+  --accent-strong: #1d4ed8;
   --accent-ink:    #ffffff;
-  --accent-soft:   color-mix(in oklab, #14a05a 12%, #f6f7f5);
-  --accent-line:   color-mix(in oklab, #14a05a 28%, #f6f7f5);
+  --accent-soft:   color-mix(in oklab, #2563eb 12%, #f6f7f5);
+  --accent-line:   color-mix(in oklab, #2563eb 28%, #f6f7f5);
 
   --bg:            #f6f7f5;
   --surface:       #ffffff;
@@ -59,8 +59,8 @@
   --ink-2:         #b6bdb6;
   --muted:         #818b83;
   --muted-2:       #5d655f;
-  --accent-soft:   color-mix(in oklab, #14a05a 22%, #0f1311);
-  --accent-line:   color-mix(in oklab, #14a05a 40%, #0f1311);
+  --accent-soft:   color-mix(in oklab, #2563eb 22%, #0f1311);
+  --accent-line:   color-mix(in oklab, #2563eb 40%, #0f1311);
   --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
   --shadow:    0 2px 6px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.3);
   --shadow-lg: 0 10px 30px rgba(0,0,0,.45), 0 30px 60px rgba(0,0,0,.4);
@@ -245,7 +245,10 @@ button { font-family: inherit; cursor: pointer; }
   font-family: var(--font-display); font-weight: 700;
   font-size: 22px; font-variant-numeric: tabular-nums;
   transition: all .15s var(--ease); outline: none;
+  -moz-appearance: textfield;
 }
+.wm-score-input::-webkit-outer-spin-button,
+.wm-score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .wm-score-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 .wm-score-input.filled {
   border-color: var(--accent-line);
@@ -307,3 +310,35 @@ button { font-family: inherit; cursor: pointer; }
 .link:hover   { text-decoration: underline; }
 .divider      { @apply wm-divider; }
 .fade-in      { @apply wm-fade-in; }
+
+/* ── Dashboard responsive ── */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hero responsive */
+.wm-hero-body h1 { font-size: 32px; }
+@media (max-width: 640px) {
+  .wm-hero-body h1 { font-size: 24px; }
+  .wm-stat .v { font-size: 22px !important; }
+}

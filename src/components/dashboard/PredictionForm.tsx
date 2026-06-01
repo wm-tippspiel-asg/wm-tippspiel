@@ -68,13 +68,13 @@ export function PredictionForm({ match, existing, onSaved }: Props) {
 
   return (
     <form onSubmit={save} className="flex items-center gap-2">
-      <input type="number" min={0} max={99} value={home}
-        onChange={(e) => { setHome(e.target.value); setSaved(false) }}
+      <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2} value={home}
+        onChange={(e) => { if (/^\d{0,2}$/.test(e.target.value)) { setHome(e.target.value); setSaved(false) } }}
         disabled={isDisabled || loading}
         placeholder="0" className="score-input" aria-label="Heim-Tore" />
-      <span className="text-xl font-bold text-gray-400">:</span>
-      <input type="number" min={0} max={99} value={away}
-        onChange={(e) => { setAway(e.target.value); setSaved(false) }}
+      <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--muted-2)' }}>:</span>
+      <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={2} value={away}
+        onChange={(e) => { if (/^\d{0,2}$/.test(e.target.value)) { setAway(e.target.value); setSaved(false) } }}
         disabled={isDisabled || loading}
         placeholder="0" className="score-input" aria-label="Auswärts-Tore" />
 
