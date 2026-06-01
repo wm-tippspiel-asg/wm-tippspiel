@@ -41,7 +41,7 @@ export default function ProfilePage() {
       .then((r) => r.json() as Promise<{ success: boolean; data?: ProfileData }>)
       .then((d) => {
         if (d.success) {
-          setData(d.data)
+          setData(d.data ?? null)
           setNewUsername(d.data?.user.username ?? '')
         }
       })
