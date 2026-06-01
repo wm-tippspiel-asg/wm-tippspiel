@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         <div className="wm-hero-body">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700,
             letterSpacing: '.1em', textTransform: 'uppercase', opacity: .9, marginBottom: 14 }}>
-            ⚽ FIFA Weltmeisterschaft 2026
+            FIFA Weltmeisterschaft 2026
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end',
             justifyContent: 'space-between', gap: 16 }}>
