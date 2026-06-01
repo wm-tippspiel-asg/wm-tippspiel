@@ -38,11 +38,11 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetch('/api/profile')
-      .then((r) => r.json())
-      .then((d: { success: boolean; data?: ProfileData }) => {
+      .then((r) => r.json() as Promise<{ success: boolean; data?: ProfileData }>)
+      .then((d) => {
         if (d.success) {
           setData(d.data)
-          setNewUsername(d.data.user.username)
+          setNewUsername(d.data?.user.username ?? '')
         }
       })
       .finally(() => setLoading(false))
