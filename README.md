@@ -167,6 +167,8 @@ Die hier gezeigten Prompts sind die größten und wichtigsten Prompts dieses Pro
 
 [Claude Code](https://code.claude.com/docs/de/overview) ist ein bezahltes KI-Modell von Anthropic. Man hat nur eine bestimmte Anzahl von Tokens bzw. eine bestimmte Usage, die man nutzen kann. Mit diesem Projekt wurden bis jetzt insgesamt ca. **500.000 Tokens** verbraucht. Das entspricht beim Claude Max ×5-Plan einer Usage von ca. **40 % des Weekly Limits**. Zudem wurde noch Claude Design benutzt, welches für das Design verantwortlich war. Claude Design ist ebenfalls nur im Paid Plan enthalten.
 
+[usage](https://github.com/wm-tippspiel-asg/wm-tippspiel/public/usage.png)
+
 ---
 
 ### Prompt 1 Grundprojekt
