@@ -7,11 +7,12 @@ import { useState, useEffect } from 'react'
 import type { AuthUser } from '@/types'
 
 const userLinks = [
-  { href: '/dashboard',   label: 'Start',    icon: LayoutDashboard },
-  { href: '/predictions', label: 'Tippen',   icon: Target },
-  { href: '/groups',      label: 'Gruppen',  icon: Trophy },
-  { href: '/leaderboard', label: 'Rangliste',icon: Trophy },
-  { href: '/about',       label: 'Regeln',   icon: BookOpen },
+  { href: '/dashboard',     label: 'Start',      icon: LayoutDashboard },
+  { href: '/predictions',   label: 'Tippen',     icon: Target },
+  { href: '/special-bets',  label: 'Sondertipps',icon: Trophy },
+  { href: '/groups',        label: 'Gruppen',    icon: Trophy },
+  { href: '/leaderboard',   label: 'Rangliste',  icon: Trophy },
+  { href: '/about',         label: 'Regeln',     icon: BookOpen },
 ]
 
 const adminLinks = [

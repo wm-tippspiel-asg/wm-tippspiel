@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { getDb, queryAll, queryOne } from '@/lib/db'
 import { MatchCard } from '@/components/dashboard/MatchCard'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
+import { DashboardCountdown } from '@/components/dashboard/DashboardCountdown'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Calendar } from 'lucide-react'
 import type { Match, Prediction, LeaderboardEntry } from '@/types'
@@ -37,6 +38,12 @@ export default async function DashboardPage() {
   const totalParticipants = await queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM leaderboard`)
   const predMap = new Map(predictions.map((p) => [p.match_id, p]))
 
+  const specialBets = await queryAll<{ bet_type: string }>(
+    db, `SELECT bet_type FROM special_bets WHERE user_id = ?`, [user.id]
+  )
+  const hasWinner = specialBets.some(b => b.bet_type === 'winner')
+  const hasTopScorer = specialBets.some(b => b.bet_type === 'top_scorer')
+
   return (
     <div className="wm-fade-in" style={{ display: 'grid', gap: 28 }}>
 
@@ -69,6 +76,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Countdown + Special Bets CTA */}
+      <DashboardCountdown hasWinner={hasWinner} hasTopScorer={hasTopScorer} />
 
       {/* Stats */}
       <div className="dashboard-stats-grid">
