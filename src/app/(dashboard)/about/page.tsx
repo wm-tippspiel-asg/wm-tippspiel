@@ -79,6 +79,8 @@ export default function AboutPage() {
             { label: 'Richtige Differenz & Gewinner', sub: 'z.B. 3:1 getippt → 2:0 erzielt', pts: 3, color: 'var(--accent-strong)' },
             { label: 'Richtiger Gewinner oder Unentschieden', sub: 'Tendenz stimmt, Ergebnis nicht', pts: 2, color: 'var(--ink-2)' },
             { label: 'Falscher Tipp', sub: 'Kein Treffer', pts: 0, color: 'var(--muted)' },
+            { label: '🏆 Sondertipp: Turniersieger', sub: 'Richtiger Weltmeister getippt (bis Anpfiff)', pts: 10, color: 'var(--gold)' },
+            { label: '⚽ Sondertipp: Torschützenkönig', sub: 'Richtiger Torschützenkönig getippt (bis Anpfiff)', pts: 7, color: 'var(--warn)' },
           ].map((row) => (
             <div key={row.label} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',

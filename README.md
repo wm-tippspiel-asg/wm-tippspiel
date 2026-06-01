@@ -65,8 +65,12 @@ Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben. Tipps können bis zum
 | Richtige Tordifferenz & richtiger Gewinner (z.B. 3:1 getippt, 2:0 erzielt) | **3** |
 | Richtiger Gewinner oder Unentschieden | **2** |
 | Falsch | **0** |
+| 🏆 Sondertipp: Richtiger Turniersieger | **10** |
+| ⚽ Sondertipp: Richtiger Torschützenkönig | **7** |
 
 Bei Punktegleichstand entscheidet die Anzahl der exakten Treffer.
+
+> Sondertipps können nur bis zum Anpfiff des ersten Spiels (11. Juni 2026) abgegeben werden.
 
 ---
 
@@ -120,13 +124,16 @@ src/
 | Hosting | [Cloudflare Pages](https://pages.cloudflare.com) |
 | CI/CD | GitHub -> Cloudflare Pages automatisch bei Push wird deployed (beste möglichkeit wie ich finde, geht super easy) |
 | Validierung | [Zod](https://zod.dev) |
+| Live-Daten | [football-data.org API](https://www.football-data.org) (Spielplan, Gruppen-Tabellen) |
 
 ### Wie funktioniert das Projekt?
 
 1. **Registrierung**: Schüler erhalten einen Zugangscode vom Admin und registrieren sich damit.
 2. **Tipps abgeben**: Vor jedem Spiel können Ergebnisse getippt werden. Nach Anpfiff ist der Tipp gesperrt.
-3. **Auswertung**: Nach Spielende trägt der Admin das Ergebnis ein. Punkte werden automatisch berechnet und die Rangliste aktualisiert.
-4. **Rangliste**: Alle Teilnehmer sehen die aktuelle Rangliste in Echtzeit.
+3. **Sondertipps**: Bis zum ersten Anpfiff können Turniersieger (10 Pkt.) und Torschützenkönig (7 Pkt.) getippt werden.
+4. **Live-Daten**: Spielergebnisse und Gruppen-Tabellen werden automatisch von der [football-data.org API](https://www.football-data.org) geladen (Competition ID: `2000` — FIFA World Cup 2026).
+5. **Auswertung**: Punkte werden automatisch nach Spielende berechnet und die Rangliste aktualisiert.
+6. **Rangliste**: Alle Teilnehmer sehen die aktuelle Rangliste in Echtzeit.
 
 ### Security
 

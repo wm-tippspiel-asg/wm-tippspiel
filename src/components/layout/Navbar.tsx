@@ -16,11 +16,12 @@ const userLinks = [
 ]
 
 const adminLinks = [
-  { href: '/admin',         label: 'Übersicht', icon: LayoutDashboard },
-  { href: '/admin/matches', label: 'Spiele',    icon: Calendar },
-  { href: '/admin/users',   label: 'Nutzer',    icon: Users },
-  { href: '/admin/codes',   label: 'Codes',     icon: Key },
-  { href: '/admin/logs',    label: 'Logs',      icon: FileText },
+  { href: '/admin',               label: 'Übersicht',   icon: LayoutDashboard },
+  { href: '/admin/matches',       label: 'Spiele',      icon: Calendar },
+  { href: '/admin/special-bets',  label: 'Sondertipps', icon: Trophy },
+  { href: '/admin/users',         label: 'Nutzer',      icon: Users },
+  { href: '/admin/codes',         label: 'Codes',       icon: Key },
+  { href: '/admin/logs',          label: 'Logs',        icon: FileText },
 ]
 
 function ThemeBtn() {
