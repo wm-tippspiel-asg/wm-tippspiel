@@ -44,7 +44,7 @@ Eine webbasierte Tippspiel-Plattform für die FIFA Weltmeisterschaft 2026. Schü
 | Bereich | Features |
 |---------|----------|
 | **Auth** | Registrierung mit Zugangscode, Login, sichere Sessions |
-| **Dashboard** | Nächste Spiele, Countdown, Schnell-Tipp |
+| **Dashboard** | Nächste Spiele, Countdown bis zum Spiel, Tipp-Abgabe |
 | **Tipps** | Alle WM-Phasen, Bearbeiten bis Anpfiff |
 | **Rangliste** | Live-Leaderboard, eigene Position hervorgehoben |
 | **Profil** | Benutzername & Passwort ändern |
