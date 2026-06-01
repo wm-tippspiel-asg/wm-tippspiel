@@ -55,7 +55,7 @@ Eine webbasierte Tippspiel-Plattform für die FIFA Weltmeisterschaft 2026. Schü
 
 ## Regeln & Punkteverteilung
 
-Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben. Tipps können bis zum **offiziellen Anpfiff** geändert werden — danach ist keine Änderung mehr möglich (serverseitig gesperrt).
+Jeder Teilnehmer kann für jedes Spiel einen Tipp abgeben. Tipps können bis zum **offiziellen Anpfiff** geändert werden, danach ist keine Änderung mehr möglich (serverseitig und clientseitig gesperrt).
 
 ### Punktesystem
 
