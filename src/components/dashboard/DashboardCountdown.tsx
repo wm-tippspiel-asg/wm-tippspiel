@@ -74,7 +74,7 @@ export function DashboardCountdown({ hasWinner, hasTopScorer }: Props) {
         <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 3 }}>
           {allDone
             ? 'Turniersieger & Torschützenkönig sind gespeichert.'
-            : 'Tippe jetzt — nur bis zum ersten Anpfiff möglich!'}
+            : 'Tippe jetzt! Nur bis zum ersten Anpfiff möglich!'}
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13,
