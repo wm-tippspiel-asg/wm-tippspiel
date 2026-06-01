@@ -118,7 +118,7 @@ src/
 | Datenbank | [Cloudflare D1](https://developers.cloudflare.com/d1/) (SQLite) |
 | Cache / Rate-Limiting | [Cloudflare KV](https://developers.cloudflare.com/kv/) |
 | Hosting | [Cloudflare Pages](https://pages.cloudflare.com) |
-| CI/CD | GitHub → Cloudflare Pages (automatisch bei Push) |
+| CI/CD | GitHub -> Cloudflare Pages automatisch bei Push wird deployed (beste möglichkeit wie ich finde, geht super easy) |
 | Validierung | [Zod](https://zod.dev) |
 
 ### Wie funktioniert das Projekt?
@@ -141,11 +141,11 @@ Da KI-generierter Code oft Sicherheitslücken enthält, wurde bei diesem Projekt
 | XSS | Content-Security-Policy Header, keine direkte HTML-Interpolation |
 | CSRF | SameSite=Strict Cookies |
 | IDOR | Alle DB-Queries filtern nach `user_id = ?` |
-| Tipp-Manipulation | Serverseitige Zeitprüfung — API verweigert Änderungen nach Anpfiff |
+| Tipp-Manipulation | Serverseitige Zeitprüfung, API verweigert Änderungen nach Anpfiff |
 | Clickjacking | `X-Frame-Options: DENY` Header |
 | Privilege Escalation | Rollenprüfung in Middleware + jeder API-Route |
 
-Alle sicherheitsrelevanten Aktionen werden in `audit_logs` protokolliert.
+Alle sicherheitsrelevanten Aktionen werden in `audit_logs` protokolliert, die nur der Admin sehen kann.
 
 > ⚠️ Trotz dieser Maßnahmen kann es noch Bugs oder Lücken geben. Für Meldungen siehe [Bugs & Report](#bugs--report).
 
