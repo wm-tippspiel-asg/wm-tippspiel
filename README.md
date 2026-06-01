@@ -163,7 +163,7 @@ Die hier gezeigten Prompts sind die größten und wichtigsten Prompts dieses Pro
 
 ---
 
-### Prompt 1 — Grundprojekt
+### Prompt 1 Grundprojekt
 
 **Intention:** Eine gute Grundbasis für das Projekt schaffen und danach einzelne Verbesserungen vornehmen.
 
@@ -232,17 +232,12 @@ Bevorzugt:
 
 ---
 
-### Prompt 2 — Design-Überarbeitung & WM-Spielplan
+### Prompt 2 Design-Überarbeitung & WM-Spielplan
 
-**Intention:** Verbesserung des Designs, WM 2026 Spiele automatisch eintragen, Übersichtlichkeit erhöhen.
+**Intention:** WM 2026 Spiele automatisch eintragen, Übersichtlichkeit erhöhen.
 
 ```
-ja klappt super, aber jetzt müssen ordentlich Verbesserungen her, und zwar ist die
-Website nicht übersichtlich, verbessere das. Außerdem sollen die Spiele von der WM
-2026 automatisch eingetragen werden und angezeigt werden. Zudem verbessere das
-Design, die Farben sind nicht schön, alles ist etwas zu klein. Nutze einfache
-schlichte Farben und achte darauf, dass es nicht nach KI STYLE aussieht — das ist
-ganz wichtig.
+Verbessere die Übersichtlichkeit. Außerdem zeige die Spiele der WM 2026 automatisch an.
 ```
 
 **Ergebnis:**
