@@ -1,4 +1,4 @@
-# 🏆 WM-Tippspiel 2026
+# WM-Tippspiel 2026
 
 Ein Tippspiel zur FIFA Weltmeisterschaft 2026 — gebaut von Schülerinnen und Schülern der Klasse 11.
 
