@@ -16,7 +16,7 @@ export function AdminCodesClient({ initialCodes }: { initialCodes: CodeWithCreat
   const [codes, setCodes] = useState(initialCodes)
   const [showCreate, setShowCreate] = useState(false)
   const [newCodeResult, setNewCodeResult] = useState('')
-  const [form, setForm] = useState({ description: '', max_uses: '', expires_at: '' })
+  const [form, setForm] = useState({ description: '', max_uses: '1', expires_at: '' })
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
@@ -50,7 +50,7 @@ export function AdminCodesClient({ initialCodes }: { initialCodes: CodeWithCreat
       if (!d.success) { setFormError(d.error ?? 'Fehler'); return }
 
       setNewCodeResult(d.data?.code ?? '')
-      setForm({ description: '', max_uses: '', expires_at: '' })
+      setForm({ description: '', max_uses: '1', expires_at: '' })
 
       const all = await fetch('/api/admin/codes').then((r) => r.json()) as { success: boolean; data: CodeWithCreator[] }
       if (all.success) setCodes(all.data)
@@ -190,12 +190,12 @@ export function AdminCodesClient({ initialCodes }: { initialCodes: CodeWithCreat
             placeholder="z.B. Klasse 10a"
           />
           <Input
-            label="Maximale Nutzungen (leer = unbegrenzt)"
+            label="Maximale Nutzungen"
             type="number"
             min={1}
             value={form.max_uses}
             onChange={(e) => setForm((p) => ({ ...p, max_uses: e.target.value }))}
-            placeholder="z.B. 30"
+            placeholder="z.B. 1"
           />
           <Input
             label="Ablaufdatum (optional)"

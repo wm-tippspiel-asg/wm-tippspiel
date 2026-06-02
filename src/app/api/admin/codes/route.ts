@@ -49,7 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     db,
     `INSERT INTO registration_codes (code, description, max_uses, expires_at, created_by)
      VALUES (?, ?, ?, ?, ?)`,
-    [code, description ?? null, max_uses ?? null, expires_at ?? null, actorId],
+    [code, description ?? null, max_uses ?? 1, expires_at ?? null, actorId],
   )
 
   await audit({
