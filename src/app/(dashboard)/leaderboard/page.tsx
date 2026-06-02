@@ -31,15 +31,15 @@ export default async function LeaderboardPage() {
     queryAll<GroupStanding>(
       db,
       `SELECT ug.id, ug.name, ug.description,
-              COUNT(ugm.user_id)           AS member_count,
-              COALESCE(SUM(l.total_points), 0)  AS total_points,
-              COALESCE(SUM(l.exact_results), 0) AS exact_results,
-              CASE WHEN COUNT(ugm.user_id) > 0
-                   THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(ugm.user_id), 1)
-                   ELSE 0 END              AS avg_points
+              COUNT(DISTINCT ugm.user_id)              AS member_count,
+              COALESCE(SUM(gp.points), 0)              AS total_points,
+              COALESCE(SUM(CASE WHEN gp.points IS NOT NULL AND gp.points > 0 THEN 1 ELSE 0 END), 0) AS exact_results,
+              CASE WHEN COUNT(DISTINCT ugm.user_id) > 0
+                   THEN ROUND(CAST(COALESCE(SUM(gp.points), 0) AS REAL) / COUNT(DISTINCT ugm.user_id), 1)
+                   ELSE 0 END                          AS avg_points
        FROM user_groups ug
        LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
-       LEFT JOIN leaderboard l ON l.user_id = ugm.user_id
+       LEFT JOIN group_predictions gp ON gp.user_id = ugm.user_id AND gp.group_id = ug.id
        GROUP BY ug.id
        ORDER BY total_points DESC, exact_results DESC, ug.name ASC`,
     ),

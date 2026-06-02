@@ -9,9 +9,10 @@ interface Props {
   match: Match
   existing?: Prediction | null
   onSaved?: () => void
+  groupId?: string  // wenn gesetzt → Gruppen-Tipp
 }
 
-export function PredictionForm({ match, existing, onSaved }: Props) {
+export function PredictionForm({ match, existing, onSaved, groupId }: Props) {
   const [home, setHome] = useState(existing?.home_score?.toString() ?? '')
   const [away, setAway] = useState(existing?.away_score?.toString() ?? '')
   const [loading, setLoading] = useState(false)
@@ -34,10 +35,10 @@ export function PredictionForm({ match, existing, onSaved }: Props) {
     if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { setError('Ungültige Eingabe'); return }
     setLoading(true); setError('')
     try {
-      const res = await fetch('/api/predictions', {
+      const res = await fetch(groupId ? '/api/group-predictions' : '/api/predictions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ match_id: match.id, home_score: h, away_score: a }),
+        body: JSON.stringify({ match_id: match.id, home_score: h, away_score: a, ...(groupId ? { group_id: groupId } : {}) }),
       })
       const d = await res.json() as { success: boolean; error?: string }
       if (!d.success) { setError(d.error ?? 'Fehler'); return }

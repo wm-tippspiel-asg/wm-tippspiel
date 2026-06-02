@@ -128,14 +128,15 @@ export default function AboutPage() {
             </div>
             <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 10px' }}>
               Gruppen (z.B. Klassen, Kurse, Abteilungen) treten als Team gegeneinander an.
-              Die Punkte aller Mitglieder einer Gruppe werden aufsummiert — je mehr Mitglieder gut tippen,
-              desto besser steht die Gruppe da.
+              Jedes Mitglied tippt <strong style={{ color: 'var(--ink)' }}>separat für die Gruppe</strong> —
+              diese Tipps sind unabhängig von den persönlichen Tipps und zählen nur für die Gruppenwertung.
             </p>
             <div style={{ display: 'grid', gap: 6 }}>
               {[
-                { icon: '➕', text: 'Gruppenpunkte = Summe der Punkte aller Mitglieder' },
+                { icon: '🔀', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
+                { icon: '➕', text: 'Gruppenpunkte = Summe der Gruppen-Tipps aller Mitglieder' },
                 { icon: '📊', text: 'Zusätzlich wird der Durchschnitt pro Mitglied angezeigt' },
-                { icon: '🏆', text: 'Die Gruppe mit den meisten Gesamtpunkten gewinnt' },
+                { icon: '🏆', text: 'Die Gruppe mit den meisten Gesamtpunkten aus Gruppen-Tipps gewinnt' },
                 { icon: '📌', text: 'Mitglieder werden vom Admin zugeteilt' },
               ].map((item) => (
                 <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -148,8 +149,8 @@ export default function AboutPage() {
 
           {/* Hinweis */}
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
-            Beide Wertungen laufen parallel. Man tippt einmal — die Punkte zählen automatisch
-            für die Einzelwertung und für die eigene Gruppe.
+            Beide Wertungen laufen parallel, aber unabhängig: Persönliche Tipps zählen für die Einzelwertung,
+            Gruppen-Tipps zählen für die Gruppenwertung. Man kann pro Spiel unterschiedlich tippen.
           </p>
         </div>
       </div>
