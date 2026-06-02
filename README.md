@@ -285,7 +285,9 @@ Das Projekt ist noch nicht 100% fertig, es werden wahrscheinlich noch weitere Fu
 Die Tipps für beide Wertungen sind voneinander unabhängig. Das bedeutet, dass jeder Teilnehmer seine Tipps zunächst für die Einzelwertung abgibt, wodurch Punkte für das persönliche Ranking gesammelt werden.
 Zusätzlich können Tipps für die Gruppenwertung abgegeben werden. Dabei werden die Punkte aller Mitglieder einer Gruppe zusammengezählt. Auf Grundlage dieser Gesamtpunktzahl entsteht ein separates Gruppenranking.
 
-**[02.06.2026- 15:35]**: Bug fix: Wenn man auf den NavBar Button "Tippen" gegangen ist, wurde der DarkMode ausgeschaltet und auf LightMode geswitcht, das heißt die Seite wurde kurz ohne Dark-Klasse gerendet. Der Fix: Nav-Tabs Next.js nutzen, das argiert Client seitig ohne Reload. Dark Mode bleibt jetzt durchgängig an. 
+**[02.06.2026- 15:35 Uhr]**: Bug fix: Wenn man auf den NavBar Button "Tippen" gegangen ist, wurde der DarkMode ausgeschaltet und auf LightMode geswitcht, das heißt die Seite wurde kurz ohne Dark-Klasse gerendet. Der Fix: Nav-Tabs Next.js nutzen, das argiert Client seitig ohne Reload. Dark Mode bleibt jetzt durchgängig an. 
+
+**[02.06.2026- 15:58 Uhr]**: Bug gefunden von Fabian. Spiele werden doppelt angezeigt, wegen dem neuem Gruppen-Upadte. Der Fix: Alle Spiele waren doppelt in der Datenbank.
 
 ---
 
