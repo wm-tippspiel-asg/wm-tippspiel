@@ -1,7 +1,8 @@
 import { getDb, queryOne } from '@/lib/db'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { RecalculateAction } from '@/components/admin/RecalculateAction'
-import { Users, Trophy, Key, FileText, RefreshCcw } from 'lucide-react'
+import { AutoUpdateAction } from '@/components/admin/AutoUpdateAction'
+import { Users, Trophy, Key, FileText, RefreshCcw, Download } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -83,8 +84,30 @@ export default async function AdminDashboard() {
           </a>
         ))}
 
-        {/* Recalculate leaderboard */}
+        {/* Ergebnisse von API holen */}
+        <AutoUpdateButton finishedCount={finishedMatches?.count ?? 0} />
+
+        {/* Rangliste neu berechnen */}
         <RecalculateButton participantCount={participantCount?.count ?? 0} />
+      </div>
+    </div>
+  )
+}
+
+function AutoUpdateButton({ finishedCount }: { finishedCount: number }) {
+  return (
+    <div className="card p-5">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/40">
+          <Download className="h-5 w-5 text-green-600 dark:text-green-400" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-sm text-slate-900 dark:text-slate-100">Ergebnisse aktualisieren</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {finishedCount} Spiele bereits abgeschlossen
+          </p>
+          <AutoUpdateAction />
+        </div>
       </div>
     </div>
   )
