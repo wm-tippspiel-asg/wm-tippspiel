@@ -154,7 +154,7 @@ export default async function DashboardPage() {
           {/* Top 5 Spieler */}
           <div style={{ display: 'grid', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-              <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>👤 Top 5 Spieler</h2>
+              <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>Top 5 Spieler</h2>
               <Link href="/leaderboard" className="wm-btn wm-btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
                 Alle →
               </Link>
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
           {groupStandings.length > 0 && (
             <div style={{ display: 'grid', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-                <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>👥 Top 5 Gruppen</h2>
+                <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>Top 5 Gruppen</h2>
                 <Link href="/leaderboard" className="wm-btn wm-btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
                   Alle →
                 </Link>
