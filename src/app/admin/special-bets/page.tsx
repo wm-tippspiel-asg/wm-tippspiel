@@ -73,7 +73,7 @@ export default function AdminSpecialBetsPage() {
           Sondertipps auswerten
         </h1>
         <p style={{ marginTop: 6, fontSize: 14, color: 'var(--muted)' }}>
-          Trage das offizielle Ergebnis ein — Punkte werden automatisch vergeben (10 Pkt. Sieger, 7 Pkt. Torschütze).
+          Trage das offizielle Ergebnis ein — Punkte werden automatisch vergeben (20 Pkt. Sieger, 15 Pkt. Torschütze).
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function AdminSpecialBetsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Trophy size={20} style={{ color: 'var(--accent-strong)' }} />
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
-            Turniersieger — 10 Punkte
+            Turniersieger — 20 Punkte
           </h2>
         </div>
 
@@ -125,7 +125,7 @@ export default function AdminSpecialBetsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Target size={20} style={{ color: 'var(--accent-strong)' }} />
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
-            Torschützenkönig — 7 Punkte
+            Torschützenkönig — 15 Punkte
           </h2>
         </div>
 

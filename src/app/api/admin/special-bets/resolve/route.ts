@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const config = await queryOne<{ value: number }>(db,
     `SELECT value FROM scoring_config WHERE key = ?`, [configKey]
   )
-  const points = config?.value ?? (bet_type === 'winner' ? 10 : 7)
+  const points = config?.value ?? (bet_type === 'winner' ? 20 : 15)
 
   // Find all users who got it right and award points
   const correct = await queryAll<{ user_id: string; prediction: string }>(db,
