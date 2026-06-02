@@ -79,8 +79,8 @@ export default function AboutPage() {
             { label: 'Richtige Differenz & Gewinner', sub: 'z.B. 3:1 getippt → 2:0 erzielt', pts: 3, color: 'var(--accent-strong)' },
             { label: 'Richtiger Gewinner oder Unentschieden', sub: 'Tendenz stimmt, Ergebnis nicht', pts: 2, color: 'var(--ink-2)' },
             { label: 'Falscher Tipp', sub: 'Kein Treffer', pts: 0, color: 'var(--muted)' },
-            { label: '🏆 Sondertipp: Turniersieger', sub: 'Richtiger Weltmeister getippt (bis Turnierbeginn)', pts: 10, color: 'var(--gold)' },
-            { label: '⚽ Sondertipp: Torschützenkönig', sub: 'Richtiger Torschützenkönig getippt (bis Turnierbeginn)', pts: 7, color: 'var(--warn)' },
+            { label: 'Sondertipp: Turniersieger', sub: 'Richtiger Weltmeister getippt (bis Turnierbeginn)', pts: 10, color: 'var(--gold)' },
+            { label: 'Sondertipp: Torschützenkönig', sub: 'Richtiger Torschützenkönig getippt (bis Turnierbeginn)', pts: 7, color: 'var(--warn)' },
           ].map((row) => (
             <div key={row.label} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -128,16 +128,16 @@ export default function AboutPage() {
             </div>
             <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 10px' }}>
               Gruppen (z.B. Klassen, Kurse, Abteilungen) treten als Team gegeneinander an.
-              Jedes Mitglied tippt <strong style={{ color: 'var(--ink)' }}>separat für die Gruppe</strong> —
+              Jedes Mitglied tippt <strong style={{ color: 'var(--ink)' }}>separat für die Gruppe</strong>,
               diese Tipps sind unabhängig von den persönlichen Tipps und zählen nur für die Gruppenwertung.
             </p>
             <div style={{ display: 'grid', gap: 6 }}>
               {[
-                { icon: '🔀', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
-                { icon: '➕', text: 'Gruppenpunkte = Summe der Gruppen-Tipps aller Mitglieder' },
-                { icon: '📊', text: 'Zusätzlich wird der Durchschnitt pro Mitglied angezeigt' },
-                { icon: '🏆', text: 'Die Gruppe mit den meisten Gesamtpunkten aus Gruppen-Tipps gewinnt' },
-                { icon: '📌', text: 'Mitglieder werden vom Admin zugeteilt' },
+                { icon: '', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
+                { icon: '', text: 'Gruppenpunkte = Summe der Gruppen-Tipps aller Mitglieder' },
+                { icon: '', text: 'Zusätzlich wird der Durchschnitt pro Mitglied angezeigt' },
+                { icon: '', text: 'Die Gruppe mit den meisten Gesamtpunkten aus Gruppen-Tipps gewinnt' },
+                { icon: '', text: 'Mitglieder werden vom Admin zugeteilt' },
               ].map((item) => (
                 <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
@@ -170,7 +170,7 @@ export default function AboutPage() {
             style={{ color: 'var(--accent-strong)', fontWeight: 600, textDecoration: 'none' }}>
             GitHub
           </a>
-          {' '}— Informatikkurs Klasse 11, 2026 - wm-tippspiel-asg@proton.me
+          {' '}-Informatikkurs Klasse 11, 2026 - wm-tippspiel-asg@proton.me
         </p>
       </div>
 
