@@ -17,11 +17,30 @@ export default async function LeaderboardPage() {
   const [entries, myEntry, groups, groupStandings] = await Promise.all([
     queryAll<LeaderboardEntry>(
       db,
-      'SELECT * FROM leaderboard ORDER BY total_points DESC, exact_results DESC, username ASC',
+      `SELECT u.id AS user_id, u.username,
+              COALESCE(l.total_points,   0) AS total_points,
+              COALESCE(l.exact_results,  0) AS exact_results,
+              COALESCE(l.correct_diff,   0) AS correct_diff,
+              COALESCE(l.correct_winner, 0) AS correct_winner,
+              COALESCE(l.total_tips,     0) AS total_tips,
+              l.rank
+       FROM users u
+       LEFT JOIN leaderboard l ON l.user_id = u.id
+       WHERE u.role = 'user' AND u.is_banned = 0
+       ORDER BY total_points DESC, exact_results DESC, u.username ASC`,
     ),
     queryOne<LeaderboardEntry>(
       db,
-      'SELECT * FROM leaderboard WHERE user_id = ?',
+      `SELECT u.id AS user_id, u.username,
+              COALESCE(l.total_points,   0) AS total_points,
+              COALESCE(l.exact_results,  0) AS exact_results,
+              COALESCE(l.correct_diff,   0) AS correct_diff,
+              COALESCE(l.correct_winner, 0) AS correct_winner,
+              COALESCE(l.total_tips,     0) AS total_tips,
+              l.rank
+       FROM users u
+       LEFT JOIN leaderboard l ON l.user_id = u.id
+       WHERE u.id = ?`,
       [user.id],
     ),
     queryAll<UserGroup>(
