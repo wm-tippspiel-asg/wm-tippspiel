@@ -137,7 +137,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, grou
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
           >
-            {tab === 'einzel' ? '👤 Einzelwertung' : '👥 Gruppenwertung'}
+            {tab === 'einzel' ? 'Einzelwertung' : 'Gruppenwertung'}
           </button>
         ))}
       </div>
