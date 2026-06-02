@@ -101,6 +101,16 @@ export interface UserGroupMember {
   added_at: string
 }
 
+export interface GroupStanding {
+  id: string
+  name: string
+  description: string | null
+  member_count: number
+  total_points: number
+  exact_results: number
+  avg_points: number
+}
+
 export interface AuditLog {
   id: string
   actor_id: string | null

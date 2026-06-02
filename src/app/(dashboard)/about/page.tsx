@@ -30,7 +30,7 @@ export default function AboutPage() {
         <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, margin: 0 }}>
           Dieses Tippspiel ist eine Idee unseres Informatikkurses der Klasse 11, 2026.
           Da die FIFA Weltmeisterschaft in Kanada, Mexiko und den USA kurz bevorstand,
-          haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen. Wir hoffen 
+          haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen. Wir hoffen
           euch gefällt es. Feedback gerne in der Schule persönlich oder per Mail.
         </p>
         <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, marginTop: 12 }}>
@@ -45,7 +45,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      {/* Regeln */}
+      {/* Spielregeln */}
       <div className="wm-card wm-card-pad">
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
           color: 'var(--ink)', marginBottom: 16 }}>Spielregeln</h2>
@@ -79,8 +79,8 @@ export default function AboutPage() {
             { label: 'Richtige Differenz & Gewinner', sub: 'z.B. 3:1 getippt → 2:0 erzielt', pts: 3, color: 'var(--accent-strong)' },
             { label: 'Richtiger Gewinner oder Unentschieden', sub: 'Tendenz stimmt, Ergebnis nicht', pts: 2, color: 'var(--ink-2)' },
             { label: 'Falscher Tipp', sub: 'Kein Treffer', pts: 0, color: 'var(--muted)' },
-            { label: '🏆 Sondertipp: Turniersieger', sub: 'Richtiger Weltmeister getippt (bis Anpfiff)', pts: 10, color: 'var(--gold)' },
-            { label: '⚽ Sondertipp: Torschützenkönig', sub: 'Richtiger Torschützenkönig getippt (bis Anpfiff)', pts: 7, color: 'var(--warn)' },
+            { label: '🏆 Sondertipp: Turniersieger', sub: 'Richtiger Weltmeister getippt (bis Turnierbeginn)', pts: 10, color: 'var(--gold)' },
+            { label: '⚽ Sondertipp: Torschützenkönig', sub: 'Richtiger Torschützenkönig getippt (bis Turnierbeginn)', pts: 7, color: 'var(--warn)' },
           ].map((row) => (
             <div key={row.label} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -97,6 +97,60 @@ export default function AboutPage() {
               </span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Einzel- & Gruppenwertung */}
+      <div className="wm-card wm-card-pad">
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
+          color: 'var(--ink)', marginBottom: 16 }}>Einzel- & Gruppenwertung</h2>
+
+        <div style={{ display: 'grid', gap: 16 }}>
+          {/* Einzelwertung */}
+          <div style={{ padding: '16px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 22 }}>👤</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Einzelwertung</span>
+            </div>
+            <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: 0 }}>
+              Jeder Teilnehmer tippt für sich und sammelt Punkte. Die Gesamtrangliste
+              zeigt alle Spieler nach ihren persönlichen Punkten sortiert.
+              Über die Filter-Schaltflächen kann man sich auch nur eine bestimmte Gruppe anzeigen lassen —
+              die Punkte zählen aber immer global.
+            </p>
+          </div>
+
+          {/* Gruppenwertung */}
+          <div style={{ padding: '16px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 22 }}>👥</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Gruppenwertung</span>
+            </div>
+            <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 10px' }}>
+              Gruppen (z.B. Klassen, Kurse, Abteilungen) treten als Team gegeneinander an.
+              Die Punkte aller Mitglieder einer Gruppe werden aufsummiert — je mehr Mitglieder gut tippen,
+              desto besser steht die Gruppe da.
+            </p>
+            <div style={{ display: 'grid', gap: 6 }}>
+              {[
+                { icon: '➕', text: 'Gruppenpunkte = Summe der Punkte aller Mitglieder' },
+                { icon: '📊', text: 'Zusätzlich wird der Durchschnitt pro Mitglied angezeigt' },
+                { icon: '🏆', text: 'Die Gruppe mit den meisten Gesamtpunkten gewinnt' },
+                { icon: '📌', text: 'Mitglieder werden vom Admin zugeteilt' },
+              ].map((item) => (
+                <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ fontSize: 13.5, color: 'var(--ink-2)', lineHeight: 1.5 }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Hinweis */}
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+            Beide Wertungen laufen parallel. Man tippt einmal — die Punkte zählen automatisch
+            für die Einzelwertung und für die eigene Gruppe.
+          </p>
         </div>
       </div>
 
