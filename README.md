@@ -270,7 +270,7 @@ Bitte beim Melden folgende Informationen angeben:
 - Erwartetes vs. tatsächliches Verhalten
 - Screenshots (falls hilfreich)
 
-> Für sicherheitsrelevante Lücken bitte **kein öffentliches Issue** erstellen, stattdessen direkt per E-Mail (wm-tippspiel-asg@proton.me) auf IServ oder direkt in der Schule ansprechen.
+> Für sicherheitsrelevante Lücken bitte **kein öffentliches Issue** erstellen, stattdessen direkt per E-Mail (wm-tippspiel-asg@proton.me) , auf IServ oder direkt in der Schule ansprechen.
 
 ---
 
