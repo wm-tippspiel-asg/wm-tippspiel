@@ -3,10 +3,45 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, UserPlus } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, Check, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
+
+function getPasswordChecks(pw: string) {
+  return {
+    length: pw.length >= 8,
+    upper: /[A-Z]/.test(pw),
+    lower: /[a-z]/.test(pw),
+    digit: /[0-9]/.test(pw),
+    special: /[^A-Za-z0-9]/.test(pw),
+  }
+}
+
+function PasswordChecklist({ password }: { password: string }) {
+  const checks = getPasswordChecks(password)
+  const items = [
+    { key: 'length', label: 'Mindestens 8 Zeichen' },
+    { key: 'upper', label: 'Großbuchstabe (A–Z)' },
+    { key: 'lower', label: 'Kleinbuchstabe (a–z)' },
+    { key: 'digit', label: 'Zahl (0–9)' },
+    { key: 'special', label: 'Sonderzeichen (!@#$…)' },
+  ] as const
+
+  return (
+    <ul className="mt-2 space-y-1">
+      {items.map(({ key, label }) => {
+        const ok = checks[key]
+        return (
+          <li key={key} className={`flex items-center gap-1.5 text-xs ${ok ? 'text-green-600 dark:text-green-400' : 'text-slate-400 dark:text-slate-500'}`}>
+            {ok ? <Check className="h-3 w-3 shrink-0" /> : <X className="h-3 w-3 shrink-0" />}
+            {label}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -26,7 +61,12 @@ export default function RegisterPage() {
     const errs: typeof errors = {}
     if (form.username.length < 3) errs.username = 'Mindestens 3 Zeichen'
     else if (!/^[a-zA-Z0-9_-]+$/.test(form.username)) errs.username = 'Nur Buchstaben, Zahlen, _ und -'
-    if (form.password.length < 8) errs.password = 'Mindestens 8 Zeichen'
+    const checks = getPasswordChecks(form.password)
+    if (!checks.length) errs.password = 'Mindestens 8 Zeichen erforderlich'
+    else if (!checks.upper) errs.password = 'Mindestens ein Großbuchstabe erforderlich'
+    else if (!checks.lower) errs.password = 'Mindestens ein Kleinbuchstabe erforderlich'
+    else if (!checks.digit) errs.password = 'Mindestens eine Zahl erforderlich'
+    else if (!checks.special) errs.password = 'Mindestens ein Sonderzeichen erforderlich'
     if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwörter stimmen nicht überein'
     if (!form.code.trim()) errs.code = 'Zugangscode ist erforderlich'
     setErrors(errs)
@@ -106,7 +146,7 @@ export default function RegisterPage() {
                 onChange={update('password')}
                 autoComplete="new-password"
                 className={`input-base pr-10 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-                placeholder="Mindestens 8 Zeichen"
+                placeholder="Min. 8 Zeichen, Groß/Klein/Zahl/Sonderzeichen"
               />
               <button
                 type="button"
@@ -117,6 +157,7 @@ export default function RegisterPage() {
               </button>
             </div>
             {errors.password && <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>}
+            {form.password.length > 0 && <PasswordChecklist password={form.password} />}
           </div>
 
           <Input

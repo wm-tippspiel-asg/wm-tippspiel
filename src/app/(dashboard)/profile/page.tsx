@@ -66,8 +66,22 @@ export default function ProfilePage() {
     setUsernameLoading(false)
   }
 
+  function validateNewPassword(pw: string): string | null {
+    if (pw.length < 8) return 'Mindestens 8 Zeichen erforderlich'
+    if (!/[A-Z]/.test(pw)) return 'Mindestens ein Großbuchstabe erforderlich'
+    if (!/[a-z]/.test(pw)) return 'Mindestens ein Kleinbuchstabe erforderlich'
+    if (!/[0-9]/.test(pw)) return 'Mindestens eine Zahl erforderlich'
+    if (!/[^A-Za-z0-9]/.test(pw)) return 'Mindestens ein Sonderzeichen erforderlich'
+    return null
+  }
+
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault()
+    const pwError = validateNewPassword(passwords.new)
+    if (pwError) {
+      setPasswordMsg({ type: 'error', text: pwError })
+      return
+    }
     if (passwords.new !== passwords.confirm) {
       setPasswordMsg({ type: 'error', text: 'Passwörter stimmen nicht überein.' })
       return

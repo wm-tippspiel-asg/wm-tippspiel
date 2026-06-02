@@ -8,8 +8,12 @@ export const usernameSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(8, 'Mindestens 8 Zeichen')
+  .min(8, 'Mindestens 8 Zeichen erforderlich')
   .max(128, 'Maximal 128 Zeichen')
+  .regex(/[A-Z]/, 'Mindestens ein Großbuchstabe erforderlich')
+  .regex(/[a-z]/, 'Mindestens ein Kleinbuchstabe erforderlich')
+  .regex(/[0-9]/, 'Mindestens eine Zahl erforderlich')
+  .regex(/[^A-Za-z0-9]/, 'Mindestens ein Sonderzeichen erforderlich')
 
 export const registrationCodeSchema = z
   .string()
