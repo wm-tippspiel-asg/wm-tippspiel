@@ -249,7 +249,7 @@ Verbessere die Übersichtlichkeit. Außerdem zeige die Spiele der WM 2026 automa
 ```
 
 **Ergebnis:**
-- Komplett neues Design (Grün statt Lila, größere Schrift, cleaner Sports-Look)
+- Komplett neues Design (Blau statt Lila, größere Schrift, cleaneres aussehen)
 - Alle 72 WM 2026 Gruppenspiele automatisch in die Datenbank eingetragen
 - Größere Karten mit Flaggen-Emojis und besserer Struktur
 - Verbesserte Navbar und Navigation
