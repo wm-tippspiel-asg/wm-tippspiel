@@ -10,7 +10,7 @@ const userLinks = [
   { href: '/dashboard',     label: 'Start',      icon: LayoutDashboard },
   { href: '/predictions',   label: 'Tippen',     icon: Target },
   { href: '/special-bets',  label: 'Sondertipps',icon: Trophy },
-  { href: '/groups',        label: 'Gruppen',    icon: Trophy },
+  { href: '/groups',        label: 'Ergebnisse', icon: Trophy },
   { href: '/leaderboard',   label: 'Rangliste',  icon: Trophy },
   { href: '/about',         label: 'Regeln',     icon: BookOpen },
 ]
