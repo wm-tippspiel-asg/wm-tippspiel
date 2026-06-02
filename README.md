@@ -281,6 +281,12 @@ Das Projekt ist noch nicht 100% fertig, es werden wahrscheinlich noch weitere Fu
 
 **[02.06.2026-14:40 Uhr]**: Neues Security Feature. Bei so einer vermutlich "unwichtigen Seite" nehmen Leute gerne Passwört wie **12345678**. Auch wenn auf dieser Seite keine wichtigen Daten gespeichert werden, ist es trotzdem nicht smart so ein Passwort zu verwenden. Deshalb wurde ein Feature eingebaut, dass den Nutzer zwingt ein **halbwegs sicheres Passwort** zu benutzen (Sprich mindestens 8 Zeichen, mind. 1 Zahl, mind. 1 Großbuchstaben, mind. 1 Kleinbuchstaben, mind. 1 Sonderzeichen). Auch wenn es nervig ist.
 
+**[02.06.2026- 15:30 Uhr]**: Ein großes Update!! Auf Wunsch von Herrn Moellmann wurde ein Gruppensystem integriert. Es gibt nun sowohl eine Einzel- als auch eine Gruppenwertung.
+Die Tipps für beide Wertungen sind voneinander unabhängig. Das bedeutet, dass jeder Teilnehmer seine Tipps zunächst für die Einzelwertung abgibt, wodurch Punkte für das persönliche Ranking gesammelt werden.
+Zusätzlich können Tipps für die Gruppenwertung abgegeben werden. Dabei werden die Punkte aller Mitglieder einer Gruppe zusammengezählt. Auf Grundlage dieser Gesamtpunktzahl entsteht ein separates Gruppenranking.
+
+**[02.06.2026- 15:35]**: Bug fix: Wenn man auf den NavBar Button "Tippen" gegangen ist, wurde der DarkMode ausgeschaltet und auf LightMode geswitcht, das heißt die Seite wurde kurz ohne Dark-Klasse gerendet. Der Fix: Nav-Tabs Next.js nutzen, das argiert Client seitig ohne Reload. Dark Mode bleibt jetzt durchgängig an. 
+
 ---
 
 ## Lizenz
