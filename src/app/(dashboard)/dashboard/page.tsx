@@ -7,7 +7,7 @@ import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { DashboardCountdown } from '@/components/dashboard/DashboardCountdown'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Calendar } from 'lucide-react'
-import type { Match, Prediction, LeaderboardEntry } from '@/types'
+import type { Match, Prediction, LeaderboardEntry, GroupStanding } from '@/types'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -35,7 +35,21 @@ export default async function DashboardPage() {
       `SELECT rank FROM leaderboard WHERE user_id = ?`, [user.id]),
   ])
 
-  const totalParticipants = await queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM leaderboard`)
+  const [totalParticipants, groupStandings] = await Promise.all([
+    queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM leaderboard`),
+    queryAll<GroupStanding>(db,
+      `SELECT ug.id, ug.name, ug.description,
+              COUNT(DISTINCT ugm.user_id)              AS member_count,
+              COALESCE(SUM(gp.points), 0)              AS total_points,
+              COALESCE(SUM(CASE WHEN gp.points IS NOT NULL AND gp.points > 0 THEN 1 ELSE 0 END), 0) AS exact_results,
+              0 AS avg_points
+       FROM user_groups ug
+       LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
+       LEFT JOIN group_predictions gp ON gp.user_id = ugm.user_id AND gp.group_id = ug.id
+       GROUP BY ug.id
+       ORDER BY total_points DESC, exact_results DESC, ug.name ASC
+       LIMIT 5`),
+  ])
   const predMap = new Map(predictions.map((p) => [p.match_id, p]))
 
   const specialBets = await queryAll<{ bet_type: string }>(
@@ -134,20 +148,65 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Leaderboard */}
-        <div style={{ display: 'grid', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
-            <div>
-              <div className="wm-eyebrow">Büro-Rangliste</div>
-              <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)', marginTop: 4 }}>Top 5</h2>
+        {/* Ranglisten */}
+        <div style={{ display: 'grid', gap: 24 }}>
+
+          {/* Top 5 Spieler */}
+          <div style={{ display: 'grid', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+              <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>👤 Top 5 Spieler</h2>
+              <Link href="/leaderboard" className="wm-btn wm-btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
+                Alle →
+              </Link>
             </div>
-            <Link href="/leaderboard" className="wm-btn wm-btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
-              Alle →
-            </Link>
+            <div className="wm-card">
+              <LeaderboardTable entries={leaderboard} currentUserId={user.id} />
+            </div>
           </div>
-          <div className="wm-card">
-            <LeaderboardTable entries={leaderboard} currentUserId={user.id} />
-          </div>
+
+          {/* Top 5 Gruppen (nur wenn Gruppen existieren) */}
+          {groupStandings.length > 0 && (
+            <div style={{ display: 'grid', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+                <h2 className="wm-section-h2" style={{ fontFamily: 'var(--font-display)' }}>👥 Top 5 Gruppen</h2>
+                <Link href="/leaderboard" className="wm-btn wm-btn-ghost" style={{ fontSize: 13, padding: '8px 14px' }}>
+                  Alle →
+                </Link>
+              </div>
+              <div className="wm-card" style={{ overflow: 'hidden' }}>
+                {groupStandings.map((g, i) => {
+                  const medals = ['🥇', '🥈', '🥉']
+                  return (
+                    <div key={g.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      padding: '13px 20px',
+                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      <div style={{ width: 28, textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+                        {i < 3
+                          ? <span style={{ fontSize: 20 }}>{medals[i]}</span>
+                          : <span style={{ fontSize: 14, color: 'var(--muted)' }}>{i + 1}</span>}
+                      </div>
+                      <span style={{ width: 9, height: 9, borderRadius: 99, flexShrink: 0,
+                        background: i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--surface-3)' }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{g.name}</span>
+                        <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--muted)' }}>
+                          {g.member_count} Mitglied{g.member_count !== 1 ? 'er' : ''}
+                        </span>
+                      </div>
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
+                        width: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+                        color: i === 0 ? 'var(--good)' : 'var(--ink)' }}>
+                        {g.total_points}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
