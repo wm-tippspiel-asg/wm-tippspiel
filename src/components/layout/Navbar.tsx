@@ -81,10 +81,10 @@ export function Navbar({ user }: { user: AuthUser }) {
             {/* Tabs */}
             <nav className="wm-nav-tabs">
               {links.map((l) => (
-                <button key={l.href} onClick={() => window.location.href = l.href}
+                <Link key={l.href} href={l.href}
                   className={`wm-nav-tab ${isActive(l.href) ? 'active' : ''}`}>
                   {l.label}
-                </button>
+                </Link>
               ))}
             </nav>
 
@@ -112,11 +112,11 @@ export function Navbar({ user }: { user: AuthUser }) {
         {links.map((l) => {
           const Icon = l.icon
           return (
-            <button key={l.href} onClick={() => window.location.href = l.href}
+            <Link key={l.href} href={l.href}
               className={`wm-tabbar-btn ${isActive(l.href) ? 'active' : ''}`}>
               <Icon size={22} />
               {l.label}
-            </button>
+            </Link>
           )
         })}
       </nav>
