@@ -85,6 +85,22 @@ export interface LeaderboardEntry {
   updated_at: string
 }
 
+export interface UserGroup {
+  id: string
+  name: string
+  description: string | null
+  created_by: string | null
+  created_at: string
+  member_count?: number
+}
+
+export interface UserGroupMember {
+  user_id: string
+  username: string
+  group_id: string
+  added_at: string
+}
+
 export interface AuditLog {
   id: string
   actor_id: string | null
