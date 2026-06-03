@@ -1,9 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
+import { Turnstile } from '@marsidev/react-turnstile'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
+
+const SITEKEY = '0x4AAAAAADeNxYOS2NZIXGtC'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,6 +17,8 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [banned, setBanned] = useState(false)
+  const turnstileRef = useRef<TurnstileInstance>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('banned') === '1') setBanned(true)
@@ -20,15 +26,21 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
+    if (!turnstileToken) { setError('Bitte bestätige, dass du kein Roboter bist.'); return }
     setError(''); setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ username: username.trim(), password, turnstileToken }),
       })
       const d = await res.json() as { success: boolean; data?: { role: string }; error?: string }
-      if (!d.success) { setError(d.error ?? 'Ungültige Anmeldedaten.'); return }
+      if (!d.success) {
+        turnstileRef.current?.reset()
+        setTurnstileToken(null)
+        setError(d.error ?? 'Ungültige Anmeldedaten.')
+        return
+      }
       router.push(d.data?.role === 'admin' ? '/admin' : '/dashboard')
     } catch { setError('Verbindungsfehler.') } finally { setLoading(false) }
   }
@@ -76,7 +88,16 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" className="wm-btn wm-btn-primary" disabled={loading}
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={SITEKEY}
+            onSuccess={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+            options={{ theme: 'auto', language: 'de' }}
+          />
+
+          <button type="submit" className="wm-btn wm-btn-primary" disabled={loading || !turnstileToken}
             style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}>
             {loading ? 'Einen Moment…' : 'Anmelden'}
           </button>

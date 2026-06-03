@@ -14,3 +14,4 @@ id = "94c3c8aa214e40d78b618f13e0470743"
 
 [vars]
 NODE_ENV = "production"
+# TURNSTILE_SECRET_KEY is set via Cloudflare Pages dashboard (Secrets)
