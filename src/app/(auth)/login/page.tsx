@@ -97,7 +97,7 @@ export default function LoginPage() {
             options={{ theme: 'auto', language: 'de' }}
           />
 
-          <button type="submit" className="wm-btn wm-btn-primary" disabled={loading || !turnstileToken}
+          <button type="submit" className="wm-btn wm-btn-primary" disabled={loading}
             style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}>
             {loading ? 'Einen Moment…' : 'Anmelden'}
           </button>

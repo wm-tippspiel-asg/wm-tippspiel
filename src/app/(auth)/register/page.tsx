@@ -203,7 +203,7 @@ export default function RegisterPage() {
             options={{ theme: 'auto', language: 'de' }}
           />
 
-          <Button type="submit" className="w-full" loading={loading} disabled={!turnstileToken}>
+          <Button type="submit" className="w-full" loading={loading}>
             <UserPlus className="h-4 w-4" />
             Registrieren
           </Button>
