@@ -157,7 +157,7 @@ export default async function RootPage() {
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '20px 24px',
         textAlign: 'center', fontSize: 13, color: 'var(--muted)' }}>
-        © {new Date().getFullYear()} WM-Tippspiel ASG - Nur für den Schulgebrauch
+        © {new Date().getFullYear()} WM-Tippspiel ASG
       </footer>
     </div>
   )
