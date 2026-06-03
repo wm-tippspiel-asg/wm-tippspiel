@@ -117,12 +117,12 @@ export default async function RootPage() {
           {/* No data yet */}
           {matchData.length === 0 && (
             <div className="wm-card" style={{ padding: '40px 24px', textAlign: 'center' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>⚽</div>
+              <div style={{ fontSize: 36, marginBottom: 12 }}></div>
               <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--ink)', marginBottom: 6 }}>
                 Spielplan kommt bald
               </div>
               <div style={{ color: 'var(--muted)', fontSize: 14 }}>
-                Die WM 2026 startet am 11. Juni — Gruppen und Spielplan erscheinen dann hier.
+                Die WM 2026 startet am 11. Juni - Gruppen und Spielplan erscheinen dann hier.
               </div>
             </div>
           )}
@@ -141,7 +141,7 @@ export default async function RootPage() {
           <div className="wm-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
             <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--muted)' }}>
-              Kostenlos · Nur für ASG-Schüler
+              Nur für ASG-Schüler
             </p>
             <h2 style={{ margin: '0 0 16px', fontSize: 22, fontWeight: 800,
               letterSpacing: '-0.02em', color: 'var(--ink)' }}>
