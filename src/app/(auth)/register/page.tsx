@@ -1,16 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, UserPlus, Check, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
-import { Turnstile } from '@marsidev/react-turnstile'
-import type { TurnstileInstance } from '@marsidev/react-turnstile'
-
-const SITEKEY = '0x4AAAAAADeNxYOS2NZIXGtC'
 
 function getPasswordChecks(pw: string) {
   return {
@@ -53,8 +49,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Partial<typeof form & { general: string }>>({})
   const [loading, setLoading] = useState(false)
-  const turnstileRef = useRef<TurnstileInstance>(null)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
   function update(field: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,15 +86,12 @@ export default function RegisterPage() {
           username: form.username.trim(),
           password: form.password,
           code: form.code.trim().toUpperCase(),
-          turnstileToken,
         }),
       })
 
       const data = await res.json() as { success: boolean; error?: string }
 
       if (!res.ok || !data.success) {
-        turnstileRef.current?.reset()
-        setTurnstileToken(null)
         setErrors({ general: data.error ?? 'Registrierung fehlgeschlagen.' })
         return
       }
@@ -188,15 +179,6 @@ export default function RegisterPage() {
             placeholder="z.B. ABCD1234"
             hint="Den Code erhältst du von deiner Lehrkraft"
             className="uppercase tracking-widest font-mono"
-          />
-
-          <Turnstile
-            ref={turnstileRef}
-            siteKey={SITEKEY}
-            onSuccess={setTurnstileToken}
-            onExpire={() => setTurnstileToken(null)}
-            onError={() => setTurnstileToken(null)}
-            options={{ theme: 'auto', language: 'de' }}
           />
 
           <Button type="submit" className="w-full" loading={loading}>

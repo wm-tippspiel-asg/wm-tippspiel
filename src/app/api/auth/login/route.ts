@@ -5,7 +5,6 @@ import { createSession, setSessionCookie } from '@/lib/auth'
 import { loginSchema, getIpAddress } from '@/lib/validation'
 import { rateLimitLogin } from '@/lib/rateLimit'
 import { audit } from '@/lib/audit'
-import { verifyTurnstile } from '@/lib/turnstile'
 import type { User } from '@/types'
 
 export const runtime = 'edge'
@@ -38,15 +37,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
   }
 
-  const { username, password, turnstileToken } = parsed.data
-
-  const turnstileOk = await verifyTurnstile(turnstileToken ?? '', ip)
-  if (!turnstileOk) {
-    return NextResponse.json(
-      { success: false, error: 'Captcha-Überprüfung fehlgeschlagen. Bitte erneut versuchen.' },
-      { status: 400 },
-    )
-  }
+  const { username, password } = parsed.data
   const db = getDb()
 
   const user = await queryOne<User & { password_hash: string }>(
