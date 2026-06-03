@@ -26,7 +26,6 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!turnstileToken) { setError('Bitte bestätige, dass du kein Roboter bist.'); return }
     setError(''); setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {

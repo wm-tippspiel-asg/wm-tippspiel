@@ -82,10 +82,6 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!validate()) return
-    if (!turnstileToken) {
-      setErrors({ general: 'Bitte bestätige, dass du kein Roboter bist.' })
-      return
-    }
     setLoading(true)
 
     try {
