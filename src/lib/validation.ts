@@ -24,14 +24,14 @@ export const registrationCodeSchema = z
 export const loginSchema = z.object({
   username: z.string().min(1, 'Benutzername erforderlich').max(100),
   password: z.string().min(1, 'Passwort erforderlich').max(128),
-  turnstileToken: z.string().optional(),
+  turnstileToken: z.string().nullable().optional(),
 })
 
 export const registerSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
   code: registrationCodeSchema,
-  turnstileToken: z.string().optional(),
+  turnstileToken: z.string().nullable().optional(),
 })
 
 export const predictionSchema = z.object({
