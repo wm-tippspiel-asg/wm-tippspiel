@@ -1,60 +1,57 @@
-import { getCurrentUser } from '@/lib/auth'
-import { getDb, queryOne, queryAll, execute } from '@/lib/db'
-import { recalculateLeaderboard } from '@/lib/scoring'
+import { NextRequest, NextResponse } from 'next/server'
+import { getDb, queryOne, execute } from '@/lib/db'
+import { rebuildLeaderboard } from '@/lib/scoring'
+import { audit } from '@/lib/audit'
 import { fetchFootballMatches } from '@/lib/football-api'
-import { logAudit } from '@/lib/audit'
+import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
+import { getKv } from '@/lib/db'
 
 export const runtime = 'edge'
 
-export async function POST(request: Request) {
-  try {
-    const user = await getCurrentUser()
-    if (!user || user.role !== 'admin') {
-      return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const role = request.headers.get('x-user-role')
+  const actorId = request.headers.get('x-user-id')
+  const actorName = request.headers.get('x-username') ?? 'admin'
+  if (role !== 'admin') return NextResponse.json({ success: false, error: 'Kein Zugriff' }, { status: 403 })
 
-    const db = getDb()
-    const kv = (globalThis as any).RATE_LIMIT as KVNamespace
+  return runUpdate(actorId, actorName)
+}
 
-    // Fetch latest from API
-    const apiMatches = await fetchFootballMatches(kv)
-    if (!apiMatches) {
-      return Response.json({ success: false, error: 'Failed to fetch from API' }, { status: 503 })
-    }
+export async function runUpdate(actorId: string | null, actorName: string): Promise<NextResponse> {
+  const db = getDb()
+  const kv = getKv()
 
-    let updated = 0
-
-    // Check each match
-    for (const apiMatch of apiMatches) {
-      if (apiMatch.status !== 'finished' || apiMatch.home_score === null) continue
-
-      // Check if we already have this result
-      const existing = await queryOne<{ home_score: number | null }>(
-        db,
-        `SELECT home_score FROM matches WHERE id = ?`,
-        [apiMatch.id]
-      )
-
-      // Only insert if we don't have a result yet
-      if (existing && existing.home_score === null) {
-        await execute(db,
-          `UPDATE matches SET home_score = ?, away_score = ?, status = 'finished'
-           WHERE id = ?`,
-          [apiMatch.home_score, apiMatch.away_score, apiMatch.id]
-        )
-        updated++
-      }
-    }
-
-    // Recalculate leaderboard if any matches were updated
-    if (updated > 0) {
-      await recalculateLeaderboard(db)
-      await logAudit(db, user.id, 'AUTO_SCORE_UPDATE', `Updated ${updated} match results from API`)
-    }
-
-    return Response.json({ success: true, data: { updated } })
-  } catch (e) {
-    console.error('POST /api/admin/auto-update-scores:', e)
-    return Response.json({ success: false, error: 'Server error' }, { status: 500 })
+  const apiMatches = await fetchFootballMatches(kv)
+  if (!apiMatches) {
+    return NextResponse.json({ success: false, error: 'Football-API nicht erreichbar' }, { status: 503 })
   }
+
+  let updated = 0
+
+  for (const apiMatch of apiMatches) {
+    if (apiMatch.status !== 'finished' || apiMatch.home_score === null || apiMatch.away_score === null) continue
+
+    const existing = await queryOne<{ home_score: number | null }>(
+      db, `SELECT home_score FROM matches WHERE id = ?`, [apiMatch.id]
+    )
+    if (!existing || existing.home_score !== null) continue
+
+    await execute(
+      db,
+      `UPDATE matches SET home_score = ?, away_score = ?, status = 'finished', updated_at = datetime('now') WHERE id = ?`,
+      [apiMatch.home_score, apiMatch.away_score, apiMatch.id]
+    )
+    updated++
+  }
+
+  if (updated > 0) {
+    await rebuildLeaderboard()
+    await invalidateCache(
+      CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
+      'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
+    )
+    await audit({ actorId, actorName, action: 'leaderboard.recalculated', details: { auto_updated: updated } })
+  }
+
+  return NextResponse.json({ success: true, data: { updated } })
 }

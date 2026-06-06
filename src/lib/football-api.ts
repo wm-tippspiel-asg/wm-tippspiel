@@ -9,10 +9,22 @@ function headers() {
   return { 'x-apisports-key': key }
 }
 
-export async function fetchFootballMatches(kv?: KVNamespace) {
+export interface FootballMatch {
+  id: number
+  home_team: string
+  away_team: string
+  home_score: number | null
+  away_score: number | null
+  match_time: string
+  status: string
+  group: string | null
+  external_id: number
+}
+
+export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMatch[] | null> {
   const cacheKey = 'wm2026_matches'
   if (kv) {
-    const cached = await kv.get(cacheKey, 'json')
+    const cached = await kv.get<FootballMatch[]>(cacheKey, 'json')
     if (cached) return cached
   }
 
@@ -128,7 +140,7 @@ function mapStatus(short: string): string {
 function extractGroup(round: string): string | null {
   // e.g. "Group Stage - 1" or "Group A"
   const match = round.match(/Group\s+([A-Z])/i)
-  if (match) return `GROUP_${match[1].toUpperCase()}`
+  if (match?.[1]) return `GROUP_${match[1].toUpperCase()}`
   if (round.toLowerCase().includes('group')) return round
   return null
 }
