@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, Trophy, Key, FileText,
-  BarChart2, Star, Users2, ArrowLeft, Shield, Moon, Sun,
+  BarChart2, Star, Users2, ArrowLeft, Moon, Sun,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { AuthUser } from '@/types'
@@ -55,7 +55,7 @@ export function AdminTopBar({ user }: { user: AuthUser }) {
 
           {/* Brand */}
           <div className="admin-topbar-brand">
-            <div className="admin-topbar-logo-icon"><Shield size={14} /></div>
+            <img src="/logo.png" alt="Logo" className="admin-topbar-logo-img" />
             <span className="admin-topbar-brand-text">Admin</span>
           </div>
 
