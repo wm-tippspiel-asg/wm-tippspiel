@@ -52,14 +52,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Mitgliederzahl haben. Nur aktive, nicht gesperrte Schüler:innen zählen —
     // konsistent mit der Einzelrangliste. Sortierung & Tiebreak laufen über die
     // ungerundeten Durchschnitte; avg_points wird nur fürs Anzeigen gerundet.
+    // Nur Mitglieder mit ≥1 Tipp zählen im Nenner — wer nie getippt hat,
+    // darf den Gruppenscnitt nicht runterziehen.
     const standings = await queryAll<GroupStanding>(
       db,
       `SELECT ug.id, ug.name, ug.description,
               COUNT(DISTINCT u.id) AS member_count,
-              COALESCE(SUM(l.total_points), 0) AS total_points,
-              COALESCE(SUM(l.exact_results), 0) AS exact_results,
-              CASE WHEN COUNT(DISTINCT u.id) > 0
-                   THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id), 1)
+              COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END), 0) AS total_points,
+              COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END), 0) AS exact_results,
+              CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                   THEN ROUND(
+                     CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                     / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END), 1)
                    ELSE 0 END AS avg_points
        FROM user_groups ug
        LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
@@ -67,11 +71,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
        LEFT JOIN leaderboard l ON l.user_id = u.id
        GROUP BY ug.id
        ORDER BY
-         CASE WHEN COUNT(DISTINCT u.id) > 0
-              THEN CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id)
+         CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+              THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                   / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
               ELSE 0 END DESC,
-         CASE WHEN COUNT(DISTINCT u.id) > 0
-              THEN CAST(COALESCE(SUM(l.exact_results), 0) AS REAL) / COUNT(DISTINCT u.id)
+         CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+              THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END),0) AS REAL)
+                   / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
               ELSE 0 END DESC,
          ug.name ASC`,
     )
