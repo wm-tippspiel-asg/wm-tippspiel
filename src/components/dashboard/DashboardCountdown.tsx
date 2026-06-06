@@ -80,12 +80,12 @@ export function DashboardCountdown({ hasWinner, hasTopScorer }: Props) {
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13,
             fontWeight: 600, color: hasWinner ? 'var(--good)' : 'var(--muted)' }}>
             <Trophy size={14} />
-            Turniersieger {hasWinner ? '✓' : '–'}
+            Turniersieger {hasWinner ? '✓' : ''}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13,
             fontWeight: 600, color: hasTopScorer ? 'var(--good)' : 'var(--muted)' }}>
             <Target size={14} />
-            Torschützenkönig {hasTopScorer ? '✓' : '–'}
+            Torschützenkönig {hasTopScorer ? '✓' : ''}
           </span>
         </div>
       </div>
