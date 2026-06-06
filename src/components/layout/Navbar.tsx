@@ -2,16 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Trophy, Target, BookOpen, Users, Calendar, BarChart2, FileText, LogOut, Moon, Sun } from 'lucide-react'
+import { LayoutDashboard, Trophy, Target, BookOpen, Users, Calendar, BarChart2, FileText, LogOut, Moon, Sun, Star, Medal } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { AuthUser } from '@/types'
 
 const userLinks = [
   { href: '/dashboard',     label: 'Start',      icon: LayoutDashboard },
   { href: '/predictions',   label: 'Tippen',     icon: Target },
-  { href: '/special-bets',  label: 'Sondertipps',icon: Trophy },
-  { href: '/groups',        label: 'Ergebnisse', icon: Trophy },
-  { href: '/leaderboard',   label: 'Rangliste',  icon: Trophy },
+  { href: '/special-bets',  label: 'Sondertipps',icon: Star },
+  { href: '/groups',        label: 'Ergebnisse', icon: Users },
+  { href: '/leaderboard',   label: 'Rangliste',  icon: Medal },
   { href: '/about',         label: 'Regeln',     icon: BookOpen },
 ]
 
