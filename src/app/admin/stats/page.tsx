@@ -1,5 +1,6 @@
 import { getDb, queryAll } from '@/lib/db'
 import { BarChart2, TrendingUp, Target } from 'lucide-react'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -65,13 +66,8 @@ export default async function AdminStatsPage() {
   const matches = Array.from(matchMap.values())
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="page-title">Statistiken</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Aktivität und Tipp-Verteilung der letzten 14 Tage
-        </p>
-      </div>
+    <div className="admin-page space-y-8 animate-fade-in">
+      <AdminPageHeader title="Statistiken" description="Aktivität und Tipp-Verteilung der letzten 14 Tage" />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

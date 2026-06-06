@@ -1,5 +1,6 @@
 import { getDb, queryAll, queryOne } from '@/lib/db'
 import { Badge } from '@/components/ui/Badge'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { formatDateTime } from '@/lib/utils'
 import type { AuditLog } from '@/types'
 import type { Metadata } from 'next'
@@ -46,13 +47,8 @@ export default async function AdminLogsPage({
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Audit-Logs</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {total?.count ?? 0} Einträge insgesamt
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader title="Audit-Logs" description={`${total?.count ?? 0} Einträge insgesamt`} />
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
@@ -125,3 +121,4 @@ export default async function AdminLogsPage({
     </div>
   )
 }
+

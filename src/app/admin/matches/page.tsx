@@ -1,5 +1,6 @@
 import { getDb, queryAll } from '@/lib/db'
 import { AdminMatchesClient } from '@/components/admin/AdminMatchesClient'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import type { Match } from '@/types'
 import type { Metadata } from 'next'
 
@@ -8,19 +9,16 @@ export const metadata: Metadata = { title: 'Spielverwaltung' }
 
 export default async function AdminMatchesPage() {
   const db = getDb()
-  const matches = await queryAll<Match>(
-    db,
-    'SELECT * FROM matches ORDER BY match_time ASC',
-  )
+  const matches = await queryAll<Match>(db, 'SELECT * FROM matches ORDER BY match_time ASC')
+  const finished = matches.filter(m => m.status === 'finished').length
+  const live = matches.filter(m => m.status === 'live').length
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Spielverwaltung</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {matches.length} Spiele eingetragen
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Spielverwaltung"
+        description={`${matches.length} Spiele · ${finished} beendet${live > 0 ? ` · ${live} live` : ''}`}
+      />
       <AdminMatchesClient initialMatches={matches} />
     </div>
   )

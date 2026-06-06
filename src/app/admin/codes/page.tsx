@@ -1,5 +1,6 @@
 import { getDb, queryAll } from '@/lib/db'
 import { AdminCodesClient } from '@/components/admin/AdminCodesClient'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import type { RegistrationCode } from '@/types'
 import type { Metadata } from 'next'
 
@@ -16,14 +17,14 @@ export default async function AdminCodesPage() {
      ORDER BY rc.created_at DESC`,
   )
 
+  const active = codes.filter(c => c.is_active).length
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Zugangscodes</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {codes.filter((c) => c.is_active).length} aktive Codes
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Zugangscodes"
+        description={`${active} aktiv · ${codes.length} gesamt`}
+      />
       <AdminCodesClient initialCodes={codes} />
     </div>
   )

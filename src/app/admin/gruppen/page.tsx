@@ -1,5 +1,6 @@
 import { getDb, queryAll } from '@/lib/db'
 import { AdminGroupsClient } from '@/components/admin/AdminGroupsClient'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import type { UserGroup } from '@/types'
 import type { Metadata } from 'next'
 
@@ -25,13 +26,11 @@ export default async function AdminGruppenPage() {
   )
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Gruppen</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Klassen, Kurse, Abteilungen — Nutzer in Gruppen einteilen für eigene Ranglisten
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Gruppen"
+        description={`${groups.length} Gruppe${groups.length !== 1 ? 'n' : ''} · Klassen und Kurse für eigene Ranglisten`}
+      />
       <AdminGroupsClient initialGroups={groups} allUsers={users} />
     </div>
   )

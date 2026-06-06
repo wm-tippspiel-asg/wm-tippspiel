@@ -1,5 +1,6 @@
 import { getDb, queryAll } from '@/lib/db'
 import { AdminUsersClient } from '@/components/admin/AdminUsersClient'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import type { Metadata } from 'next'
 import type { User } from '@/types'
 
@@ -13,15 +14,15 @@ export default async function AdminUsersPage() {
     `SELECT id, username, email, role, is_banned, ban_reason, created_at, last_login
      FROM users ORDER BY created_at DESC`,
   )
+  const userCount = users.filter((u) => u.role === 'user').length
+  const bannedCount = users.filter((u) => u.is_banned).length
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="page-title">Nutzerverwaltung</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {users.filter((u) => u.role === 'user').length} Schülerinnen und Schüler registriert
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Nutzerverwaltung"
+        description={`${userCount} registriert${bannedCount > 0 ? ` · ${bannedCount} gesperrt` : ''}`}
+      />
       <AdminUsersClient initialUsers={users} />
     </div>
   )
