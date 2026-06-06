@@ -62,14 +62,6 @@ export default async function LandingPage() {
                 }}>
                   Jetzt anmelden →
                 </Link>
-                <Link href="/login" style={{
-                  display: 'inline-flex', alignItems: 'center',
-                  padding: '10px 20px', background: 'rgba(255,255,255,0.12)', color: 'inherit',
-                  borderRadius: 10, fontWeight: 600, fontSize: 14, textDecoration: 'none',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                }}>
-                  Einloggen
-                </Link>
               </div>
             </div>
           </div>
