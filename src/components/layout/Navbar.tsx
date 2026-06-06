@@ -73,8 +73,8 @@ export function Navbar({ user }: { user: AuthUser }) {
               <img src="/logo.png" alt="WM Tippspiel Logo"
                 style={{ height: 36, width: 36, borderRadius: 8, objectFit: 'contain' }} />
               <div className="wm-brand-text">
-                ASG WM Tippspiel
-                <small>2026</small>
+                ASG
+                <small>WM Tippspiel 2026</small>
               </div>
             </Link>
 
