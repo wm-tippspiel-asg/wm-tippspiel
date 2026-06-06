@@ -116,7 +116,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, grou
       </div>
 
       {/* Tab-Switcher */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
+      <div className="flex gap-1 p-1 rounded-lg w-fit" style={{ background: '#353a37' }}>
         {(['einzel', 'gruppen'] as const).map((tab) => (
           <button
             key={tab}
