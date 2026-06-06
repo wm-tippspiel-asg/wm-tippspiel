@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rebuildLeaderboard } from '@/lib/scoring'
 import { audit } from '@/lib/audit'
+import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
 
 export const runtime = 'edge'
 
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (role !== 'admin') return NextResponse.json({ success: false, error: 'Kein Zugriff' }, { status: 403 })
 
   await rebuildLeaderboard()
+  await invalidateCache(CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS, 'cache:leaderboard:top5')
 
   await audit({
     actorId,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb, queryAll } from '@/lib/db'
+import { getCached, setCached, CACHE_KEYS } from '@/lib/cache'
 import type { LeaderboardEntry, GroupStanding } from '@/types'
 
 export const runtime = 'edge'
@@ -43,6 +44,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // --- Gruppenwertung ---
   if (view === 'groups') {
+    const cached = await getCached<GroupStanding[]>(CACHE_KEYS.LEADERBOARD_GROUPS)
+    if (cached) return NextResponse.json({ success: true, data: { standings: cached, currentUserId: userId } })
+
     const standings = await queryAll<GroupStanding>(
       db,
       `SELECT ug.id, ug.name, ug.description,
@@ -58,16 +62,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
        GROUP BY ug.id
        ORDER BY total_points DESC, exact_results DESC, ug.name ASC`,
     )
+    await setCached(CACHE_KEYS.LEADERBOARD_GROUPS, standings)
     return NextResponse.json({ success: true, data: { standings, currentUserId: userId } })
   }
 
-  // --- Einzelwertung gefiltert nach Gruppe ---
+  // --- Einzelwertung gefiltert nach Gruppe (kein Cache — gruppenspezifisch) ---
   if (groupId) {
     const entries = await queryAll<LeaderboardEntry>(db, GROUP_USERS_SQL, [groupId])
     return NextResponse.json({ success: true, data: { entries, currentUserId: userId } })
   }
 
   // --- Gesamtrangliste ---
+  const cached = await getCached<LeaderboardEntry[]>(CACHE_KEYS.LEADERBOARD_ALL)
+  if (cached) return NextResponse.json({ success: true, data: { entries: cached, currentUserId: userId } })
+
   const entries = await queryAll<LeaderboardEntry>(db, ALL_USERS_SQL)
+  await setCached(CACHE_KEYS.LEADERBOARD_ALL, entries)
   return NextResponse.json({ success: true, data: { entries, currentUserId: userId } })
 }

@@ -3,6 +3,7 @@ import { getDb, queryOne, execute } from '@/lib/db'
 import { matchSchema, matchResultSchema } from '@/lib/validation'
 import { audit } from '@/lib/audit'
 import { recalculateMatchPoints } from '@/lib/scoring'
+import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
 import type { Match } from '@/types'
 
 export const runtime = 'edge'
@@ -46,6 +47,10 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
 
     // Recalculate points for all predictions on this match
     await recalculateMatchPoints(id)
+    await invalidateCache(
+      CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
+      'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
+    )
 
     await audit({
       actorId,
@@ -113,6 +118,7 @@ export async function PATCH(request: NextRequest, { params }: Params): Promise<N
       `UPDATE matches SET status = 'locked', locked_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`,
       [id],
     )
+    await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
     return NextResponse.json({ success: true, message: 'Spiel gesperrt.' })
   }
 
@@ -122,6 +128,7 @@ export async function PATCH(request: NextRequest, { params }: Params): Promise<N
       `UPDATE matches SET status = 'scheduled', locked_at = NULL, updated_at = datetime('now') WHERE id = ?`,
       [id],
     )
+    await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
     return NextResponse.json({ success: true, message: 'Spiel entsperrt.' })
   }
 

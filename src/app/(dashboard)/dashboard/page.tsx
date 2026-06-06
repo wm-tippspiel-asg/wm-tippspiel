@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth'
 import { getDb, queryAll, queryOne } from '@/lib/db'
+import { getCached, setCached, CACHE_KEYS } from '@/lib/cache'
 import { MatchCard } from '@/components/dashboard/MatchCard'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { DashboardCountdown } from '@/components/dashboard/DashboardCountdown'
@@ -19,12 +20,18 @@ export default async function DashboardPage() {
 
   const db = getDb()
 
-  const [upcomingMatches, predictions, leaderboard, stats, userRank] = await Promise.all([
-    queryAll<Match>(db,
+  // Cached: upcoming matches (30s) and leaderboard top 5 (60s)
+  let upcomingMatches = await getCached<Match[]>(CACHE_KEYS.MATCHES_UPCOMING)
+  if (!upcomingMatches) {
+    upcomingMatches = await queryAll<Match>(db,
       `SELECT * FROM matches WHERE status IN ('scheduled','locked') AND match_time > datetime('now')
-       ORDER BY match_time ASC LIMIT 5`),
-    queryAll<Prediction>(db, `SELECT * FROM predictions WHERE user_id = ?`, [user.id]),
-    queryAll<LeaderboardEntry>(db,
+       ORDER BY match_time ASC LIMIT 5`)
+    await setCached(CACHE_KEYS.MATCHES_UPCOMING, upcomingMatches, 30)
+  }
+
+  let leaderboard = await getCached<LeaderboardEntry[]>('cache:leaderboard:top5')
+  if (!leaderboard) {
+    leaderboard = await queryAll<LeaderboardEntry>(db,
       `SELECT u.id AS user_id, u.username,
               COALESCE(l.total_points,   0) AS total_points,
               COALESCE(l.exact_results,  0) AS exact_results,
@@ -36,7 +43,13 @@ export default async function DashboardPage() {
        LEFT JOIN leaderboard l ON l.user_id = u.id
        WHERE u.role = 'user' AND u.is_banned = 0
        ORDER BY total_points DESC, exact_results DESC, u.username ASC
-       LIMIT 5`),
+       LIMIT 5`)
+    await setCached('cache:leaderboard:top5', leaderboard)
+  }
+
+  // User-specific: never cache
+  const [predictions, stats, userRank] = await Promise.all([
+    queryAll<Prediction>(db, `SELECT * FROM predictions WHERE user_id = ?`, [user.id]),
     queryOne<{ total_tips: number; total_points: number; exact_results: number }>(db,
       `SELECT COUNT(*) AS total_tips,
               COALESCE(SUM(points),0) AS total_points,
