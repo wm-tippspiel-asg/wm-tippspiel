@@ -111,7 +111,7 @@ export function PredictionsClient({ grouped, personalPredictions, myGroups, grou
               <div className="space-y-3">
                 {matches.map((match) => (
                   <MatchCard
-                    key={match.id}
+                    key={`${activeTab}-${match.id}`}
                     match={match}
                     prediction={predMap.get(match.id)}
                     groupId={isPersonal ? undefined : activeTab}

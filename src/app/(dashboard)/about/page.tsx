@@ -114,9 +114,9 @@ export default function AboutPage() {
             </div>
             <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: 0 }}>
               Jeder Teilnehmer tippt für sich und sammelt Punkte. Die Gesamtrangliste
-              zeigt alle Spieler nach ihren persönlichen Punkten sortiert.
-              Über die Filter-Schaltflächen kann man sich auch nur eine bestimmte Gruppe anzeigen lassen —
-              die Punkte zählen aber immer global.
+              zeigt alle Spieler nach ihren persönlichen Punkten sortiert. In der
+              Klassenwertung kannst du eine Klasse anklicken, um ihre interne
+              Einzelrangliste zu sehen — die persönlichen Punkte zählen aber immer global.
             </p>
           </div>
 
@@ -133,11 +133,12 @@ export default function AboutPage() {
             </p>
             <div style={{ display: 'grid', gap: 6 }}>
               {[
-                { icon: '', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
-                { icon: '', text: 'Gruppenpunkte = Summe der Gruppen-Tipps aller Mitglieder' },
-                { icon: '', text: 'Zusätzlich wird der Durchschnitt pro Mitglied angezeigt' },
-                { icon: '', text: 'Die Gruppe mit den meisten Gesamtpunkten aus Gruppen-Tipps gewinnt' },
-                { icon: '', text: 'Mitglieder werden vom Admin zugeteilt' },
+                { icon: '🔄', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
+                { icon: '⚖️', text: 'Gewertet wird der Ø Punkte pro Mitglied (Durchschnitt), nicht die Gesamtsumme' },
+                { icon: '👍', text: 'So ist es fair: Größere Klassen haben keinen Vorteil durch mehr Mitglieder' },
+                { icon: '🏆', text: 'Die Klasse mit dem höchsten Schnitt pro Mitglied gewinnt' },
+                { icon: '🎯', text: 'Bei Gleichstand entscheiden die exakten Treffer pro Mitglied' },
+                { icon: '🧑‍🏫', text: 'Mitglieder werden vom Admin (Lehrkraft) zugeteilt' },
               ].map((item) => (
                 <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
