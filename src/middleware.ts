@@ -16,6 +16,7 @@ export const config = {
     '/api/admin/:path*',
     '/api/auth/logout',
     '/api/auth/me',
+    '/api/presence/:path*',
   ],
 }
 

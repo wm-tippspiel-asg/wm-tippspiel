@@ -1,7 +1,7 @@
 import { getDb, queryOne, queryAll } from '@/lib/db'
 import { RecalculateAction } from '@/components/admin/RecalculateAction'
 import { AutoUpdateAction } from '@/components/admin/AutoUpdateAction'
-import { Users, Trophy, Key, FileText, Download, RefreshCcw, TrendingUp, Activity } from 'lucide-react'
+import { Users, Trophy, Key, FileText, Download, RefreshCcw, TrendingUp, Activity, Radio } from 'lucide-react'
 import type { AuditLog } from '@/types'
 import type { Metadata } from 'next'
 import { formatDateTime } from '@/lib/utils'
@@ -15,7 +15,7 @@ export default async function AdminDashboard() {
   const [
     userCount, matchCount, codeCount, logCount,
     finishedMatches, recentLogs,
-    tipsToday, loginsToday, pendingMatches,
+    tipsToday, loginsToday, pendingMatches, onlineUsers,
   ] = await Promise.all([
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM users WHERE role = 'user'`),
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM matches`),
@@ -26,6 +26,7 @@ export default async function AdminDashboard() {
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM predictions WHERE DATE(created_at) = DATE('now')`),
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'user.login' AND DATE(created_at) = DATE('now')`),
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM matches WHERE status = 'scheduled' AND match_time < datetime('now', '+24 hours') AND match_time > datetime('now')`),
+    queryAll<{ username: string }>(db, `SELECT username FROM user_presence WHERE last_seen >= datetime('now', '-5 minutes') ORDER BY last_seen DESC`),
   ])
 
   const actionColor: Record<string, string> = {
@@ -73,6 +74,20 @@ export default async function AdminDashboard() {
           <div className="admin-stat-body">
             <div className="admin-stat-value">{logCount?.count ?? 0}</div>
             <div className="admin-stat-label">Audit-Logs</div>
+          </div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--emerald"><Radio size={18} /></div>
+          <div className="admin-stat-body">
+            <div className="admin-stat-value" style={{ color: onlineUsers.length > 0 ? '#10b981' : undefined }}>
+              {onlineUsers.length}
+            </div>
+            <div className="admin-stat-label">Gerade online</div>
+            {onlineUsers.length > 0 && (
+              <div className="admin-stat-online-names">
+                {onlineUsers.map(u => u.username).join(', ')}
+              </div>
+            )}
           </div>
         </div>
       </div>

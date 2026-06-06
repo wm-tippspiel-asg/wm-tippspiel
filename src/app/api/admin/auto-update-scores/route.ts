@@ -53,5 +53,11 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
     await audit({ actorId, actorName, action: 'leaderboard.recalculated', details: { auto_updated: updated } })
   }
 
+  // Prediction-Logs älter als 24h löschen — nur für Echtzeit-Aktivität gedacht
+  await execute(
+    db,
+    `DELETE FROM audit_logs WHERE action IN ('prediction.created', 'prediction.updated') AND created_at < datetime('now', '-24 hours')`,
+  )
+
   return NextResponse.json({ success: true, data: { updated } })
 }

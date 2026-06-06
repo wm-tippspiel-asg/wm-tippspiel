@@ -7,6 +7,10 @@ export const runtime = 'edge'
 export const metadata: Metadata = { title: 'Statistiken' }
 
 interface DayCount { day: string; count: number }
+interface PresenceRow {
+  user_id: string; username: string; total_seconds: number
+  last_seen: string; seconds_ago: number; is_online: number
+}
 interface MatchPredStat {
   match_id: string; home_team: string; away_team: string
   home_score: number | null; away_score: number | null
@@ -23,7 +27,7 @@ export default async function AdminStatsPage() {
 
   const [
     tipsPerDay, loginsPerDay, predStats, topUsers,
-    totalPreds, totalUsers, activeUsers, hitDist,
+    totalPreds, totalUsers, activeUsers, presenceRows, hitDist,
   ] = await Promise.all([
     queryAll<DayCount>(db, `
       SELECT DATE(created_at) AS day, COUNT(*) AS count
@@ -50,6 +54,12 @@ export default async function AdminStatsPage() {
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM predictions`),
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM users WHERE role = 'user'`),
     queryOne<{ count: number }>(db, `SELECT COUNT(DISTINCT user_id) AS count FROM predictions`),
+    queryAll<PresenceRow>(db, `
+      SELECT user_id, username, total_seconds, last_seen,
+        CAST((julianday('now') - julianday(last_seen)) * 86400 AS INTEGER) AS seconds_ago,
+        CASE WHEN last_seen >= datetime('now', '-5 minutes') THEN 1 ELSE 0 END AS is_online
+      FROM user_presence
+      ORDER BY is_online DESC, total_seconds DESC`),
     queryOne<HitDist>(db, `
       SELECT
         COUNT(*) AS total,
@@ -103,6 +113,22 @@ export default async function AdminStatsPage() {
   const hitRate = hd.total > 0
     ? Math.round(((hd.exact + hd.diff + hd.tendency) / hd.total) * 100)
     : 0
+
+  function fmtSeconds(sec: number): string {
+    if (sec < 60) return '< 1 min'
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    return h > 0 ? `${h}h ${m}m` : `${m} min`
+  }
+
+  function fmtAgo(sec: number): string {
+    if (sec < 60) return 'gerade eben'
+    if (sec < 3600) return `vor ${Math.floor(sec / 60)} min`
+    if (sec < 86400) return `vor ${Math.floor(sec / 3600)} h`
+    return `vor ${Math.floor(sec / 86400)} Tagen`
+  }
+
+  const onlineCount = presenceRows.filter(r => r.is_online).length
 
   const distSegments = [
     { key: 'exact', label: 'Volltreffer', value: hd.exact, color: '#10b981' },
@@ -175,6 +201,43 @@ export default async function AdminStatsPage() {
                 })}
               </div>
             </>
+          )}
+        </div>
+      </div>
+
+      {/* Online presence */}
+      <div className="stats-section">
+        <div className="stats-section-title">
+          Nutzer-Präsenz
+          {onlineCount > 0 && (
+            <span className="presence-online-badge">{onlineCount} online</span>
+          )}
+        </div>
+        <div className="stats-chart-card">
+          {presenceRows.length === 0 ? (
+            <div className="stats-empty">Noch keine Daten — Nutzer müssen sich einmal einloggen.</div>
+          ) : (
+            <table className="presence-table">
+              <thead>
+                <tr>
+                  <th>Nutzer</th>
+                  <th>Zeit auf der Site</th>
+                  <th>Zuletzt aktiv</th>
+                </tr>
+              </thead>
+              <tbody>
+                {presenceRows.map((r) => (
+                  <tr key={r.user_id}>
+                    <td>
+                      <span className={`presence-dot${r.is_online ? ' presence-dot--online' : ''}`} />
+                      {r.username}
+                    </td>
+                    <td className="presence-time">{fmtSeconds(r.total_seconds)}</td>
+                    <td className="presence-ago">{fmtAgo(r.seconds_ago)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

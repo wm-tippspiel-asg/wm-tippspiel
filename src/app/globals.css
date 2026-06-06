@@ -844,6 +844,44 @@ button { font-family: inherit; cursor: pointer; }
 
 .stats-empty { padding: 24px; text-align: center; font-size: 13px; color: var(--muted); }
 
+/* ── Presence ───────────────── */
+.presence-online-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: 10px; padding: 2px 9px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; letter-spacing: .03em;
+  background: #d1fae5; color: #065f46;
+}
+.dark .presence-online-badge { background: rgba(16,185,129,.18); color: #34d399; }
+.presence-online-badge::before {
+  content: ''; display: block; width: 7px; height: 7px;
+  border-radius: 50%; background: #10b981;
+  animation: presence-pulse 2s ease-in-out infinite;
+}
+@keyframes presence-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
+}
+.presence-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.presence-table th {
+  text-align: left; padding: 0 12px 10px;
+  font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
+}
+.presence-table td { padding: 9px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+.presence-table tr:first-child td { border-top: none; }
+.presence-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); margin-right: 8px; flex-shrink: 0;
+}
+.presence-dot--online { background: #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,.25); }
+.presence-time { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.presence-ago { color: var(--muted); font-size: 12px; }
+
+/* ── Admin stat online names ── */
+.admin-stat-online-names {
+  font-size: 10.5px; color: var(--muted); margin-top: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;
+}
+
 /* ══════════════════════════════
    RESPONSIVE ADMIN
 ══════════════════════════════ */
