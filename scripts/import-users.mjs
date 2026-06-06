@@ -202,7 +202,7 @@ async function main() {
   writeFileSync(tmpFile, sqlText, 'utf8')
 
   const remote = isRemote ? '--remote' : '--local'
-  const cmd = `wrangler d1 execute ${dbName} ${remote} --file=${tmpFile}`
+  const cmd = `npx wrangler d1 execute ${dbName} ${remote} --file=${tmpFile}`
 
   console.log(`Schreibe in D1 (${isRemote ? 'REMOTE — Produktion' : 'lokal'})...`)
   try {
