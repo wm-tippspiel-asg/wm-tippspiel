@@ -535,6 +535,13 @@ button { font-family: inherit; cursor: pointer; }
 .lb-filter-btn--active { background: #1c1f1e; color: #edf0ed; }
 .lb-filter-btn:hover:not(.lb-filter-btn--active) { background: var(--surface-3); }
 
+/* Clickable group row */
+.lb-group-row:hover { background: var(--surface-2); }
+.lb-group-row:active { background: var(--surface-3); }
+
+/* Back button hover */
+.lb-back-btn:hover { color: var(--ink); }
+
 /* ═══════════════════════════════════════════
    ADMIN PANEL
 ═══════════════════════════════════════════ */
