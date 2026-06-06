@@ -80,7 +80,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
       </div>
 
       {/* ── Tab switcher ── */}
-      <div className="flex gap-1 p-1 rounded-lg w-fit" style={{ background: '#353a37' }}>
+      <div className="lb-tab-group flex gap-1 p-1 rounded-lg w-fit">
         {(['einzel', 'gruppen'] as const).map((tab) => (
           <button
             key={tab}
@@ -160,7 +160,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                 <h2 className="section-title">Klassenwertung</h2>
               </div>
               <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-                Summe aller Punkte · Klasse anklicken für Einzelrangliste
+                Ø Punkte pro Mitglied · fair unabhängig von der Klassengröße · Klasse anklicken für Einzelrangliste
               </p>
             </div>
             <div>
@@ -200,16 +200,16 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                     </span>
                   </div>
 
-                  <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600, marginRight: 6, flexShrink: 0 }}>
-                    Ø {g.avg_points} Pkt.
+                  <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginRight: 6, flexShrink: 0, textAlign: 'right' }}>
+                    {g.total_points} Pkt.<br />gesamt
                   </span>
 
                   <span style={{
                     fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
-                    width: 54, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0,
+                    width: 76, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0,
                     color: i === 0 ? 'var(--good)' : 'var(--ink)',
                   }}>
-                    {g.total_points}
+                    Ø {g.avg_points}
                   </span>
 
                   <ChevronRight size={16} style={{ color: 'var(--muted)', flexShrink: 0 }} />

@@ -47,20 +47,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const cached = await getCached<GroupStanding[]>(CACHE_KEYS.LEADERBOARD_GROUPS)
     if (cached) return NextResponse.json({ success: true, data: { standings: cached, currentUserId: userId } })
 
+    // Faire Klassenwertung: gewertet wird der Durchschnitt pro Mitglied
+    // (Ø Punkte/Mitglied), damit größere Klassen keinen Vorteil durch ihre
+    // Mitgliederzahl haben. Nur aktive, nicht gesperrte Schüler:innen zählen —
+    // konsistent mit der Einzelrangliste. Sortierung & Tiebreak laufen über die
+    // ungerundeten Durchschnitte; avg_points wird nur fürs Anzeigen gerundet.
     const standings = await queryAll<GroupStanding>(
       db,
       `SELECT ug.id, ug.name, ug.description,
-              COUNT(DISTINCT ugm.user_id) AS member_count,
+              COUNT(DISTINCT u.id) AS member_count,
               COALESCE(SUM(l.total_points), 0) AS total_points,
               COALESCE(SUM(l.exact_results), 0) AS exact_results,
-              CASE WHEN COUNT(DISTINCT ugm.user_id) > 0
-                   THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT ugm.user_id), 1)
+              CASE WHEN COUNT(DISTINCT u.id) > 0
+                   THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id), 1)
                    ELSE 0 END AS avg_points
        FROM user_groups ug
        LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
-       LEFT JOIN leaderboard l ON l.user_id = ugm.user_id
+       LEFT JOIN users u ON u.id = ugm.user_id AND u.role = 'user' AND u.is_banned = 0
+       LEFT JOIN leaderboard l ON l.user_id = u.id
        GROUP BY ug.id
-       ORDER BY total_points DESC, exact_results DESC, ug.name ASC`,
+       ORDER BY
+         CASE WHEN COUNT(DISTINCT u.id) > 0
+              THEN CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id)
+              ELSE 0 END DESC,
+         CASE WHEN COUNT(DISTINCT u.id) > 0
+              THEN CAST(COALESCE(SUM(l.exact_results), 0) AS REAL) / COUNT(DISTINCT u.id)
+              ELSE 0 END DESC,
+         ug.name ASC`,
     )
     await setCached(CACHE_KEYS.LEADERBOARD_GROUPS, standings)
     return NextResponse.json({ success: true, data: { standings, currentUserId: userId } })
