@@ -83,10 +83,6 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <p style={{ marginTop: 20, textAlign: 'center', fontSize: 14, color: 'var(--muted)' }}>
-        Noch kein Konto?{' '}
-        <Link href="/register" className="link">Jetzt registrieren</Link>
-      </p>
     </div>
   )
 }

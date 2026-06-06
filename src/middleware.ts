@@ -19,7 +19,7 @@ export const config = {
   ],
 }
 
-const PUBLIC_PATHS = new Set(['/login', '/register', '/api/auth/login', '/api/auth/register'])
+const PUBLIC_PATHS = new Set(['/login', '/api/auth/login'])
 const ADMIN_PATHS_PREFIX = ['/admin', '/api/admin']
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {

@@ -29,12 +29,8 @@ export default async function LandingPage() {
             </div>
           </Link>
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
-            <Link href="/login" className="wm-btn wm-btn-ghost landing-btn-login" style={{ fontSize: 14, padding: '8px 16px' }}>
+            <Link href="/login" className="wm-btn wm-btn-primary" style={{ fontSize: 14, padding: '8px 16px' }}>
               Anmelden
-            </Link>
-            <Link href="/register" className="wm-btn wm-btn-primary" style={{ fontSize: 14, padding: '8px 16px' }}>
-              <span className="landing-reg-full">Registrieren</span>
-              <span className="landing-reg-short">Jetzt</span>
             </Link>
           </div>
         </div>
@@ -59,12 +55,12 @@ export default async function LandingPage() {
                 Tippe Spielergebnisse, sammle Punkte und kämpfe um den ersten Platz.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <Link href="/register" style={{
+                <Link href="/login" style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '10px 20px', background: 'var(--surface)', color: 'var(--accent-strong)',
                   borderRadius: 10, fontWeight: 700, fontSize: 14, textDecoration: 'none',
                 }}>
-                  Jetzt mitmachen →
+                  Jetzt anmelden →
                 </Link>
                 <Link href="/login" style={{
                   display: 'inline-flex', alignItems: 'center',
@@ -137,14 +133,14 @@ export default async function LandingPage() {
           <div className="wm-card" style={{ padding: '32px 20px', textAlign: 'center' }}>
             <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--muted)' }}>
-              Kostenlos · Nur für ASG-Schüler
+              Nur für ASG-Schüler
             </p>
             <h2 style={{ margin: '0 0 18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--ink)' }}
               className="landing-cta-h2">
               Jetzt anmelden und tippen
             </h2>
-            <Link href="/register" className="wm-btn wm-btn-primary" style={{ fontSize: 15, padding: '11px 28px' }}>
-              Konto erstellen
+            <Link href="/login" className="wm-btn wm-btn-primary" style={{ fontSize: 15, padding: '11px 28px' }}>
+              Anmelden
             </Link>
           </div>
 
