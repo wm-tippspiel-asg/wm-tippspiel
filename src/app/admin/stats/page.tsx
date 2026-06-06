@@ -140,7 +140,7 @@ export default async function AdminStatsPage() {
 
       {/* Hit distribution — overall accuracy breakdown */}
       <div className="stats-section">
-        <div className="stats-section-title">Treffer-Verteilung — alle ausgewerteten Tipps</div>
+        <div className="stats-section-title">Treffer-Verteilung - alle ausgewerteten Tipps</div>
         <div className="stats-chart-card">
           {hd.total === 0 ? (
             <div className="stats-empty">Noch keine abgeschlossenen Spiele.</div>
@@ -179,9 +179,9 @@ export default async function AdminStatsPage() {
         </div>
       </div>
 
-      {/* Activity chart — Tag / Woche / Monat */}
+      {/* Activity chart - Tag / Woche / Monat */}
       <div className="stats-section">
-        <div className="stats-section-title">Aktivität — Logins &amp; Tipps</div>
+        <div className="stats-section-title">Aktivität - Logins &amp; Tipps</div>
         <AdminActivityChart tips={tipsPerDay} logins={loginsPerDay} />
       </div>
 
