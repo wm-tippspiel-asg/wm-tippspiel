@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Target, User, Users } from 'lucide-react'
 import { MatchCard } from '@/components/dashboard/MatchCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -27,16 +27,22 @@ export function PredictionsClient({ grouped, personalPredictions, myGroups, grou
   const isPersonal = activeTab === 'personal'
   const activeGroup = isPersonal ? null : myGroups.find((g) => g.id === activeTab) ?? null
 
-  const predMap = isPersonal
-    ? new Map(personalPredictions.map((p) => [p.match_id, p]))
-    : new Map((groupPredictions[activeTab] ?? []).map((p) => [p.match_id, p]))
+  const predMap = useMemo(
+    () => isPersonal
+      ? new Map(personalPredictions.map((p) => [p.match_id, p]))
+      : new Map((groupPredictions[activeTab] ?? []).map((p) => [p.match_id, p])),
+    [isPersonal, activeTab, personalPredictions, groupPredictions],
+  )
 
-  const allMatches = grouped.flatMap((g) => g.matches).filter((m) => m.status !== 'cancelled')
-  const tipped = predMap.size
-  const total = allMatches.length
-  const totalPoints = isPersonal
-    ? personalPredictions.reduce((s, p) => s + (p.points ?? 0), 0)
-    : (groupPredictions[activeTab] ?? []).reduce((s, p) => s + (p.points ?? 0), 0)
+  const { tipped, total, totalPoints } = useMemo(() => {
+    const allMatches = grouped.flatMap((g) => g.matches).filter((m) => m.status !== 'cancelled')
+    const preds = isPersonal ? personalPredictions : (groupPredictions[activeTab] ?? [])
+    return {
+      tipped: predMap.size,
+      total: allMatches.length,
+      totalPoints: preds.reduce((s, p) => s + (p.points ?? 0), 0),
+    }
+  }, [grouped, isPersonal, activeTab, predMap, personalPredictions, groupPredictions])
 
   return (
     <div className="space-y-6 animate-fade-in">

@@ -135,7 +135,8 @@ button { font-family: inherit; cursor: pointer; }
 .wm-nav-tab {
   appearance: none; border: 0; background: transparent; color: var(--ink-2);
   font-size: 14.5px; font-weight: 600; padding: 9px 14px; border-radius: 10px;
-  transition: all .15s var(--ease); white-space: nowrap;
+  transition: background-color .12s var(--ease), color .12s var(--ease);
+  white-space: nowrap; cursor: pointer;
 }
 .wm-nav-tab:hover { background: var(--surface-2); color: var(--ink); }
 .wm-nav-tab.active { background: var(--accent-soft); color: var(--accent-strong); }
@@ -157,18 +158,47 @@ button { font-family: inherit; cursor: pointer; }
   .wm-tabbar {
     display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
-    background: color-mix(in oklab, var(--surface) 92%, transparent);
-    backdrop-filter: blur(14px);
+    background: color-mix(in oklab, var(--surface) 94%, transparent);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
     border-top: 1px solid var(--border);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   }
   .wm-tabbar-btn {
     border: 0; background: transparent; color: var(--muted);
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     padding: 7px 4px; border-radius: 12px; font-size: 10.5px; font-weight: 600;
+    position: relative; min-height: 48px;
+    /* Only GPU-composited properties */
+    transition: color .15s ease, opacity .15s ease;
+    cursor: pointer;
   }
+  .wm-tabbar-btn svg {
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1);
+    will-change: transform;
+  }
+  .wm-tabbar-btn:active { opacity: .7; }
+  .wm-tabbar-btn:active svg { transform: scale(.82); }
   .wm-tabbar-btn.active { color: var(--accent-strong); }
-  .dark .wm-tabbar-btn.active { color: color-mix(in oklab, var(--accent) 70%, white); }
+  .wm-tabbar-btn.active svg { transform: scale(1.1); }
+  .dark .wm-tabbar-btn.active { color: color-mix(in oklab, var(--accent) 75%, white); }
+
+  /* Animated pill indicator under active tab */
+  .wm-tabbar-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 2px; left: 50%;
+    width: 18px; height: 3px; border-radius: 3px;
+    background: var(--accent-strong);
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+    transition: transform .2s cubic-bezier(.34,1.3,.64,1), opacity .15s ease;
+    will-change: transform, opacity;
+  }
+  .wm-tabbar-btn.active::after {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
 }
 
 /* ── Cards ── */
@@ -186,7 +216,8 @@ button { font-family: inherit; cursor: pointer; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   border: 1px solid transparent; border-radius: 11px;
   font-weight: 700; font-size: 14.5px; padding: 11px 18px;
-  transition: all .15s var(--ease); text-decoration: none; font-family: inherit;
+  transition: background-color .12s var(--ease), transform .12s var(--ease), box-shadow .12s var(--ease);
+  text-decoration: none; font-family: inherit; cursor: pointer;
 }
 .wm-btn-primary {
   background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow-sm);
@@ -281,7 +312,8 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--surface); color: var(--ink);
   border: 1.5px solid var(--border-strong); border-radius: var(--r);
   font-family: var(--font-body);
-  transition: all .15s var(--ease); outline: none;
+  transition: border-color .12s var(--ease), box-shadow .12s var(--ease);
+  outline: none;
 }
 .input-base::placeholder { color: var(--muted-2); }
 .input-base:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
@@ -467,42 +499,41 @@ button { font-family: inherit; cursor: pointer; }
 @view-transition { navigation: auto; }
 
 ::view-transition-old(root) {
-  animation: 120ms ease-out both vt-fade-out;
+  animation: 100ms ease-out both vt-out;
 }
 ::view-transition-new(root) {
-  animation: 140ms ease-in both vt-fade-in;
+  animation: 120ms ease-out both vt-in;
+}
+@keyframes vt-out {
+  to { opacity: 0; transform: translateY(-3px); }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(5px); }
 }
 
-@keyframes vt-fade-out {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-4px); }
-}
-@keyframes vt-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ── Leaderboard tab panels (CSS toggle, no remount) ── */
+.lb-panel { display: none; }
+.lb-panel--active { display: contents; }
 
-/* ── Tab bar pulse on active ── */
-.wm-tabbar-btn {
-  position: relative;
-  transition: color .18s var(--ease), transform .15s var(--ease);
+/* ── Leaderboard tab buttons ── */
+.lb-tab-btn {
+  color: var(--muted);
+  transition: color .12s ease, background-color .12s ease;
+  cursor: pointer; border: 0;
 }
-.wm-tabbar-btn:active { transform: scale(.9); }
-.wm-tabbar-btn.active { color: var(--accent-strong); }
-.wm-tabbar-btn.active svg {
-  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--accent) 60%, transparent));
+.lb-tab-btn--active {
+  background: white; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1);
 }
-.dark .wm-tabbar-btn.active { color: color-mix(in oklab, var(--accent) 75%, white); }
+.dark .lb-tab-btn--active { background: var(--surface-3); color: var(--ink); }
 
-/* Active indicator dot under tab icon */
-.wm-tabbar-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 50%; transform: translateX(-50%);
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--accent-strong);
+/* ── Leaderboard filter pills ── */
+.lb-filter-btn {
+  background: var(--surface-2); color: var(--muted);
+  transition: color .1s ease, background-color .1s ease;
+  cursor: pointer; border: 0;
 }
+.lb-filter-btn--active { background: #4f46e5; color: white; }
+.lb-filter-btn:hover:not(.lb-filter-btn--active) { background: var(--surface-3); }
 
 /* ═══════════════════════════════════════════
    ADMIN PANEL
@@ -518,7 +549,7 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ── Top Bar ── */
 .admin-topbar {
-  background: #1e293b;
+  background: #111318;
   border-bottom: 1px solid rgba(255,255,255,.07);
   position: sticky;
   top: 0; z-index: 50;
@@ -874,7 +905,7 @@ button { font-family: inherit; cursor: pointer; }
   .admin-bottom-nav {
     display: flex;
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: #1e293b;
+    background: #111318;
     border-top: 1px solid rgba(255,255,255,.08);
     overflow-x: auto; scrollbar-width: none;
     padding-bottom: env(safe-area-inset-bottom);
