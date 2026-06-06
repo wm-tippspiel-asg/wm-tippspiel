@@ -34,6 +34,9 @@ export async function POST(request: Request) {
   if (!prediction || prediction.trim().length === 0) {
     return Response.json({ success: false, error: 'Bitte gib eine Antwort ein.' }, { status: 400 })
   }
+  if (prediction.trim().length > 100) {
+    return Response.json({ success: false, error: 'Antwort darf maximal 100 Zeichen lang sein.' }, { status: 400 })
+  }
 
   const db = getDb()
   await execute(db,
