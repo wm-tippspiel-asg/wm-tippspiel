@@ -684,19 +684,47 @@ button { font-family: inherit; cursor: pointer; }
 ═══════════════════════════════ */
 .stats-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 10px; margin-bottom: 24px;
 }
 .stats-kpi-card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow-sm);
+  border-top: 3px solid var(--muted);
+  border-radius: 12px; padding: 13px 14px 12px; box-shadow: var(--shadow-sm);
   text-align: center;
 }
 .stats-kpi-val {
-  font-size: 24px; font-weight: 700; color: var(--ink);
+  font-size: 24px; font-weight: 800; color: var(--ink);
   font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  display: flex; align-items: baseline; justify-content: center; gap: 5px;
 }
-.stats-kpi-label { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+.stats-kpi-extra { font-size: 12px; font-weight: 700; opacity: .65; }
+.stats-kpi-label { font-size: 11px; color: var(--ink); margin-top: 4px; font-weight: 700; }
+.stats-kpi-sub { font-size: 10px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+
+/* Hit distribution bar */
+.stats-chart-head {
+  display: flex; gap: 18px; margin-bottom: 12px;
+  font-size: 12px; color: var(--muted);
+}
+.stats-chart-head strong { color: var(--ink); font-size: 14px; }
+.stats-dist-bar {
+  display: flex; width: 100%; height: 34px;
+  border-radius: 9px; overflow: hidden; background: var(--surface-2);
+}
+.stats-dist-seg {
+  height: 100%; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; font-weight: 700;
+  min-width: 2px; transition: width .2s;
+}
+.stats-dist-legend {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 14px;
+  margin-top: 14px;
+}
+.stats-dist-item { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+.stats-dist-item-label { color: var(--ink); font-weight: 600; }
+.stats-dist-item-val { margin-left: auto; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stats-dist-item-pct { font-weight: 600; color: var(--muted); }
 
 .stats-section { margin-bottom: 24px; }
 .stats-section-title {
@@ -781,6 +809,7 @@ button { font-family: inherit; cursor: pointer; }
   .admin-dashboard-grid { grid-template-columns: 1fr; }
   .stats-kpi-grid { grid-template-columns: repeat(3, 1fr); }
   .stats-two-col { grid-template-columns: 1fr; }
+  .stats-dist-legend { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 639px) {
@@ -792,6 +821,6 @@ button { font-family: inherit; cursor: pointer; }
   .admin-today-divider { display: none; }
   .admin-page-title { font-size: 20px; }
   .stats-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .stats-kpi-card:last-child { grid-column: 1 / -1; }
   .stats-chart-svg { height: 130px; }
+  .stats-dist-legend { grid-template-columns: 1fr 1fr; }
 }
