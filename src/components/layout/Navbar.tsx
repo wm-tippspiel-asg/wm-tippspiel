@@ -74,7 +74,7 @@ export function Navbar({ user }: { user: AuthUser }) {
                 style={{ height: 36, width: 36, borderRadius: 8, objectFit: 'contain' }} />
               <div className="wm-brand-text">
                 ASG
-                <small>WM Tippspiel 2026</small>
+                <small>Tippspiel</small>
               </div>
             </Link>
 
