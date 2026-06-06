@@ -82,24 +82,45 @@ async function main() {
     process.exit(1)
   }
 
-  // Column detection by header name (case-insensitive)
-  const header = rows[0].map(h => String(h).trim().toLowerCase())
+  // Column detection by header name (case-insensitive, exact then partial)
+  const rawHeader = rows[0].map(h => String(h).trim())
+  const header    = rawHeader.map(h => h.toLowerCase())
+
+  console.log(`Gefundene Spalten in der Datei: ${rawHeader.map((h, i) => `[${i}] "${h}"`).join('  ')}`)
+  console.log()
 
   const codeNames    = ['code', 'passwort', 'password', 'pw', 'kennwort', 'pin']
-  const nameNames    = ['benutzername', 'username', 'name', 'nutzer', 'login']
+  const nameNames    = ['benutzername', 'nutzername', 'username', 'name', 'nutzer', 'login', 'vorname']
   const klasseNames  = ['klasse', 'gruppe', 'kurs', 'class', 'group', 'abteilung']
 
-  const cIdx = header.findIndex(h => codeNames.includes(h))   >= 0
-    ? header.findIndex(h => codeNames.includes(h))   : 0
-  const nIdx = header.findIndex(h => nameNames.includes(h))   >= 0
-    ? header.findIndex(h => nameNames.includes(h))   : 1
-  const kIdx = header.findIndex(h => klasseNames.includes(h)) >= 0
-    ? header.findIndex(h => klasseNames.includes(h)) : 2
+  function detectCol(names, fallback) {
+    // 1. Exact match
+    const exact = header.findIndex(h => names.includes(h))
+    if (exact >= 0) return exact
+    // 2. Partial match (header contains keyword or keyword is substring of header)
+    const partial = header.findIndex(h => names.some(k => h.includes(k) || k.includes(h)))
+    if (partial >= 0) return partial
+    return fallback
+  }
+
+  const cIdx = detectCol(codeNames, 0)
+  const nIdx = detectCol(nameNames, 1)
+  const kIdx = detectCol(klasseNames, 2)
+
+  // Conflict check: if two fields resolved to the same column, warn the user
+  if (cIdx === nIdx || cIdx === kIdx || nIdx === kIdx) {
+    console.error('FEHLER: Spalten-Erkennung gescheitert — zwei Felder zeigen auf dieselbe Spalte.')
+    console.error('Benenne die Spaltenüberschriften in der Excel-Datei um:')
+    console.error('  Spalte 1 → "Code"')
+    console.error('  Spalte 2 → "Benutzername"')
+    console.error('  Spalte 3 → "Klasse"')
+    process.exit(1)
+  }
 
   console.log(`Spalten erkannt:`)
-  console.log(`  Code       → Spalte "${header[cIdx] || cIdx + 1}"`)
-  console.log(`  Benutzername → Spalte "${header[nIdx] || nIdx + 1}"`)
-  console.log(`  Klasse     → Spalte "${header[kIdx] || kIdx + 1}"`)
+  console.log(`  Code         → Spalte [${cIdx}] "${rawHeader[cIdx]}"`)
+  console.log(`  Benutzername → Spalte [${nIdx}] "${rawHeader[nIdx]}"`)
+  console.log(`  Klasse       → Spalte [${kIdx}] "${rawHeader[kIdx]}"`)
   console.log()
 
   // Parse data rows (skip header)
