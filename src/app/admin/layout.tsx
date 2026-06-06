@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
-import { AdminTopBar } from '@/components/admin/AdminTopBar'
+import { Navbar } from '@/components/layout/Navbar'
 
 export const runtime = 'edge'
 
@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="admin-shell">
-      <AdminTopBar user={user} />
+      <Navbar user={user} />
       <main className="admin-content">
         {children}
       </main>

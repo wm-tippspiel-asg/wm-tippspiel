@@ -547,106 +547,6 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--bg);
 }
 
-/* ── Top Bar ── */
-.admin-topbar {
-  background: #111318;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  position: sticky;
-  top: 0; z-index: 50;
-  flex-shrink: 0;
-}
-
-.admin-topbar-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  height: 52px;
-  gap: 4px;
-}
-
-.admin-topbar-brand {
-  display: flex; align-items: center; gap: 8px;
-  margin-right: 8px; flex-shrink: 0;
-}
-
-.admin-topbar-logo-img {
-  width: 30px; height: 30px;
-  border-radius: 7px; object-fit: contain;
-  flex-shrink: 0;
-}
-
-.admin-topbar-brand-text {
-  font-size: 13px; font-weight: 700; color: #e2e8f0;
-  letter-spacing: -.01em;
-}
-
-/* Nav */
-.admin-topbar-nav {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  min-width: 0;
-}
-.admin-topbar-nav::-webkit-scrollbar { display: none; }
-
-.admin-topbar-tab {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 10px;
-  border-radius: 7px;
-  font-size: 12.5px; font-weight: 500;
-  color: #64748b;
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background .12s, color .12s, transform .1s;
-}
-.admin-topbar-tab:hover { background: rgba(255,255,255,.07); color: #94a3b8; }
-.admin-topbar-tab--active {
-  background: rgba(99,102,241,.18);
-  color: #a5b4fc;
-  font-weight: 600;
-}
-.admin-topbar-tab:active { transform: scale(.95); }
-
-/* Right */
-.admin-topbar-right {
-  display: flex; align-items: center; gap: 6px;
-  margin-left: 8px; flex-shrink: 0;
-}
-
-.admin-topbar-icon-btn {
-  border: 0; background: rgba(255,255,255,.06); color: #64748b;
-  width: 32px; height: 32px; border-radius: 8px;
-  display: grid; place-items: center; cursor: pointer;
-  transition: background .12s, color .12s;
-}
-.admin-topbar-icon-btn:hover { background: rgba(255,255,255,.1); color: #94a3b8; }
-
-.admin-topbar-user {
-  display: flex; align-items: center; gap: 7px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.08);
-}
-
-.admin-topbar-avatar {
-  width: 26px; height: 26px;
-  background: #6366f1; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: white;
-  flex-shrink: 0;
-}
-
-.admin-topbar-username {
-  font-size: 12.5px; font-weight: 600; color: #94a3b8;
-}
-
-
 /* ── Content ── */
 .admin-content {
   flex: 1;
@@ -770,7 +670,7 @@ button { font-family: inherit; cursor: pointer; }
 .admin-log-empty { padding: 20px 14px; text-align: center; font-size: 13px; color: var(--muted); }
 
 /* ── Bottom nav (mobile only) ── */
-.admin-bottom-nav { display: none; }
+
 
 /* ═══════════════════════════════
    STATS PAGE
@@ -869,8 +769,6 @@ button { font-family: inherit; cursor: pointer; }
    RESPONSIVE ADMIN
 ══════════════════════════════ */
 @media (max-width: 900px) {
-  .admin-topbar-username { display: none; }
-  .admin-topbar-user { padding: 4px; border-radius: 50%; border: none; }
   .admin-content { padding: 20px 20px 80px; }
   .admin-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .admin-dashboard-grid { grid-template-columns: 1fr; }
@@ -879,7 +777,6 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 @media (max-width: 639px) {
-  .admin-topbar-nav { display: none; }
   .admin-content { padding: 16px 14px 80px; }
   .admin-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .admin-stat-card { padding: 12px; gap: 10px; border-radius: 12px; }
@@ -890,33 +787,4 @@ button { font-family: inherit; cursor: pointer; }
   .stats-kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .stats-kpi-card:last-child { grid-column: 1 / -1; }
   .stats-chart-svg { height: 130px; }
-
-  /* Mobile bottom nav */
-  .admin-bottom-nav {
-    display: flex;
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: #111318;
-    border-top: 1px solid rgba(255,255,255,.08);
-    overflow-x: auto; scrollbar-width: none;
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(58px + env(safe-area-inset-bottom));
-    align-items: flex-start;
-    padding-top: 2px;
-  }
-  .admin-bottom-nav::-webkit-scrollbar { display: none; }
-
-  .admin-bottom-tab {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2px; padding: 6px 12px;
-    font-size: 9px; font-weight: 600;
-    color: #475569; text-decoration: none;
-    white-space: nowrap; flex-shrink: 0;
-    transition: color .15s, transform .12s;
-    min-width: 54px; min-height: 44px;
-  }
-  .admin-bottom-tab:active { transform: scale(.88); }
-  .admin-bottom-tab--active { color: #818cf8; }
-  .admin-bottom-tab--active svg {
-    filter: drop-shadow(0 0 5px rgba(129,140,248,.5));
-  }
 }

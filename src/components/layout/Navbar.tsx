@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Trophy, Target, BookOpen, Users, Calendar, Key, FileText, LogOut, Moon, Sun } from 'lucide-react'
+import { LayoutDashboard, Trophy, Target, BookOpen, Users, Calendar, BarChart2, FileText, LogOut, Moon, Sun } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { AuthUser } from '@/types'
 
@@ -21,7 +21,7 @@ const adminLinks = [
   { href: '/admin/special-bets',  label: 'Sondertipps', icon: Trophy },
   { href: '/admin/users',         label: 'Nutzer',      icon: Users },
   { href: '/admin/gruppen',       label: 'Gruppen',     icon: Users },
-  { href: '/admin/codes',         label: 'Codes',       icon: Key },
+  { href: '/admin/stats',         label: 'Statistiken', icon: BarChart2 },
   { href: '/admin/logs',          label: 'Logs',        icon: FileText },
 ]
 
