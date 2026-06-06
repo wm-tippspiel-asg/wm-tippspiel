@@ -52,7 +52,7 @@ export default async function LandingPage() {
                 WM Tippspiel ASG
               </h1>
               <p style={{ margin: '0 0 22px', fontSize: 15, opacity: .85, maxWidth: 380, lineHeight: 1.55 }}>
-                Tippe Spielergebnisse, sammle Punkte und kämpfe um den ersten Platz.
+                Ein Tippspiel des Informatikkurses der 11.Klasse des Albert-Schweitzer-Gymnasiums Hamburg.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <Link href="/login" style={{
@@ -109,12 +109,12 @@ export default async function LandingPage() {
           {/* No data yet */}
           {matchData.length === 0 && (
             <div className="wm-card" style={{ padding: '40px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: 34, marginBottom: 10 }}>⚽</div>
+              <div style={{ fontSize: 34, marginBottom: 10 }}></div>
               <p style={{ margin: '0 0 6px', fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>
                 Spielplan kommt bald
               </p>
               <p style={{ margin: 0, color: 'var(--muted)', fontSize: 14 }}>
-                Die WM 2026 startet am 11. Juni — Gruppen und Spielplan erscheinen dann hier.
+                Die WM 2026 startet am 11. Juni - Gruppen und Spielplan erscheinen dann hier.
               </p>
             </div>
           )}
@@ -149,7 +149,7 @@ export default async function LandingPage() {
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '18px 24px',
         textAlign: 'center', fontSize: 13, color: 'var(--muted)' }}>
-        © {new Date().getFullYear()} WM-Tippspiel ASG — Nur für den Schulgebrauch
+        © {new Date().getFullYear()} WM-Tippspiel ASG - Nur für den Schulgebrauch
       </footer>
     </div>
   )
