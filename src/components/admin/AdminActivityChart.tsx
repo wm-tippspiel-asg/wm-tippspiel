@@ -69,6 +69,20 @@ function buildBuckets(gran: Gran, tipsMap: Map<string, number>, loginsMap: Map<s
   return out
 }
 
+// Liefert einen runden Achsen-Maximalwert und gleichmäßige, ganzzahlige Ticks,
+// damit die Y-Achse keine doppelten/krummen Beschriftungen zeigt.
+function niceAxis(rawMax: number): { axisMax: number; yTickVals: number[] } {
+  const target = 4 // angestrebte Anzahl an Schritten
+  const rough = rawMax / target
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)))
+  const norm = rough / pow
+  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * pow
+  const axisMax = Math.max(step * target, Math.ceil(rawMax / step) * step)
+  const vals: number[] = []
+  for (let v = 0; v <= axisMax + 1e-9; v += step) vals.push(Math.round(v))
+  return { axisMax, yTickVals: vals }
+}
+
 export function AdminActivityChart({ tips, logins }: { tips: DayCount[]; logins: DayCount[] }) {
   const [gran, setGran] = useState<Gran>('day')
 
@@ -78,17 +92,19 @@ export function AdminActivityChart({ tips, logins }: { tips: DayCount[]; logins:
 
   const totalTips = buckets.reduce((s, b) => s + b.tips, 0)
   const totalLogins = buckets.reduce((s, b) => s + b.logins, 0)
-  const maxVal = Math.max(...buckets.map(b => Math.max(b.tips, b.logins)), 1)
+  const rawMax = Math.max(...buckets.map(b => Math.max(b.tips, b.logins)), 1)
+
+  // "Schöner" Achsen-Maximalwert mit ganzzahligen, eindeutigen Ticks
+  const { axisMax, yTickVals } = niceAxis(rawMax)
+  const maxVal = axisMax
 
   // SVG-Geometrie
   const n = buckets.length
-  const W = 640, H = 220
-  const PL = 30, PR = 8, PT = 12, PB = 34
+  const W = 640, H = 240
+  const PL = 42, PR = 10, PT = 14, PB = 46
   const chartW = W - PL - PR, chartH = H - PT - PB
   const groupW = chartW / n
-  const barW = Math.min(groupW * 0.32, 14)
-
-  const yTicks = [0, 0.25, 0.5, 0.75, 1]
+  const barW = Math.min(groupW * 0.34, 16)
 
   const tabs: { id: Gran; label: string }[] = [
     { id: 'day', label: 'Pro Tag' },
@@ -117,14 +133,33 @@ export function AdminActivityChart({ tips, logins }: { tips: DayCount[]; logins:
       </div>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="aac-svg" role="img" aria-label="Aktivitätsdiagramm">
+        <defs>
+          <linearGradient id="aac-grad-tips" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#818cf8" />
+            <stop offset="100%" stopColor="#6366f1" />
+          </linearGradient>
+          <linearGradient id="aac-grad-logins" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+
         {/* Gridlines + y labels */}
-        {yTicks.map(f => {
-          const y = PT + chartH * (1 - f)
+        {yTickVals.map(v => {
+          const y = PT + chartH * (1 - v / maxVal)
+          const isBase = v === 0
           return (
-            <g key={f}>
-              <line x1={PL} x2={W - PR} y1={y} y2={y} stroke="currentColor" strokeOpacity={f === 0 ? 0.18 : 0.07} />
-              <text x={PL - 5} y={y + 3.5} textAnchor="end" fontSize={9} fill="currentColor" opacity={0.4}>
-                {Math.round(maxVal * f)}
+            <g key={v}>
+              <line
+                x1={PL} x2={W - PR} y1={y} y2={y}
+                stroke="currentColor" strokeOpacity={isBase ? 0.22 : 0.08}
+                strokeWidth={isBase ? 1.25 : 1}
+              />
+              <text
+                x={PL - 8} y={y + 4} textAnchor="end"
+                className="aac-axis-label" style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {v}
               </text>
             </g>
           )
@@ -137,14 +172,18 @@ export function AdminActivityChart({ tips, logins }: { tips: DayCount[]; logins:
           const lH = (b.logins / maxVal) * chartH
           return (
             <g key={b.key}>
-              <rect x={cx - barW - 1} y={PT + chartH - tH} width={barW} height={tH} rx={2.5} fill="#6366f1">
-                <title>{`${b.label}: ${b.tips} Tipps`}</title>
-              </rect>
-              <rect x={cx + 1} y={PT + chartH - lH} width={barW} height={lH} rx={2.5} fill="#10b981">
-                <title>{`${b.label}: ${b.logins} Logins`}</title>
-              </rect>
-              <text x={cx} y={H - 16} textAnchor="middle" fontSize={9} fill="currentColor" opacity={0.55}>{b.label}</text>
-              {b.sub && <text x={cx} y={H - 5} textAnchor="middle" fontSize={8} fill="currentColor" opacity={0.32}>{b.sub}</text>}
+              {b.tips > 0 && (
+                <rect x={cx - barW - 1.5} y={PT + chartH - tH} width={barW} height={tH} rx={3} fill="url(#aac-grad-tips)">
+                  <title>{`${b.label}: ${b.tips} Tipps`}</title>
+                </rect>
+              )}
+              {b.logins > 0 && (
+                <rect x={cx + 1.5} y={PT + chartH - lH} width={barW} height={lH} rx={3} fill="url(#aac-grad-logins)">
+                  <title>{`${b.label}: ${b.logins} Logins`}</title>
+                </rect>
+              )}
+              <text x={cx} y={H - 20} textAnchor="middle" className="aac-x-label">{b.label}</text>
+              {b.sub && <text x={cx} y={H - 7} textAnchor="middle" className="aac-x-sub">{b.sub}</text>}
             </g>
           )
         })}
