@@ -2,7 +2,7 @@ import { getDb, queryOne } from '@/lib/db'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import { RecalculateAction } from '@/components/admin/RecalculateAction'
 import { AutoUpdateAction } from '@/components/admin/AutoUpdateAction'
-import { Users, Trophy, Key, FileText, RefreshCcw, Download } from 'lucide-react'
+import { Users, Trophy, Key, FileText, RefreshCcw, Download, BarChart2 } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -66,6 +66,7 @@ export default async function AdminDashboard() {
           { href: '/admin/matches', icon: Trophy, title: 'Spielverwaltung', desc: 'Spiele anlegen und Ergebnisse eintragen' },
           { href: '/admin/codes', icon: Key, title: 'Zugangscodes', desc: 'Registrierungscodes generieren und verwalten' },
           { href: '/admin/logs', icon: FileText, title: 'Audit-Logs', desc: 'Sicherheitsrelevante Ereignisse einsehen' },
+          { href: '/admin/stats', icon: BarChart2, title: 'Statistiken', desc: 'Aktivitäts-Chart und Tipp-Verteilung' },
         ].map(({ href, icon: Icon, title, desc }) => (
           <a
             key={href}
