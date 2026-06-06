@@ -28,7 +28,7 @@ export default function AboutPage() {
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700,
           color: 'var(--ink)', marginBottom: 12 }}>Über das Projekt</h2>
         <p style={{ fontSize: 15, color: 'var(--ink-2)', lineHeight: 1.7, margin: 0 }}>
-          Dieses Tippspiel ist eine Idee unseres Informatikkurses der Klasse 11, 2026.
+          Dieses Tippspiel ist eine Idee des Informatikkurses der Klasse 11 vom Albert-Schweitzer-Gymnasium.
           Da die FIFA Weltmeisterschaft in Kanada, Mexiko und den USA kurz bevorstand,
           haben wir uns überlegt ein Tippspiel für die ganze Schule zu bauen. Wir hoffen
           euch gefällt es. Feedback gerne in der Schule persönlich oder per Mail.
@@ -116,7 +116,7 @@ export default function AboutPage() {
               Jeder Teilnehmer tippt für sich und sammelt Punkte. Die Gesamtrangliste
               zeigt alle Spieler nach ihren persönlichen Punkten sortiert. In der
               Klassenwertung kannst du eine Klasse anklicken, um ihre interne
-              Einzelrangliste zu sehen — die persönlichen Punkte zählen aber immer global.
+              Einzelrangliste zu sehen, die persönlichen Punkte zählen aber immer global.
             </p>
           </div>
 
@@ -133,12 +133,11 @@ export default function AboutPage() {
             </p>
             <div style={{ display: 'grid', gap: 6 }}>
               {[
-                { icon: '🎟️', text: 'Ein Tipp pro Spiel und ein Sondertipp – zählt gleichzeitig für Einzel- und Klassenwertung' },
-                { icon: '⚖️', text: 'Gewertet wird der Ø Punkte pro Mitglied (Durchschnitt), nicht die Gesamtsumme' },
-                { icon: '👍', text: 'So ist es fair: Größere Klassen haben keinen Vorteil durch mehr Mitglieder' },
-                { icon: '🏆', text: 'Die Klasse mit dem höchsten Schnitt pro Mitglied gewinnt' },
-                { icon: '🎯', text: 'Bei Gleichstand entscheiden die exakten Treffer pro Mitglied' },
-                { icon: '🧑‍🏫', text: 'Mitglieder werden vom Admin (Lehrkraft) zugeteilt' },
+                { icon: '', text: 'Ein Tipp pro Spiel und ein Sondertipp, zählt gleichzeitig für Einzel- und Klassenwertung' },
+                { icon: '', text: 'Gewertet wird der Ø Punkte pro Mitglied (Durchschnitt), nicht die Gesamtsumme' },
+                { icon: '', text: 'So ist es fair: Größere Klassen haben keinen Vorteil durch mehr Mitglieder' },
+                { icon: '', text: 'Die Klasse mit dem höchsten Schnitt pro Mitglied gewinnt' },
+                { icon: '', text: 'Bei Gleichstand entscheiden die exakten Treffer pro Mitglied' },
               ].map((item) => (
                 <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
