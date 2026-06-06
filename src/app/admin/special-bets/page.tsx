@@ -33,8 +33,8 @@ export default function AdminSpecialBetsPage() {
 
   useEffect(() => {
     fetch('/api/admin/special-bets/resolve')
-      .then(r => r.json())
-      .then((d: { success: boolean; data?: { results: BetResult[]; stats: BetStat[] } }) => {
+      .then(r => r.json() as Promise<{ success: boolean; data?: { results: BetResult[]; stats: BetStat[] } }>)
+      .then((d) => {
         if (!d.success || !d.data) return
         setStats(d.data.stats)
         setResults(d.data.results)

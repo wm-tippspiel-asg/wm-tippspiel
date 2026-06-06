@@ -86,16 +86,6 @@ export async function recalculateMatchPoints(matchId: string): Promise<void> {
     await execute(db, `UPDATE predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`, [points, pred.id])
   }
 
-  // Score group predictions for the same match
-  const groupPredictions = await queryAll<{
-    id: string; home_score: number; away_score: number
-  }>(db, 'SELECT id, home_score, away_score FROM group_predictions WHERE match_id = ?', [matchId])
-
-  for (const pred of groupPredictions) {
-    const points = calculatePoints(pred.home_score, pred.away_score, match.home_score, match.away_score, scoring)
-    await execute(db, `UPDATE group_predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`, [points, pred.id])
-  }
-
   await rebuildLeaderboard()
 }
 

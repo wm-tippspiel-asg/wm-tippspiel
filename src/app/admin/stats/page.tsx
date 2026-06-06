@@ -1,5 +1,6 @@
 import { getDb, queryAll, queryOne } from '@/lib/db'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { AdminActivityChart } from '@/components/admin/AdminActivityChart'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -26,11 +27,11 @@ export default async function AdminStatsPage() {
   ] = await Promise.all([
     queryAll<DayCount>(db, `
       SELECT DATE(created_at) AS day, COUNT(*) AS count
-      FROM predictions WHERE created_at >= datetime('now', '-14 days')
+      FROM predictions WHERE created_at >= datetime('now', '-365 days')
       GROUP BY day ORDER BY day ASC`),
     queryAll<DayCount>(db, `
       SELECT DATE(created_at) AS day, COUNT(*) AS count
-      FROM audit_logs WHERE action = 'user.login' AND created_at >= datetime('now', '-14 days')
+      FROM audit_logs WHERE action = 'user.login' AND created_at >= datetime('now', '-365 days')
       GROUP BY day ORDER BY day ASC`),
     queryAll<MatchPredStat>(db, `
       SELECT m.id AS match_id, m.home_team, m.away_team,
@@ -72,9 +73,6 @@ export default async function AdminStatsPage() {
       FROM predictions p JOIN matches m ON m.id = p.match_id
       WHERE m.status = 'finished' AND m.home_score IS NOT NULL AND m.away_score IS NOT NULL`),
   ])
-
-  const totalTips14 = tipsPerDay.reduce((s, d) => s + d.count, 0)
-  const totalLogins14 = loginsPerDay.reduce((s, d) => s + d.count, 0)
 
   const matchMap = new Map<string, {
     home_team: string; away_team: string
@@ -181,22 +179,10 @@ export default async function AdminStatsPage() {
         </div>
       </div>
 
-      {/* Activity chart */}
+      {/* Activity chart — Tag / Woche / Monat */}
       <div className="stats-section">
-        <div className="stats-section-title">Aktivität — letzte 14 Tage</div>
-        <div className="stats-chart-card">
-          <div className="stats-chart-head">
-            <span><strong>{totalTips14}</strong> Tipps</span>
-            <span><strong>{totalLogins14}</strong> Logins</span>
-          </div>
-          <ActivityChart tipsData={tipsPerDay} loginsData={loginsPerDay} />
-          <div className="stats-chart-legend">
-            <span className="stats-legend-dot" style={{ background: '#6366f1' }} />
-            <span>Tipps</span>
-            <span className="stats-legend-dot" style={{ background: '#10b981', marginLeft: 12 }} />
-            <span>Logins</span>
-          </div>
-        </div>
+        <div className="stats-section-title">Aktivität — Logins &amp; Tipps</div>
+        <AdminActivityChart tips={tipsPerDay} logins={loginsPerDay} />
       </div>
 
       <div className="stats-two-col">
@@ -283,53 +269,5 @@ export default async function AdminStatsPage() {
 
       </div>
     </div>
-  )
-}
-
-function ActivityChart({ tipsData, loginsData }: { tipsData: DayCount[]; loginsData: DayCount[] }) {
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date()
-    d.setUTCDate(d.getUTCDate() - 13 + i)
-    return d.toISOString().slice(0, 10)
-  })
-  const tipsMap = Object.fromEntries(tipsData.map(d => [d.day, d.count]))
-  const loginsMap = Object.fromEntries(loginsData.map(d => [d.day, d.count]))
-  const tips = days.map(d => tipsMap[d] ?? 0)
-  const logins = days.map(d => loginsMap[d] ?? 0)
-  const maxVal = Math.max(...tips, ...logins, 1)
-
-  const W = 540; const H = 160
-  const PL = 26; const PR = 6; const PT = 8; const PB = 26
-  const chartW = W - PL - PR; const chartH = H - PT - PB
-  const groupW = chartW / 14; const barW = groupW * 0.32
-  const DAY = ['So','Mo','Di','Mi','Do','Fr','Sa']
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="stats-chart-svg" aria-hidden="true">
-      {[0.25,0.5,0.75,1].map(f => {
-        const y = PT + chartH * (1 - f)
-        return (
-          <g key={f}>
-            <line x1={PL} x2={W-PR} y1={y} y2={y} stroke="currentColor" strokeOpacity={0.07} strokeWidth={1}/>
-            <text x={PL-3} y={y+3.5} textAnchor="end" fontSize={7.5} fill="currentColor" opacity={0.3}>{Math.round(maxVal*f)}</text>
-          </g>
-        )
-      })}
-      <line x1={PL} x2={W-PR} y1={PT+chartH} y2={PT+chartH} stroke="currentColor" strokeOpacity={0.1} strokeWidth={1}/>
-      {days.map((day, i) => {
-        const cx = PL + i * groupW + groupW / 2
-        const tH = ((tips[i] ?? 0) / maxVal) * chartH
-        const lH = ((logins[i] ?? 0) / maxVal) * chartH
-        const dateObj = new Date(day + 'T12:00:00Z')
-        const label = `${dateObj.getUTCDate()}/${DAY[dateObj.getUTCDay()]}`
-        return (
-          <g key={day}>
-            <rect x={cx-barW-1} y={PT+chartH-tH} width={barW} height={tH} rx={2} fill="#6366f1" opacity={0.85}/>
-            <rect x={cx+1} y={PT+chartH-lH} width={barW} height={lH} rx={2} fill="#10b981" opacity={0.85}/>
-            <text x={cx} y={H-4} textAnchor="middle" fontSize={7} fill="currentColor" opacity={0.35}>{label}</text>
-          </g>
-        )
-      })}
-    </svg>
   )
 }

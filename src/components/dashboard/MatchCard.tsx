@@ -6,7 +6,6 @@ interface Props {
   match: Match
   prediction?: Prediction | null
   showPredictionForm?: boolean
-  groupId?: string
 }
 
 const statusConfig: Record<string, { label: string; chipClass: string }> = {
@@ -17,7 +16,7 @@ const statusConfig: Record<string, { label: string; chipClass: string }> = {
   cancelled:  { label: 'Abgesagt',chipClass: 'wm-chip' },
 }
 
-export function MatchCard({ match, prediction, showPredictionForm = true, groupId }: Props) {
+export function MatchCard({ match, prediction, showPredictionForm = true }: Props) {
   const st = statusConfig[match.status] ?? statusConfig['scheduled']!
   const isLive = match.status === 'live'
   const isDone = match.status === 'finished' && match.home_score !== null
@@ -88,9 +87,9 @@ export function MatchCard({ match, prediction, showPredictionForm = true, groupI
         {showPredictionForm && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--muted)' }}>
-              {groupId ? 'Gruppen-Tipp' : 'Mein Tipp'}
+              Mein Tipp
             </span>
-            <PredictionForm match={match} existing={prediction} groupId={groupId} />
+            <PredictionForm match={match} existing={prediction} />
           </div>
         )}
       </div>

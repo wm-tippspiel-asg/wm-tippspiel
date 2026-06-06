@@ -54,8 +54,8 @@ export default function SpecialBetsPage() {
 
   useEffect(() => {
     fetch('/api/special-bets')
-      .then(r => r.json())
-      .then((d: { success: boolean; data?: { bet_type: string; prediction: string }[] }) => {
+      .then(r => r.json() as Promise<{ success: boolean; data?: { bet_type: string; prediction: string }[] }>)
+      .then((d) => {
         if (!d.success || !d.data) return
         const w = d.data.find(b => b.bet_type === 'winner')
         const t = d.data.find(b => b.bet_type === 'top_scorer')

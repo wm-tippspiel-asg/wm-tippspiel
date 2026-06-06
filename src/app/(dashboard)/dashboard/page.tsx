@@ -61,17 +61,29 @@ export default async function DashboardPage() {
 
   const [totalParticipants, groupStandings] = await Promise.all([
     queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM leaderboard`),
+    // Klassenwertung = persönliche Punkte der Mitglieder, fair als Ø pro
+    // Mitglied gewertet (größenunabhängig) — konsistent mit /api/leaderboard.
     queryAll<GroupStanding>(db,
       `SELECT ug.id, ug.name, ug.description,
-              COUNT(DISTINCT ugm.user_id)              AS member_count,
-              COALESCE(SUM(gp.points), 0)              AS total_points,
-              COALESCE(SUM(CASE WHEN gp.points IS NOT NULL AND gp.points > 0 THEN 1 ELSE 0 END), 0) AS exact_results,
-              0 AS avg_points
+              COUNT(DISTINCT u.id) AS member_count,
+              COALESCE(SUM(l.total_points), 0) AS total_points,
+              COALESCE(SUM(l.exact_results), 0) AS exact_results,
+              CASE WHEN COUNT(DISTINCT u.id) > 0
+                   THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id), 1)
+                   ELSE 0 END AS avg_points
        FROM user_groups ug
        LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
-       LEFT JOIN group_predictions gp ON gp.user_id = ugm.user_id AND gp.group_id = ug.id
+       LEFT JOIN users u ON u.id = ugm.user_id AND u.role = 'user' AND u.is_banned = 0
+       LEFT JOIN leaderboard l ON l.user_id = u.id
        GROUP BY ug.id
-       ORDER BY total_points DESC, exact_results DESC, ug.name ASC
+       ORDER BY
+         CASE WHEN COUNT(DISTINCT u.id) > 0
+              THEN CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id)
+              ELSE 0 END DESC,
+         CASE WHEN COUNT(DISTINCT u.id) > 0
+              THEN CAST(COALESCE(SUM(l.exact_results), 0) AS REAL) / COUNT(DISTINCT u.id)
+              ELSE 0 END DESC,
+         ug.name ASC
        LIMIT 5`),
   ])
   const predMap = new Map(predictions.map((p) => [p.match_id, p]))
@@ -220,9 +232,9 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
-                        width: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+                        width: 66, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
                         color: i === 0 ? 'var(--good)' : 'var(--ink)' }}>
-                        {g.total_points}
+                        Ø {g.avg_points}
                       </span>
                     </div>
                   )

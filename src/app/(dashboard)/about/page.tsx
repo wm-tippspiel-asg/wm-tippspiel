@@ -128,12 +128,12 @@ export default function AboutPage() {
             </div>
             <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 10px' }}>
               Gruppen (z.B. Klassen, Kurse, Abteilungen) treten als Team gegeneinander an.
-              Jedes Mitglied tippt <strong style={{ color: 'var(--ink)' }}>separat für die Gruppe</strong>,
-              diese Tipps sind unabhängig von den persönlichen Tipps und zählen nur für die Gruppenwertung.
+              Du musst dafür <strong style={{ color: 'var(--ink)' }}>nichts extra tippen</strong>:
+              deine normalen Tipps und dein Sondertipp zählen automatisch auch für deine Klasse.
             </p>
             <div style={{ display: 'grid', gap: 6 }}>
               {[
-                { icon: '🔄', text: 'Auf der Tippen-Seite zwischen "Persönlich" und deiner Gruppe wechseln' },
+                { icon: '🎟️', text: 'Ein Tipp pro Spiel und ein Sondertipp – zählt gleichzeitig für Einzel- und Klassenwertung' },
                 { icon: '⚖️', text: 'Gewertet wird der Ø Punkte pro Mitglied (Durchschnitt), nicht die Gesamtsumme' },
                 { icon: '👍', text: 'So ist es fair: Größere Klassen haben keinen Vorteil durch mehr Mitglieder' },
                 { icon: '🏆', text: 'Die Klasse mit dem höchsten Schnitt pro Mitglied gewinnt' },
@@ -150,8 +150,8 @@ export default function AboutPage() {
 
           {/* Hinweis */}
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
-            Beide Wertungen laufen parallel, aber unabhängig: Persönliche Tipps zählen für die Einzelwertung,
-            Gruppen-Tipps zählen für die Gruppenwertung. Man kann pro Spiel unterschiedlich tippen.
+            Einzel- und Klassenwertung nutzen dieselben Tipps: Deine Punkte zählen für dich persönlich
+            und fließen zugleich in den Schnitt deiner Klasse ein.
           </p>
         </div>
       </div>

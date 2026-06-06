@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/auth'
 import { getDb, queryAll, queryOne, execute } from '@/lib/db'
 import { audit } from '@/lib/audit'
+import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
 
 export const runtime = 'edge'
 
@@ -53,6 +54,10 @@ export async function POST(request: Request) {
       awarded++
     }
   }
+
+  // Ranglisten-Caches leeren, damit die neuen Punkte sofort sichtbar sind
+  // (Sondertipp-Punkte fließen über die persönliche Wertung auch in die Klassenwertung)
+  await invalidateCache(CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS, 'cache:leaderboard:top5')
 
   await audit({
     actorId: user.id,
