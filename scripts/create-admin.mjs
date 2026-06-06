@@ -72,7 +72,7 @@ async function main() {
   `
 
   const remote = isRemote ? '--remote' : '--local'
-  const cmd = `wrangler d1 execute ${dbName} ${remote} --command "${sql.replace(/\n/g, ' ').replace(/"/g, '\\"')}"`
+  const cmd = `npx wrangler d1 execute ${dbName} ${remote} --yes --command "${sql.replace(/\n/g, ' ').replace(/"/g, '\\"')}"`
 
   console.log('Creating admin user...')
   try {
