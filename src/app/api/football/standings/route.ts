@@ -1,10 +1,11 @@
 import { fetchFootballStandings } from '@/lib/football-api'
+import { getKv } from '@/lib/db'
 
 export const runtime = 'edge'
 
 export async function GET(request: Request) {
   try {
-    const standings = await fetchFootballStandings()
+    const standings = await fetchFootballStandings(getKv())
 
     if (!standings) {
       return Response.json({ success: false, error: 'Failed to fetch standings' }, { status: 503 })

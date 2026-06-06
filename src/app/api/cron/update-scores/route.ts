@@ -10,7 +10,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (!secret) return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
 
   const auth = request.headers.get('authorization')
-  if (auth !== `Bearer ${secret}`) {
+  const querySecret = new URL(request.url).searchParams.get('secret')
+  if (auth !== `Bearer ${secret}` && querySecret !== secret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
