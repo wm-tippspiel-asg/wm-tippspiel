@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </main>
 
       <footer style={{ textAlign: 'center', padding: '20px', fontSize: 13, color: 'var(--muted)' }}>
-        © {new Date().getFullYear()} WM-Tippspiel 2026 — Nur für den Schulgebrauch
+        © {new Date().getFullYear()} WM-Tippspiel 2026 - Nur für den Schulgebrauch
       </footer>
     </div>
   )
