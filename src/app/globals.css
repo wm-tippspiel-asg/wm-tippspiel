@@ -131,6 +131,7 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--muted); margin-top: -2px;
 }
+@media (max-width: 380px) { .wm-brand-text { display: none; } }
 .wm-nav-tabs { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
 .wm-nav-tab {
   appearance: none; border: 0; background: transparent; color: var(--ink-2);
