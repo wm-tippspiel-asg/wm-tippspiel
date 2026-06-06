@@ -1,0 +1,1 @@
+ALTER TABLE special_bets ADD COLUMN points_awarded INTEGER NOT NULL DEFAULT 0;

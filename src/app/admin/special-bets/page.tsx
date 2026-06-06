@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Trophy, Target, Check } from 'lucide-react'
+import { Trophy, Target, Check, UserCheck } from 'lucide-react'
 
 const WM_TEAMS = [
   'Mexiko','Südafrika','Südkorea','Tschechien',
@@ -22,28 +22,34 @@ export const runtime = 'edge'
 
 interface BetStat { bet_type: string; prediction: string; count: number }
 interface BetResult { bet_type: string; result: string; resolved_at: string }
+interface UserBet { user_id: string; username: string; bet_type: string; prediction: string; points_awarded: number }
 
 export default function AdminSpecialBetsPage() {
   const [stats, setStats] = useState<BetStat[]>([])
   const [results, setResults] = useState<BetResult[]>([])
+  const [userBets, setUserBets] = useState<UserBet[]>([])
   const [winner, setWinner] = useState('')
   const [topScorer, setTopScorer] = useState('')
   const [loading, setLoading] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
+  const [selectedScorers, setSelectedScorers] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
+  function load() {
     fetch('/api/admin/special-bets/resolve')
-      .then(r => r.json() as Promise<{ success: boolean; data?: { results: BetResult[]; stats: BetStat[] } }>)
+      .then(r => r.json() as Promise<{ success: boolean; data?: { results: BetResult[]; stats: BetStat[]; userBets: UserBet[] } }>)
       .then((d) => {
         if (!d.success || !d.data) return
         setStats(d.data.stats)
         setResults(d.data.results)
+        setUserBets(d.data.userBets)
         const w = d.data.results.find(r => r.bet_type === 'winner')
         const t = d.data.results.find(r => r.bet_type === 'top_scorer')
         if (w) setWinner(w.result)
         if (t) setTopScorer(t.result)
       })
-  }, [])
+  }
+
+  useEffect(() => { load() }, [])
 
   async function resolve(bet_type: string, result: string) {
     if (!result.trim()) return
@@ -56,14 +62,44 @@ export default function AdminSpecialBetsPage() {
     const d = await res.json() as { success: boolean; data?: { awarded: number; points: number }; error?: string }
     if (d.success) {
       setMsg(`✓ ${d.data?.awarded} Spieler erhalten je ${d.data?.points} Punkte!`)
+      load()
     } else {
       setMsg(`Fehler: ${d.error}`)
     }
     setLoading(null)
   }
 
+  async function awardManual(bet_type: string) {
+    const user_ids = [...selectedScorers]
+    if (user_ids.length === 0) return
+    setLoading('manual'); setMsg('')
+    const res = await fetch('/api/admin/special-bets/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bet_type, user_ids }),
+    })
+    const d = await res.json() as { success: boolean; data?: { awarded: number; points: number }; error?: string }
+    if (d.success) {
+      setMsg(`✓ ${d.data?.awarded} Spieler manuell mit je ${d.data?.points} Punkten ausgezeichnet!`)
+      setSelectedScorers(new Set())
+      load()
+    } else {
+      setMsg(`Fehler: ${d.error}`)
+    }
+    setLoading(null)
+  }
+
+  function toggleScorer(user_id: string) {
+    setSelectedScorers(prev => {
+      const next = new Set(prev)
+      next.has(user_id) ? next.delete(user_id) : next.add(user_id)
+      return next
+    })
+  }
+
   const winnerStats = stats.filter(s => s.bet_type === 'winner')
   const scorerStats = stats.filter(s => s.bet_type === 'top_scorer')
+  const scorerBets = userBets.filter(b => b.bet_type === 'top_scorer')
 
   return (
     <div className="wm-fade-in" style={{ display: 'grid', gap: 24, maxWidth: 800 }}>
@@ -73,7 +109,7 @@ export default function AdminSpecialBetsPage() {
           Sondertipps auswerten
         </h1>
         <p style={{ marginTop: 6, fontSize: 14, color: 'var(--muted)' }}>
-          Trage das offizielle Ergebnis ein — Punkte werden automatisch vergeben (20 Pkt. Sieger, 15 Pkt. Torschütze).
+          Trage das offizielle Ergebnis ein — Punkte werden automatisch vergeben. Tippfehler können manuell korrigiert werden.
         </p>
       </div>
 
@@ -120,7 +156,7 @@ export default function AdminSpecialBetsPage() {
         </button>
       </div>
 
-      {/* Top scorer */}
+      {/* Top scorer — automatisch */}
       <div className="wm-card wm-card-pad" style={{ display: 'grid', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Target size={20} style={{ color: 'var(--accent-strong)' }} />
@@ -150,9 +186,70 @@ export default function AdminSpecialBetsPage() {
 
         <button onClick={() => resolve('top_scorer', topScorer)} disabled={!topScorer.trim() || loading === 'top_scorer'}
           className="wm-btn wm-btn-primary" style={{ justifyContent: 'center' }}>
-          {loading === 'top_scorer' ? 'Berechne…' : 'Punkte vergeben'}
+          {loading === 'top_scorer' ? 'Berechne…' : 'Automatisch vergeben (exakter Name)'}
         </button>
       </div>
+
+      {/* Top scorer — manuelle Vergabe */}
+      {scorerBets.length > 0 && (
+        <div className="wm-card wm-card-pad" style={{ display: 'grid', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <UserCheck size={20} style={{ color: 'var(--accent-strong)' }} />
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
+                Manuelle Vergabe — Tippfehler
+              </h2>
+              <p style={{ margin: '3px 0 0', fontSize: 13, color: 'var(--muted)' }}>
+                Haken setzen bei Spielern, die den richtigen Namen gemeint haben (z.B. "Mbappe" statt "Mbappé").
+                Bereits ausgezeichnete Spieler sind gesperrt.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gap: 6 }}>
+            {scorerBets.map(b => (
+              <label key={b.user_id} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 14px', borderRadius: 10,
+                background: b.points_awarded > 0 ? 'var(--surface-2)' : 'var(--surface)',
+                border: `1px solid ${selectedScorers.has(b.user_id) ? 'var(--accent)' : 'var(--border)'}`,
+                cursor: b.points_awarded > 0 ? 'default' : 'pointer',
+                opacity: b.points_awarded > 0 ? 0.6 : 1,
+              }}>
+                <input
+                  type="checkbox"
+                  disabled={b.points_awarded > 0}
+                  checked={b.points_awarded > 0 || selectedScorers.has(b.user_id)}
+                  onChange={() => toggleScorer(b.user_id)}
+                  style={{ width: 16, height: 16, accentColor: 'var(--accent)', flexShrink: 0 }}
+                />
+                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', minWidth: 120 }}>
+                  {b.username}
+                </span>
+                <span style={{ fontSize: 13, color: 'var(--muted)', flex: 1 }}>
+                  „{b.prediction}"
+                </span>
+                {b.points_awarded > 0 && (
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--good)',
+                    display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                    <Check size={13} /> +{b.points_awarded} Pkt.
+                  </span>
+                )}
+              </label>
+            ))}
+          </div>
+
+          <button
+            onClick={() => awardManual('top_scorer')}
+            disabled={selectedScorers.size === 0 || loading === 'manual'}
+            className="wm-btn wm-btn-primary"
+            style={{ justifyContent: 'center' }}>
+            {loading === 'manual'
+              ? 'Vergebe…'
+              : `${selectedScorers.size} Spieler manuell auszeichnen`}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
