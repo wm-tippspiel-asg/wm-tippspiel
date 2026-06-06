@@ -10,6 +10,8 @@ export const config = {
     '/about/:path*',
     '/admin/:path*',
     '/api/predictions/:path*',
+    '/api/group-predictions/:path*',
+    '/api/user-groups/:path*',
     '/api/leaderboard/:path*',
     '/api/matches/:path*',
     '/api/profile/:path*',
