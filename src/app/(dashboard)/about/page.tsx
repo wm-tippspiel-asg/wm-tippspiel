@@ -12,7 +12,7 @@ export default function AboutPage() {
         <img src="/logo.png" alt="Logo"
           style={{ width: 72, height: 72, borderRadius: 16, objectFit: 'contain', boxShadow: 'var(--shadow)' }} />
         <div>
-          <div className="wm-eyebrow">Schulprojekt 2026</div>
+          <div className="wm-eyebrow">Albert-Schweitzer-Gymnasium Hamburg</div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700,
             letterSpacing: '-0.02em', color: 'var(--ink)', margin: '4px 0 0' }}>
             WM-Tippspiel 2026
