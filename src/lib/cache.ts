@@ -10,7 +10,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
   }
 }
 
-export async function setCached<T>(key: string, data: T, ttlSeconds = 60): Promise<void> {
+export async function setCached<T>(key: string, data: T, ttlSeconds = 300): Promise<void> {
   try {
     await getKv().put(key, JSON.stringify(data), { expirationTtl: ttlSeconds })
   } catch {

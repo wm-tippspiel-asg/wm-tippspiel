@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     upcomingMatches = await queryAll<Match>(db,
       `SELECT * FROM matches WHERE status IN ('scheduled','locked') AND match_time > datetime('now')
        ORDER BY match_time ASC LIMIT 5`)
-    await setCached(CACHE_KEYS.MATCHES_UPCOMING, upcomingMatches, 30)
+    await setCached(CACHE_KEYS.MATCHES_UPCOMING, upcomingMatches, 300)
   }
 
   let leaderboard = await getCached<LeaderboardEntry[]>('cache:leaderboard:top5')

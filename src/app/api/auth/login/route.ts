@@ -3,7 +3,7 @@ import { getDb, queryOne } from '@/lib/db'
 import { verifyPassword } from '@/lib/crypto'
 import { createSession, setSessionCookie } from '@/lib/auth'
 import { loginSchema, getIpAddress } from '@/lib/validation'
-import { rateLimitLogin } from '@/lib/rateLimit'
+import { rateLimitLogin, recordFailedLogin } from '@/lib/rateLimit'
 import { audit } from '@/lib/audit'
 import type { User } from '@/types'
 
@@ -49,6 +49,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // Constant-time response — never reveal whether user exists
   if (!user) {
     await simulatePasswordCheck()
+    await recordFailedLogin(ip)
     return NextResponse.json(
       { success: false, error: 'Ungültige Anmeldedaten.' },
       { status: 401 },
@@ -57,13 +58,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const valid = await verifyPassword(password, user.password_hash)
   if (!valid) {
-    await audit({
-      actorId: user.id,
-      actorName: user.username,
-      action: 'user.login',
-      details: { success: false, ip },
-      ipAddress: ip,
-    })
+    await Promise.all([
+      recordFailedLogin(ip),
+      audit({
+        actorId: user.id,
+        actorName: user.username,
+        action: 'user.login',
+        details: { success: false, ip },
+        ipAddress: ip,
+      }),
+    ])
     return NextResponse.json(
       { success: false, error: 'Ungültige Anmeldedaten.' },
       { status: 401 },

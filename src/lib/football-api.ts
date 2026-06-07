@@ -1,7 +1,7 @@
 const API_BASE = 'https://v3.football.api-sports.io'
 const WC_LEAGUE_ID = 1   // FIFA World Cup
 const WC_SEASON = 2026
-const CACHE_TTL = 300    // 5 minutes
+const CACHE_TTL = 900    // 15 minutes
 
 function headers() {
   const key = process.env.FOOTBALL_API_KEY
