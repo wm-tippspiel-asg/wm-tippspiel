@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Trophy, Target, Check, UserCheck } from 'lucide-react'
+import { Trophy, Target, Check, UserCheck, Trash2 } from 'lucide-react'
 
 const WM_TEAMS = [
   'Mexiko','Südafrika','Südkorea','Tschechien',
@@ -62,6 +62,24 @@ export default function AdminSpecialBetsPage() {
     const d = await res.json() as { success: boolean; data?: { awarded: number; points: number }; error?: string }
     if (d.success) {
       setMsg(`✓ ${d.data?.awarded} Spieler erhalten je ${d.data?.points} Punkte!`)
+      load()
+    } else {
+      setMsg(`Fehler: ${d.error}`)
+    }
+    setLoading(null)
+  }
+
+  async function resetResult(bet_type: string) {
+    if (!confirm(`Ergebnis für "${bet_type === 'winner' ? 'Turniersieger' : 'Torschützenkönig'}" wirklich löschen und Punkte zurücknehmen?`)) return
+    setLoading('reset-' + bet_type); setMsg('')
+    const res = await fetch('/api/admin/special-bets/resolve', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bet_type }),
+    })
+    const d = await res.json() as { success: boolean; data?: { reverted: number }; error?: string }
+    if (d.success) {
+      setMsg(`✓ Eintrag gelöscht. ${d.data?.reverted} Spieler-Punkte zurückgenommen.`)
       load()
     } else {
       setMsg(`Fehler: ${d.error}`)
@@ -154,6 +172,12 @@ export default function AdminSpecialBetsPage() {
           className="wm-btn wm-btn-primary" style={{ justifyContent: 'center' }}>
           {loading === 'winner' ? 'Berechne…' : 'Punkte vergeben'}
         </button>
+        {results.find(r => r.bet_type === 'winner') && (
+          <button onClick={() => resetResult('winner')} disabled={loading === 'reset-winner'}
+            className="wm-btn" style={{ justifyContent: 'center', color: 'var(--error, #dc2626)', borderColor: 'var(--error, #dc2626)' }}>
+            <Trash2 size={14} /> {loading === 'reset-winner' ? 'Lösche…' : 'Eintrag löschen & Punkte zurücknehmen'}
+          </button>
+        )}
       </div>
 
       {/* Top scorer — automatisch */}
@@ -188,6 +212,12 @@ export default function AdminSpecialBetsPage() {
           className="wm-btn wm-btn-primary" style={{ justifyContent: 'center' }}>
           {loading === 'top_scorer' ? 'Berechne…' : 'Automatisch vergeben (exakter Name)'}
         </button>
+        {results.find(r => r.bet_type === 'top_scorer') && (
+          <button onClick={() => resetResult('top_scorer')} disabled={loading === 'reset-top_scorer'}
+            className="wm-btn" style={{ justifyContent: 'center', color: 'var(--error, #dc2626)', borderColor: 'var(--error, #dc2626)' }}>
+            <Trash2 size={14} /> {loading === 'reset-top_scorer' ? 'Lösche…' : 'Eintrag löschen & Punkte zurücknehmen'}
+          </button>
+        )}
       </div>
 
       {/* Top scorer — manuelle Vergabe */}

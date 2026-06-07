@@ -109,6 +109,51 @@ export async function POST(request: Request) {
   return Response.json({ success: true, data: { awarded, points } })
 }
 
+export async function DELETE(request: Request) {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'admin') {
+    return Response.json({ success: false, error: 'Kein Zugriff' }, { status: 403 })
+  }
+
+  const { bet_type } = await request.json() as { bet_type: string }
+  if (!bet_type || !['winner', 'top_scorer'].includes(bet_type)) {
+    return Response.json({ success: false, error: 'Ungültiger Typ' }, { status: 400 })
+  }
+
+  const db = getDb()
+
+  const awarded = await queryAll<{ user_id: string; points_awarded: number }>(db,
+    `SELECT user_id, points_awarded FROM special_bets WHERE bet_type = ? AND points_awarded > 0`,
+    [bet_type]
+  )
+
+  for (const bet of awarded) {
+    await execute(db,
+      `UPDATE leaderboard SET total_points = total_points - ? WHERE user_id = ?`,
+      [bet.points_awarded, bet.user_id]
+    )
+  }
+
+  await execute(db,
+    `UPDATE special_bets SET points_awarded = 0 WHERE bet_type = ?`,
+    [bet_type]
+  )
+
+  await execute(db,
+    `DELETE FROM special_bets_results WHERE bet_type = ?`,
+    [bet_type]
+  )
+
+  await invalidateCache(CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS, 'cache:leaderboard:top5')
+  await audit({
+    actorId: user.id, actorName: user.username,
+    action: 'leaderboard.recalculated',
+    details: { bet_type, action: 'reset', users_reverted: awarded.length },
+  })
+
+  return Response.json({ success: true, data: { reverted: awarded.length } })
+}
+
 export async function GET() {
   const user = await getCurrentUser()
   if (!user || user.role !== 'admin') {
