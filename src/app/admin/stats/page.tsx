@@ -319,10 +319,28 @@ export default async function AdminStatsPage() {
         </div>
       </div>
 
-      {/* Activity chart - Tag / Woche / Monat */}
-      <div className="stats-section">
-        <div className="stats-section-title">Aktivität - Logins &amp; Tipps</div>
-        <AdminActivityChart tips={tipsPerDay} logins={loginsPerDay} />
+      {/* Activity charts */}
+      <div className="stats-two-col">
+        <div className="stats-section" style={{ marginBottom: 0 }}>
+          <div className="stats-section-title">Tipps pro Zeitraum</div>
+          <AdminActivityChart
+            data={tipsPerDay}
+            label="Tipps"
+            color="#6366f1"
+            colorLight="#818cf8"
+            gradientId="aac-grad-tips"
+          />
+        </div>
+        <div className="stats-section" style={{ marginBottom: 0 }}>
+          <div className="stats-section-title">Logins pro Zeitraum</div>
+          <AdminActivityChart
+            data={loginsPerDay}
+            label="Logins"
+            color="#10b981"
+            colorLight="#34d399"
+            gradientId="aac-grad-logins"
+          />
+        </div>
       </div>
 
       <div className="stats-two-col">
