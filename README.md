@@ -43,13 +43,15 @@ Eine webbasierte Tippspiel-Plattform für die FIFA WM 2026. Schülerinnen und Sc
 
 | Bereich | Features |
 |---------|----------|
-| **Auth** | Registrierung mit Zugangscode, Login, sichere Sessions |
-| **Dashboard** | Nächste Spiele, Countdown bis zum Spiel, Tipp-Abgabe |
-| **Tipps** | Alle WM-Phasen, Bearbeiten bis Anpfiff |
-| **Rangliste** | Live-Leaderboard, eigene Position hervorgehoben |
+| **Auth** | Registrierung mit Zugangscode, Login, sichere Sessions, Passwort-Stärkecheck |
+| **Dashboard** | Nächste Spiele, Countdown bis zum Anpfiff, Tipp-Abgabe direkt auf der Startseite |
+| **Tipps** | Alle WM-Phasen (Gruppe bis Finale), Bearbeiten bis Anpfiff |
+| **Sondertipps** | Turniersieger (20 Pkt.) & Torschützenkönig (15 Pkt.) bis zum ersten Anpfiff |
+| **Rangliste** | Live-Leaderboard, eigene Position hervorgehoben, Einzel- & Gruppenranking |
 | **Profil** | Benutzername & Passwort ändern |
-| **Admin** | Nutzer-, Spiel- & Codeverwaltung, Audit-Logs |
-| **Design** | Dark/Light Mode, Mobile First |
+| **Admin** | Nutzer-, Spiel- & Codeverwaltung, Audit-Logs, Statistiken |
+| **Admin – Statistiken** | Beteiligungsquoten (Login/Tipps), wer noch nicht getippt/eingeloggt hat, getrennte Aktivitätsdiagramme, Nutzer-Präsenz (online/offline), Tipp-Verteilung pro Spiel |
+| **Design** | Dark/Light Mode, Mobile First, responsive auf allen Geräten |
 
 ---
 
@@ -288,6 +290,14 @@ Zusätzlich können Tipps für die Gruppenwertung abgegeben werden. Dabei werden
 **[02.06.2026- 15:35 Uhr]**: Bug fix: Wenn man auf den NavBar Button "Tippen" gegangen ist, wurde der DarkMode ausgeschaltet und auf LightMode geswitcht, das heißt die Seite wurde kurz ohne Dark-Class gerendet. Der Fix: Nav-Tabs Next.js nutzen, das argiert Client seitig ohne Reload. Dark Mode bleibt jetzt durchgängig an. 
 
 **[02.06.2026- 15:58 Uhr]**: Bug gefunden von Fabian. Spiele werden doppelt angezeigt, wegen dem neuem Gruppen-Upadte. Der Fix: Alle Spiele waren doppelt in der Datenbank.
+
+**[03.06.2026]**: Security-Verbesserungen: max-length auf Sondertipps, CSP-Header gehärtet, doppelten Login-Button auf der Landing Page entfernt, Gruppen-Ø ignoriert jetzt Mitglieder ohne Tipps korrekt im Nenner.
+
+**[04.06.2026]**: Manuelle Punkt-Vergabe für Torschützenkönig hinzugefügt, falls jemand einen Tippfehler gemacht hat und nachträglich Punkte bekommt.
+
+**[06.06.2026]**: Admin-Statistiken stark ausgebaut: Nutzer-Präsenz-Tracking (wer gerade online ist, wie lange jemand auf der Seite war), Aktivitätsdiagramm mit verbesserter Achsenbeschriftung, Cron-Job läuft jetzt nur noch während der Spielzeiten (13–24 + 0–6 UTC) statt 24/7 um unnötige API-Calls zu sparen.
+
+**[07.06.2026]**: Admin-Panel zeigt jetzt Beteiligungsquoten: wie viele der Schüler sich eingeloggt / Tipps abgegeben haben, plus vollständige Listen wer noch fehlt. Die Aktivitätsdiagramme für Tipps und Logins wurden in zwei separate Graphen aufgeteilt.
 
 ---
 
