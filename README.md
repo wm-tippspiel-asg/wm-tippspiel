@@ -43,12 +43,12 @@ Eine webbasierte Tippspiel-Plattform für die FIFA WM 2026. Schülerinnen und Sc
 
 | Bereich | Features |
 |---------|----------|
-| **Auth** | Registrierung mit Zugangscode, Login, sichere Sessions, Passwort-Stärkecheck |
+| **Auth** | Registrierung mit Zugangscode, Login, sichere Sessions |
 | **Dashboard** | Nächste Spiele, Countdown bis zum Anpfiff, Tipp-Abgabe direkt auf der Startseite |
 | **Tipps** | Alle WM-Phasen (Gruppe bis Finale), Bearbeiten bis Anpfiff |
 | **Sondertipps** | Turniersieger (20 Pkt.) & Torschützenkönig (15 Pkt.) bis zum ersten Anpfiff |
 | **Rangliste** | Live-Leaderboard, eigene Position hervorgehoben, Einzel- & Gruppenranking |
-| **Profil** | Benutzername & Passwort ändern |
+| **Profil** | User Statistiken |
 | **Admin** | Nutzer-, Spiel- & Codeverwaltung, Audit-Logs, Statistiken |
 | **Admin – Statistiken** | Beteiligungsquoten (Login/Tipps), wer noch nicht getippt/eingeloggt hat, getrennte Aktivitätsdiagramme, Nutzer-Präsenz (online/offline), Tipp-Verteilung pro Spiel |
 | **Design** | Dark/Light Mode, Mobile First, responsive auf allen Geräten |
@@ -149,12 +149,12 @@ src/
 
 ### Wie funktioniert das Projekt?
 
-1. **Registrierung**: Schüler erhalten einen Zugangscode vom Admin und registrieren sich damit. Das Passwort muss Mindestanforderungen erfüllen (Groß-/Kleinbuchstaben, Zahl, Sonderzeichen).
+1. **Registrierung**: Schüler erhalten einen Zugangscode vom Admin und registrieren sich damit. 
 2. **Tipps abgeben**: Vor jedem Spiel können Ergebnisse getippt werden. Nach Anpfiff ist der Tipp serverseitig gesperrt.
 3. **Sondertipps**: Bis zum ersten Anpfiff (11. Juni 2026) können Turniersieger (20 Pkt.) und Torschützenkönig (15 Pkt.) getippt werden. Der Admin kann Punkte auch manuell vergeben (z.B. bei Tippfehlern).
-4. **Live-Daten**: Spielergebnisse und WM-Gruppen-Tabellen werden automatisch von der [football-data.org API](https://www.football-data.org) geladen (Competition ID: `2000` — FIFA World Cup 2026).
+4. **Live-Daten**: Spielergebnisse und WM-Gruppen-Tabellen werden automatisch von der [football-data.org API](https://www.football-data.org) geladen (Competition ID: `2000` - FIFA World Cup 2026).
 5. **Automatische Auswertung**: Ein Cloudflare Cron-Job läuft während der Spielzeiten (13–24 + 0–6 UTC) und holt neue Ergebnisse, berechnet Punkte und aktualisiert die Rangliste.
-6. **Einzel- & Gruppenranking**: Es gibt eine persönliche Rangliste und eine separate Gruppen-/Klassenwertung. Tipps beider Wertungen sind unabhängig voneinander.
+6. **Einzel- & Gruppenranking**: Es gibt eine persönliche Rangliste und eine separate Gruppen-/Klassenwertung. 
 7. **Admin-Statistiken**: Der Admin sieht Beteiligungsquoten (wer hat sich eingeloggt / getippt), Online-Präsenz, Aktivitätsdiagramme und eine Tipp-Verteilung pro Spiel.
 
 ### Security
