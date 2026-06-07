@@ -845,6 +845,13 @@ button { font-family: inherit; cursor: pointer; }
 .stats-empty { padding: 24px; text-align: center; font-size: 13px; color: var(--muted); }
 
 /* ── Presence ───────────────── */
+.stats-count-badge {
+  display: inline-flex; align-items: center;
+  margin-left: 8px; padding: 1px 8px; border-radius: 99px;
+  font-size: 11px; font-weight: 700;
+  background: #f1f5f9; color: #64748b;
+}
+.dark .stats-count-badge { background: rgba(100,116,139,.2); color: #94a3b8; }
 .presence-online-badge {
   display: inline-flex; align-items: center; gap: 5px;
   margin-left: 10px; padding: 2px 9px; border-radius: 99px;

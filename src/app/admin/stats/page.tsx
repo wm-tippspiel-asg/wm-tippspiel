@@ -21,13 +21,15 @@ interface HitDist {
   total: number; points: number
   exact: number; diff: number; tendency: number; miss: number
 }
+interface UserStub { username: string; created_at: string }
 
 export default async function AdminStatsPage() {
   const db = getDb()
 
   const [
     tipsPerDay, loginsPerDay, predStats, topUsers,
-    totalPreds, totalUsers, activeUsers, presenceRows, hitDist,
+    totalPreds, totalUsers, activeUsers, presenceRows,
+    neverLoggedIn, neverTipped, loggedInCount, hitDist,
   ] = await Promise.all([
     queryAll<DayCount>(db, `
       SELECT DATE(created_at) AS day, COUNT(*) AS count
@@ -60,6 +62,16 @@ export default async function AdminStatsPage() {
         CASE WHEN last_seen >= datetime('now', '-5 minutes') THEN 1 ELSE 0 END AS is_online
       FROM user_presence
       ORDER BY is_online DESC, total_seconds DESC`),
+    queryAll<UserStub>(db, `
+      SELECT username, created_at FROM users
+      WHERE role = 'user' AND last_login IS NULL
+      ORDER BY username ASC`),
+    queryAll<UserStub>(db, `
+      SELECT u.username, u.created_at FROM users u
+      LEFT JOIN predictions p ON p.user_id = u.id
+      WHERE u.role = 'user' AND p.user_id IS NULL
+      ORDER BY u.username ASC`),
+    queryOne<{ count: number }>(db, `SELECT COUNT(*) AS count FROM users WHERE role = 'user' AND last_login IS NOT NULL`),
     queryOne<HitDist>(db, `
       SELECT
         COUNT(*) AS total,
@@ -103,7 +115,9 @@ export default async function AdminStatsPage() {
 
   const userCount = totalUsers?.count ?? 0
   const active = activeUsers?.count ?? 0
+  const loggedIn = loggedInCount?.count ?? 0
   const partPct = userCount > 0 ? Math.round((active / userCount) * 100) : 0
+  const loginPct = userCount > 0 ? Math.round((loggedIn / userCount) * 100) : 0
   const avgTipsPerUser = active > 0
     ? Math.round((totalPreds?.count ?? 0) / active)
     : 0
@@ -138,10 +152,10 @@ export default async function AdminStatsPage() {
   ]
 
   const kpis = [
-    { val: `${active}`, sub: `von ${userCount} Schüler:innen`, label: 'Aktiv getippt', accent: '#6366f1', extra: `${partPct}%` },
+    { val: `${loggedIn}`, sub: `von ${userCount} Schüler:innen`, label: 'Eingeloggt', accent: '#6366f1', extra: `${loginPct}%` },
+    { val: `${active}`, sub: `von ${userCount} Schüler:innen`, label: 'Haben getippt', accent: '#0ea5e9', extra: `${partPct}%` },
     { val: `${totalPreds?.count ?? 0}`, label: 'Tipps gesamt', accent: '#8b5cf6' },
-    { val: `${avgTipsPerUser}`, label: 'Ø Tipps / aktiv', accent: '#0ea5e9' },
-    { val: `${matches.length}`, label: 'Ausgewertete Spiele', accent: '#f59e0b' },
+    { val: `${avgTipsPerUser}`, label: 'Ø Tipps / aktiv', accent: '#f59e0b' },
     { val: avgPoints, label: 'Ø Punkte / Tipp', accent: '#10b981' },
     { val: `${hitRate}%`, label: 'Trefferquote', accent: '#ec4899' },
   ]
@@ -162,6 +176,69 @@ export default async function AdminStatsPage() {
             {k.sub && <div className="stats-kpi-sub">{k.sub}</div>}
           </div>
         ))}
+      </div>
+
+      {/* Participation lists */}
+      <div className="stats-two-col" style={{ marginBottom: 24 }}>
+
+        <div className="stats-section" style={{ marginBottom: 0 }}>
+          <div className="stats-section-title">
+            Noch nie eingeloggt
+            <span className="stats-count-badge">{neverLoggedIn.length}</span>
+          </div>
+          <div className="stats-chart-card" style={{ padding: 0, maxHeight: 320, overflowY: 'auto' }}>
+            {neverLoggedIn.length === 0 ? (
+              <div className="stats-empty" style={{ padding: '20px 16px' }}>Alle haben sich eingeloggt!</div>
+            ) : (
+              <table className="presence-table">
+                <thead>
+                  <tr>
+                    <th>Benutzername</th>
+                    <th>Registriert</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {neverLoggedIn.map((u) => (
+                    <tr key={u.username}>
+                      <td>{u.username}</td>
+                      <td className="presence-ago">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        <div className="stats-section" style={{ marginBottom: 0 }}>
+          <div className="stats-section-title">
+            Noch keine Tipps abgegeben
+            <span className="stats-count-badge">{neverTipped.length}</span>
+          </div>
+          <div className="stats-chart-card" style={{ padding: 0, maxHeight: 320, overflowY: 'auto' }}>
+            {neverTipped.length === 0 ? (
+              <div className="stats-empty" style={{ padding: '20px 16px' }}>Alle haben getippt!</div>
+            ) : (
+              <table className="presence-table">
+                <thead>
+                  <tr>
+                    <th>Benutzername</th>
+                    <th>Registriert</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {neverTipped.map((u) => (
+                    <tr key={u.username}>
+                      <td>{u.username}</td>
+                      <td className="presence-ago">{new Date(u.created_at).toLocaleDateString('de-DE')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* Hit distribution — overall accuracy breakdown */}
