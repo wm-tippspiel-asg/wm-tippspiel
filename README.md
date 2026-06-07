@@ -83,59 +83,79 @@ Bei Punktegleichstand entscheidet die Anzahl der exakten Treffer.
 ```
 src/
 ├── app/
-│   ├── (auth)/          # Login, Registrierung
-│   ├── (dashboard)/     # Nutzerbereich
-│   │   ├── dashboard/   # Startseite mit Tipps & Leaderboard
-│   │   ├── predictions/ # Alle Tipps nach Runde
-│   │   ├── leaderboard/ # Vollständige Rangliste
-│   │   ├── profile/     # Profil & Passwort ändern
-│   │   └── about/       # Regeln, Punktesystem
-│   ├── admin/           # Admin-Panel
-│   │   ├── users/       # Nutzerverwaltung
-│   │   ├── matches/     # Spielverwaltung + Ergebnisse
-│   │   ├── codes/       # Zugangscode-Generator
-│   │   └── logs/        # Audit-Logs
-│   └── api/             # REST API Routes (Edge Runtime)
+│   ├── (auth)/           # Login, Registrierung
+│   ├── (dashboard)/      # Nutzerbereich (geschützt)
+│   │   ├── dashboard/    # Startseite mit nächsten Spielen & Tipp-Abgabe
+│   │   ├── predictions/  # Alle Tipps nach Runde
+│   │   ├── leaderboard/  # Vollständige Einzel-Rangliste
+│   │   ├── groups/       # WM-Gruppenphase Tabellen (live via API)
+│   │   ├── special-bets/ # Sondertipps: Turniersieger & Torschützenkönig
+│   │   ├── profile/      # Profil & Passwort ändern
+│   │   └── about/        # Regeln, Punktesystem
+│   ├── admin/            # Admin-Panel (nur Admins)
+│   │   ├── page.tsx      # Übersicht mit Live-Statistiken
+│   │   ├── users/        # Nutzerverwaltung (sperren, löschen)
+│   │   ├── matches/      # Spielverwaltung + Ergebnisse eintragen
+│   │   ├── codes/        # Zugangscode-Generator
+│   │   ├── gruppen/      # Gruppen-/Klassenverwaltung
+│   │   ├── special-bets/ # Sondertipps auflösen & Punkte vergeben
+│   │   ├── stats/        # Detailstatistiken (Beteiligung, Präsenz, Diagramme)
+│   │   └── logs/         # Audit-Logs
+│   ├── api/              # REST API Routes (Edge Runtime)
+│   │   ├── auth/         # login, register, logout, me
+│   │   ├── admin/        # Nutzer/Spiel/Code/Gruppen/Sondertipp-Management
+│   │   ├── predictions/  # Tipp-Abgabe & -Abruf
+│   │   ├── leaderboard/  # Ranglisten-Daten
+│   │   ├── special-bets/ # Sondertipp-Abgabe
+│   │   ├── presence/     # Heartbeat für Online-Präsenz-Tracking
+│   │   ├── football/     # Proxy zu football-data.org (Gruppen, Spielplan)
+│   │   └── cron/         # Automatisches Score-Update (Cloudflare Cron)
+│   └── page.tsx          # Landing Page
 ├── components/
-│   ├── ui/              # Button, Input, Card, Modal, …
-│   ├── layout/          # Navbar
-│   ├── dashboard/       # MatchCard, PredictionForm, …
-│   └── admin/           # Admin-spezifische Komponenten
+│   ├── ui/               # Button, Input, Card, Modal, Alert, Badge, Spinner, …
+│   ├── layout/           # Navbar
+│   ├── landing/          # Landing Page Komponente
+│   ├── dashboard/        # MatchCard, PredictionForm, LeaderboardTable, CountdownTimer, …
+│   ├── admin/            # AdminActivityChart, AdminUsersClient, RecalculateAction, …
+│   └── PresenceTracker.tsx  # Heartbeat-Client für Präsenz-Tracking
 ├── lib/
-│   ├── auth.ts          # Session-Management
-│   ├── crypto.ts        # PBKDF2, HMAC (Web Crypto API)
-│   ├── db.ts            # D1 Query-Helpers
-│   ├── scoring.ts       # Punkteberechnung + Leaderboard
-│   ├── rateLimit.ts     # KV-basiertes Rate-Limiting
-│   ├── audit.ts         # Audit-Logging
-│   ├── validation.ts    # Zod-Schemas
-│   └── utils.ts         # Hilfsfunktionen
-├── middleware.ts         # Route-Schutz (Auth + Admin)
-└── types/index.ts        # TypeScript-Typen
+│   ├── auth.ts           # Session-Management (HMAC-signierte Tokens)
+│   ├── crypto.ts         # PBKDF2, HMAC (Web Crypto API)
+│   ├── db.ts             # D1 Query-Helpers
+│   ├── scoring.ts        # Punkteberechnung + Leaderboard-Update
+│   ├── rateLimit.ts      # KV-basiertes Rate-Limiting
+│   ├── audit.ts          # Audit-Logging
+│   ├── validation.ts     # Zod-Schemas
+│   └── utils.ts          # Hilfsfunktionen
+├── middleware.ts          # Route-Schutz (Auth + Admin-Rollenprüfung)
+└── types/index.ts         # TypeScript-Typen
 ```
 
 ### Tech Stack
 
 | Bereich | Technologie |
 |---------|-------------|
-| Framework | [Next.js 15](https://nextjs.org) (App Router, Edge Runtime) |
-| Sprache | TypeScript (Strict Mode) |
-| Styling | [Tailwind CSS 3](https://tailwindcss.com) |
-| Datenbank | [Cloudflare D1](https://developers.cloudflare.com/d1/) (SQLite) |
+| Framework | [Next.js 15.1](https://nextjs.org) (App Router, Edge Runtime) |
+| Sprache | TypeScript 5 (Strict Mode) |
+| Styling | [Tailwind CSS 3.4](https://tailwindcss.com) |
+| Icons | [Lucide React](https://lucide.dev) |
+| Datenbank | [Cloudflare D1](https://developers.cloudflare.com/d1/) (SQLite, Edge) |
 | Cache / Rate-Limiting | [Cloudflare KV](https://developers.cloudflare.com/kv/) |
 | Hosting | [Cloudflare Pages](https://pages.cloudflare.com) |
-| CI/CD | GitHub -> Cloudflare Pages automatisch bei Push wird deployed (beste möglichkeit wie ich finde, geht super easy) |
-| Validierung | [Zod](https://zod.dev) |
-| Live-Daten | [football-data.org API](https://www.football-data.org) (Spielplan, Gruppen-Tabellen) |
+| CI/CD | GitHub → Cloudflare Pages (automatischer Deploy bei Push auf `main`) |
+| Validierung | [Zod 3](https://zod.dev) |
+| Live-Daten | [football-data.org API](https://www.football-data.org) (Spielplan, Gruppen-Tabellen, Ergebnisse) |
+| Cron | Cloudflare Workers Cron Trigger (automatische Score-Updates) |
 
 ### Wie funktioniert das Projekt?
 
-1. **Registrierung**: Schüler erhalten einen Zugangscode vom Admin und registrieren sich damit.
-2. **Tipps abgeben**: Vor jedem Spiel können Ergebnisse getippt werden. Nach Anpfiff ist der Tipp gesperrt.
-3. **Sondertipps**: Bis zum ersten Anpfiff können Turniersieger (20 Pkt.) und Torschützenkönig (15 Pkt.) getippt werden.
-4. **Live-Daten**: Spielergebnisse und Gruppen-Tabellen werden automatisch von der [football-data.org API](https://www.football-data.org) geladen (Competition ID: `2000` — FIFA World Cup 2026).
-5. **Auswertung**: Punkte werden automatisch nach Spielende berechnet und die Rangliste aktualisiert.
-6. **Rangliste**: Alle Teilnehmer sehen die aktuelle Rangliste in Echtzeit.
+1. **Registrierung**: Schüler erhalten einen Zugangscode vom Admin und registrieren sich damit. Das Passwort muss Mindestanforderungen erfüllen (Groß-/Kleinbuchstaben, Zahl, Sonderzeichen).
+2. **Tipps abgeben**: Vor jedem Spiel können Ergebnisse getippt werden. Nach Anpfiff ist der Tipp serverseitig gesperrt.
+3. **Sondertipps**: Bis zum ersten Anpfiff (11. Juni 2026) können Turniersieger (20 Pkt.) und Torschützenkönig (15 Pkt.) getippt werden. Der Admin kann Punkte auch manuell vergeben (z.B. bei Tippfehlern).
+4. **Live-Daten**: Spielergebnisse und WM-Gruppen-Tabellen werden automatisch von der [football-data.org API](https://www.football-data.org) geladen (Competition ID: `2000` — FIFA World Cup 2026).
+5. **Automatische Auswertung**: Ein Cloudflare Cron-Job läuft während der Spielzeiten (13–24 + 0–6 UTC) und holt neue Ergebnisse, berechnet Punkte und aktualisiert die Rangliste.
+6. **Einzel- & Gruppenranking**: Es gibt eine persönliche Rangliste und eine separate Gruppen-/Klassenwertung. Tipps beider Wertungen sind unabhängig voneinander.
+7. **Admin-Statistiken**: Der Admin sieht Beteiligungsquoten (wer hat sich eingeloggt / getippt), Online-Präsenz, Aktivitätsdiagramme und eine Tipp-Verteilung pro Spiel.
 
 ### Security
 
