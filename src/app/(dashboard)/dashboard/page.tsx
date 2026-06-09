@@ -20,6 +20,10 @@ export default async function DashboardPage() {
 
   const db = getDb()
 
+  // Live matches — never cache
+  const liveMatches = await queryAll<Match>(db,
+    `SELECT * FROM matches WHERE status = 'live' ORDER BY match_time ASC`)
+
   // Cached: upcoming matches (30s) and leaderboard top 5 (60s)
   let upcomingMatches = await getCached<Match[]>(CACHE_KEYS.MATCHES_UPCOMING)
   if (!upcomingMatches) {
@@ -126,6 +130,26 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Live-Spiele */}
+      {liveMatches.length > 0 && (
+        <div style={{ display: 'grid', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span className="wm-dot wm-dot-live" />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--ink)' }}>
+              Jetzt Live
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>
+              {liveMatches.length} Spiel{liveMatches.length !== 1 ? 'e' : ''}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gap: 12 }}>
+            {liveMatches.map((m) => (
+              <MatchCard key={m.id} match={m} prediction={predMap.get(m.id)} showPredictionForm={false} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Countdown + Special Bets CTA */}
       <DashboardCountdown hasWinner={hasWinner} hasTopScorer={hasTopScorer} />

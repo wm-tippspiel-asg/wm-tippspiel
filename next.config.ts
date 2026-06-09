@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://media.api-sports.io",
+              "img-src 'self' data: https://crests.football-data.org https://media.api-sports.io",
               "font-src 'self'",
               "connect-src 'self'",
               "object-src 'none'",

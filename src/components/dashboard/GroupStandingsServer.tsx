@@ -41,7 +41,7 @@ export async function GroupStandingsServer() {
         <div key={group.group} className="wm-card">
           <div style={{ padding: '16px 18px', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
             <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
-              Gruppe {group.group}
+              Gruppe {group.group.replace('GROUP_', '')}
             </h3>
           </div>
 
