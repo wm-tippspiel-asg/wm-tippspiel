@@ -1,12 +1,10 @@
-const API_BASE = 'https://v3.football.api-sports.io'
-const WC_LEAGUE_ID = 1   // FIFA World Cup
-const WC_SEASON = 2026
+const API_BASE = 'https://api.football-data.org/v4'
 const CACHE_TTL = 900    // 15 minutes
 
 function headers() {
   const key = process.env.FOOTBALL_API_KEY
   if (!key) throw new Error('FOOTBALL_API_KEY not set')
-  return { 'x-apisports-key': key }
+  return { 'X-Auth-Token': key }
 }
 
 export interface FootballMatch {
@@ -30,32 +28,35 @@ export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMa
 
   try {
     const res = await fetch(
-      `${API_BASE}/fixtures?league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
+      `${API_BASE}/competitions/WC/matches?season=2026`,
       { headers: headers() }
     )
     if (!res.ok) throw new Error(`API error: ${res.status}`)
     const data = (await res.json()) as {
-      response: Array<{
-        fixture: { id: number; date: string; status: { short: string } }
-        league: { round: string }
-        teams: {
-          home: { id: number; name: string; logo: string }
-          away: { id: number; name: string; logo: string }
+      matches: Array<{
+        id: number
+        utcDate: string
+        status: string
+        stage: string
+        group: string | null
+        homeTeam: { name: string }
+        awayTeam: { name: string }
+        score: {
+          fullTime: { home: number | null; away: number | null }
         }
-        goals: { home: number | null; away: number | null }
       }>
     }
 
-    const matches = data.response.map((m) => ({
-      id: m.fixture.id,
-      home_team: m.teams.home.name,
-      away_team: m.teams.away.name,
-      home_score: m.goals.home,
-      away_score: m.goals.away,
-      match_time: m.fixture.date,
-      status: mapStatus(m.fixture.status.short),
-      group: extractGroup(m.league.round),
-      external_id: m.fixture.id,
+    const matches = data.matches.map((m) => ({
+      id: m.id,
+      home_team: m.homeTeam.name,
+      away_team: m.awayTeam.name,
+      home_score: m.score.fullTime.home,
+      away_score: m.score.fullTime.away,
+      match_time: m.utcDate,
+      status: mapStatus(m.status),
+      group: m.group,
+      external_id: m.id,
     }))
 
     if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: CACHE_TTL })
@@ -75,41 +76,21 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 
   try {
     const res = await fetch(
-      `${API_BASE}/standings?league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
+      `${API_BASE}/competitions/WC/matches?season=2026&stage=GROUP_STAGE`,
       { headers: headers() }
     )
     if (!res.ok) throw new Error(`API error: ${res.status}`)
     const data = (await res.json()) as {
-      response: Array<{
-        league: {
-          standings: Array<Array<{
-            rank: number
-            team: { id: number; name: string; logo: string }
-            points: number
-            goalsDiff: number
-            group: string
-            all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } }
-          }>>
-        }
+      matches: Array<{
+        group: string
+        status: string
+        homeTeam: { id: number; name: string; crest: string }
+        awayTeam: { id: number; name: string; crest: string }
+        score: { fullTime: { home: number | null; away: number | null } }
       }>
     }
 
-    const leagueData = data.response[0]?.league
-    if (!leagueData) return []
-
-    const standings = leagueData.standings.map((group) => ({
-      group: group[0]?.group ?? '',
-      teams: group.map((t) => ({
-        position: t.rank,
-        name: t.team.name,
-        crest: t.team.logo,
-        played: t.all.played,
-        points: t.points,
-        goalsFor: t.all.goals.for,
-        goalsAgainst: t.all.goals.against,
-        goalDiff: t.goalsDiff,
-      })),
-    }))
+    const standings = computeStandings(data.matches)
 
     if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: CACHE_TTL })
     return standings
@@ -119,28 +100,88 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
   }
 }
 
-function mapStatus(short: string): string {
-  const map: Record<string, string> = {
-    NS: 'scheduled',
-    TBD: 'scheduled',
-    '1H': 'live',
-    HT: 'live',
-    '2H': 'live',
-    ET: 'live',
-    P: 'live',
-    FT: 'finished',
-    AET: 'finished',
-    PEN: 'finished',
-    PST: 'scheduled',
-    CANC: 'scheduled',
+function computeStandings(matches: Array<{
+  group: string
+  status: string
+  homeTeam: { id: number; name: string; crest: string }
+  awayTeam: { id: number; name: string; crest: string }
+  score: { fullTime: { home: number | null; away: number | null } }
+}>) {
+  type TeamStats = {
+    id: number; name: string; crest: string
+    played: number; won: number; draw: number; lost: number
+    goalsFor: number; goalsAgainst: number; points: number
   }
-  return map[short] ?? 'scheduled'
+
+  const groupMap: Record<string, Record<number, TeamStats>> = {}
+
+  for (const m of matches) {
+    const group = m.group
+    if (!group) continue
+
+    if (!groupMap[group]) groupMap[group] = {}
+
+    const ensureTeam = (team: { id: number; name: string; crest: string }): TeamStats => {
+      if (!groupMap[group]![team.id]) {
+        groupMap[group]![team.id] = {
+          id: team.id, name: team.name, crest: team.crest,
+          played: 0, won: 0, draw: 0, lost: 0,
+          goalsFor: 0, goalsAgainst: 0, points: 0,
+        }
+      }
+      return groupMap[group]![team.id]!
+    }
+
+    const home = ensureTeam(m.homeTeam)
+    const away = ensureTeam(m.awayTeam)
+
+    const hg = m.score.fullTime.home
+    const ag = m.score.fullTime.away
+    if (m.status !== 'FINISHED' || hg === null || ag === null) continue
+
+    home.played++; away.played++
+    home.goalsFor += hg; home.goalsAgainst += ag
+    away.goalsFor += ag; away.goalsAgainst += hg
+
+    if (hg > ag) {
+      home.won++; home.points += 3; away.lost++
+    } else if (hg < ag) {
+      away.won++; away.points += 3; home.lost++
+    } else {
+      home.draw++; home.points++; away.draw++; away.points++
+    }
+  }
+
+  return Object.entries(groupMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([group, teamsMap]) => ({
+      group,
+      teams: Object.values(teamsMap)
+        .sort((a, b) => b.points - a.points || (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst))
+        .map((t, i) => ({
+          position: i + 1,
+          name: t.name,
+          crest: t.crest,
+          played: t.played,
+          points: t.points,
+          goalsFor: t.goalsFor,
+          goalsAgainst: t.goalsAgainst,
+          goalDiff: t.goalsFor - t.goalsAgainst,
+        })),
+    }))
 }
 
-function extractGroup(round: string): string | null {
-  // e.g. "Group Stage - 1" or "Group A"
-  const match = round.match(/Group\s+([A-Z])/i)
-  if (match?.[1]) return `GROUP_${match[1].toUpperCase()}`
-  if (round.toLowerCase().includes('group')) return round
-  return null
+function mapStatus(status: string): string {
+  const map: Record<string, string> = {
+    TIMED: 'scheduled',
+    SCHEDULED: 'scheduled',
+    IN_PLAY: 'live',
+    PAUSED: 'live',
+    FINISHED: 'finished',
+    AWARDED: 'finished',
+    POSTPONED: 'scheduled',
+    CANCELLED: 'scheduled',
+    SUSPENDED: 'scheduled',
+  }
+  return map[status] ?? 'scheduled'
 }

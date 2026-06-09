@@ -5,7 +5,9 @@ export const runtime = 'edge'
 
 export async function GET(request: Request) {
   try {
-    const standings = await fetchFootballStandings(getKv())
+    let kv: KVNamespace | undefined
+    try { kv = getKv() } catch { kv = undefined }
+    const standings = await fetchFootballStandings(kv)
 
     if (!standings) {
       return Response.json({ success: false, error: 'Failed to fetch standings' }, { status: 503 })
