@@ -1,10 +1,34 @@
 const API_BASE = 'https://api.football-data.org/v4'
-const CACHE_TTL = 900    // 15 minutes
+const CACHE_TTL_DEFAULT = 900   // 15 min
+const CACHE_TTL_THROTTLED = 300 // 5 min when rate limit is tight
+const RATE_LIMIT_KV_KEY = 'football_rate_limit_until'
 
 function headers() {
   const key = process.env.FOOTBALL_API_KEY
   if (!key) throw new Error('FOOTBALL_API_KEY not set')
   return { 'X-Auth-Token': key }
+}
+
+// Returns the TTL to use based on remaining requests this minute.
+// Extends cache when quota is low to avoid burning the limit.
+function ttlFromHeaders(res: Response): number {
+  const available = parseInt(res.headers.get('X-Requests-Available-Minute') ?? '100', 10)
+  if (available <= 2) return 3600   // 1 h — almost exhausted
+  if (available <= 5) return 600    // 10 min — getting tight
+  if (available <= 10) return CACHE_TTL_THROTTLED
+  return CACHE_TTL_DEFAULT
+}
+
+async function isRateLimited(kv: KVNamespace): Promise<boolean> {
+  const until = await kv.get(RATE_LIMIT_KV_KEY)
+  if (!until) return false
+  return Date.now() < parseInt(until, 10)
+}
+
+async function setRateLimited(kv: KVNamespace, retryAfterSeconds: number) {
+  const until = Date.now() + retryAfterSeconds * 1000
+  await kv.put(RATE_LIMIT_KV_KEY, String(until), { expirationTtl: retryAfterSeconds + 10 })
+  console.warn(`football-data.org: rate limited for ${retryAfterSeconds}s`)
 }
 
 export interface FootballMatch {
@@ -24,6 +48,10 @@ export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMa
   if (kv) {
     const cached = await kv.get<FootballMatch[]>(cacheKey, 'json')
     if (cached) return cached
+    if (await isRateLimited(kv)) {
+      console.warn('football-data.org: rate limited, skipping request')
+      return null
+    }
   }
 
   try {
@@ -31,7 +59,15 @@ export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMa
       `${API_BASE}/competitions/WC/matches?season=2026`,
       { headers: headers() }
     )
+
+    if (res.status === 429) {
+      const retryAfter = parseInt(res.headers.get('Retry-After') ?? '60', 10)
+      if (kv) await setRateLimited(kv, retryAfter)
+      return null
+    }
+
     if (!res.ok) throw new Error(`API error: ${res.status}`)
+
     const data = (await res.json()) as {
       matches: Array<{
         id: number
@@ -59,7 +95,8 @@ export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMa
       external_id: m.id,
     }))
 
-    if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: CACHE_TTL })
+    const ttl = ttlFromHeaders(res)
+    if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: ttl })
     return matches
   } catch (e) {
     console.error('Football API error:', e)
@@ -72,6 +109,10 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
   if (kv) {
     const cached = await kv.get(cacheKey, 'json')
     if (cached) return cached
+    if (await isRateLimited(kv)) {
+      console.warn('football-data.org: rate limited, skipping standings request')
+      return null
+    }
   }
 
   try {
@@ -79,7 +120,15 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
       `${API_BASE}/competitions/WC/matches?season=2026&stage=GROUP_STAGE`,
       { headers: headers() }
     )
+
+    if (res.status === 429) {
+      const retryAfter = parseInt(res.headers.get('Retry-After') ?? '60', 10)
+      if (kv) await setRateLimited(kv, retryAfter)
+      return null
+    }
+
     if (!res.ok) throw new Error(`API error: ${res.status}`)
+
     const data = (await res.json()) as {
       matches: Array<{
         group: string
@@ -92,7 +141,8 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 
     const standings = computeStandings(data.matches)
 
-    if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: CACHE_TTL })
+    const ttl = ttlFromHeaders(res)
+    if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl })
     return standings
   } catch (e) {
     console.error('Football API standings error:', e)
