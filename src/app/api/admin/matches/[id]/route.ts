@@ -31,26 +31,29 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
 
   // Check for result update vs. full update
   const b = body as Record<string, unknown>
-  if ('home_score' in b && 'away_score' in b && Object.keys(b).length === 2) {
+  if ('home_score' in b && 'away_score' in b && !('home_team' in b)) {
     // Result update
     const parsed = matchResultSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ success: false, error: 'Ungültiger Spielstand.' }, { status: 400 })
     }
 
-    const { home_score, away_score } = parsed.data
+    const { home_score, away_score, status: matchStatus } = parsed.data
     await execute(
       db,
-      `UPDATE matches SET home_score = ?, away_score = ?, status = 'finished', updated_at = datetime('now') WHERE id = ?`,
-      [home_score, away_score, id],
+      `UPDATE matches SET home_score = ?, away_score = ?, status = ?, updated_at = datetime('now') WHERE id = ?`,
+      [home_score, away_score, matchStatus, id],
     )
 
-    // Recalculate points for all predictions on this match
-    await recalculateMatchPoints(id)
-    await invalidateCache(
-      CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
-      'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
-    )
+    if (matchStatus === 'finished') {
+      await recalculateMatchPoints(id)
+      await invalidateCache(
+        CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
+        'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
+      )
+    } else {
+      await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
+    }
 
     await audit({
       actorId,
@@ -58,10 +61,13 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
       action: 'match.result_set',
       targetType: 'match',
       targetId: id,
-      details: { home_score, away_score, home_team: match.home_team, away_team: match.away_team },
+      details: { home_score, away_score, status: matchStatus, home_team: match.home_team, away_team: match.away_team },
     })
 
-    return NextResponse.json({ success: true, message: 'Ergebnis eingetragen und Punkte berechnet.' })
+    const msg = matchStatus === 'finished'
+      ? 'Ergebnis eingetragen und Punkte berechnet.'
+      : 'Zwischenstand aktualisiert.'
+    return NextResponse.json({ success: true, message: msg })
   }
 
   // Full match update

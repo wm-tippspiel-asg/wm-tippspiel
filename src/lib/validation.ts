@@ -52,6 +52,7 @@ export const matchSchema = z.object({
 export const matchResultSchema = z.object({
   home_score: z.number().int().min(0).max(99),
   away_score: z.number().int().min(0).max(99),
+  status: z.enum(['live', 'finished']).optional().default('finished'),
 })
 
 export const codeCreateSchema = z.object({

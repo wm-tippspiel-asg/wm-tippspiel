@@ -44,6 +44,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
   const [resultMatch, setResultMatch] = useState<Match | null>(null)
   const [resultHome, setResultHome] = useState('')
   const [resultAway, setResultAway] = useState('')
+  const [resultStatus, setResultStatus] = useState<'live' | 'finished'>('finished')
   const [resultLoading, setResultLoading] = useState(false)
   const [resultError, setResultError] = useState('')
 
@@ -130,7 +131,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
       const res = await fetch(`/api/admin/matches/${resultMatch.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ home_score: h, away_score: a }),
+        body: JSON.stringify({ home_score: h, away_score: a, status: resultStatus }),
       })
       const d = await res.json() as { success: boolean; error?: string }
       if (!d.success) { setResultError(d.error ?? 'Fehler'); return }
@@ -226,7 +227,13 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
                     <div className="flex items-center justify-end gap-1">
                       <button
                         title="Ergebnis eintragen"
-                        onClick={() => { setResultMatch(match); setResultHome(''); setResultAway(''); setResultError('') }}
+                        onClick={() => {
+                          setResultMatch(match)
+                          setResultHome(match.home_score !== null ? String(match.home_score) : '')
+                          setResultAway(match.away_score !== null ? String(match.away_score) : '')
+                          setResultStatus(match.status === 'live' ? 'live' : 'finished')
+                          setResultError('')
+                        }}
                         className="p-1.5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
                       >
                         <Check className="h-4 w-4" />
@@ -312,12 +319,13 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
 
       {/* Result modal */}
       <Modal open={resultMatch !== null} onClose={() => setResultMatch(null)} title="Ergebnis eintragen"
-        description={resultMatch ? `${resultMatch.home_team} vs ${resultMatch.away_team}` : ''}>
+        description={resultMatch ? `${resultMatch.home_team_flag ?? ''} ${resultMatch.home_team} vs ${resultMatch.away_team} ${resultMatch.away_team_flag ?? ''}` : ''}>
         {resultError && <div className="mb-4"><Alert variant="error" message={resultError} /></div>}
-        <form onSubmit={submitResult} className="space-y-4">
+        <form onSubmit={submitResult} className="space-y-5">
+          {/* Score inputs */}
           <div className="flex items-center gap-4 justify-center">
             <div className="space-y-1 text-center">
-              <p className="text-xs text-slate-500">{resultMatch?.home_team}</p>
+              <p className="text-xs text-slate-500 font-medium">{resultMatch?.home_team}</p>
               <input
                 type="number" min={0} max={99} value={resultHome}
                 onChange={(e) => setResultHome(e.target.value)}
@@ -326,7 +334,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
             </div>
             <span className="text-2xl font-bold text-slate-400 mt-4">:</span>
             <div className="space-y-1 text-center">
-              <p className="text-xs text-slate-500">{resultMatch?.away_team}</p>
+              <p className="text-xs text-slate-500 font-medium">{resultMatch?.away_team}</p>
               <input
                 type="number" min={0} max={99} value={resultAway}
                 onChange={(e) => setResultAway(e.target.value)}
@@ -334,9 +342,42 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
               />
             </div>
           </div>
+
+          {/* Status selector */}
+          <div className="flex gap-2 justify-center">
+            <button
+              type="button"
+              onClick={() => setResultStatus('live')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                resultStatus === 'live'
+                  ? 'bg-red-500 text-white border-red-500'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-red-300'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${resultStatus === 'live' ? 'bg-white' : 'bg-red-400'}`} />
+              Live
+            </button>
+            <button
+              type="button"
+              onClick={() => setResultStatus('finished')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                resultStatus === 'finished'
+                  ? 'bg-indigo-600 text-white border-indigo-600'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'
+              }`}
+            >
+              Beendet
+            </button>
+          </div>
+          {resultStatus === 'finished' && (
+            <p className="text-xs text-slate-400 text-center -mt-2">
+              Punkte werden automatisch berechnet.
+            </p>
+          )}
+
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="secondary" onClick={() => setResultMatch(null)}>Abbrechen</Button>
-            <Button type="submit" loading={resultLoading}>Ergebnis speichern</Button>
+            <Button type="submit" loading={resultLoading}>Speichern</Button>
           </div>
         </form>
       </Modal>

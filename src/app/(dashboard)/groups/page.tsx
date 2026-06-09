@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
 import { GroupStandingsServer } from '@/components/dashboard/GroupStandingsServer'
+import { LiveMatchesBanner } from '@/components/dashboard/LiveMatchesBanner'
 import { Trophy } from 'lucide-react'
 import type { Metadata } from 'next'
 
@@ -23,6 +24,8 @@ export default async function GroupsPage() {
           Live-Tabellen aus der FIFA Weltmeisterschaft 2026. Aktualisiert in Echtzeit.
         </p>
       </div>
+
+      <LiveMatchesBanner />
 
       <GroupStandingsServer />
     </div>
