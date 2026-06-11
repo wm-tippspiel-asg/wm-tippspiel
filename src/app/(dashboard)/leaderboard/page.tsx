@@ -29,18 +29,33 @@ export default async function LeaderboardPage() {
     ORDER BY total_points DESC, exact_results DESC, u.username ASC`
 
   const GROUP_STANDINGS_SQL = `
-    SELECT ug.id, ug.name, ug.description,
-           COUNT(DISTINCT ugm.user_id) AS member_count,
-           COALESCE(SUM(l.total_points), 0) AS total_points,
-           COALESCE(SUM(l.exact_results), 0) AS exact_results,
-           CASE WHEN COUNT(DISTINCT ugm.user_id) > 0
-                THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT ugm.user_id), 1)
-                ELSE 0 END AS avg_points
-    FROM user_groups ug
-    LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
-    LEFT JOIN leaderboard l ON l.user_id = ugm.user_id
-    GROUP BY ug.id
-    ORDER BY total_points DESC, exact_results DESC, ug.name ASC`
+    WITH group_stats AS (
+      SELECT ug.id, ug.name, ug.description,
+             COUNT(DISTINCT u.id) AS member_count,
+             COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END), 0) AS total_points,
+             COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END), 0) AS exact_results,
+             CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                  THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                       / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
+                  ELSE 0 END AS avg_points_raw,
+             CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                  THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END),0) AS REAL)
+                       / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
+                  ELSE 0 END AS avg_exact_raw,
+             CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                  THEN ROUND(
+                    CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                    / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END), 1)
+                  ELSE 0 END AS avg_points
+      FROM user_groups ug
+      LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
+      LEFT JOIN users u ON u.id = ugm.user_id AND u.role = 'user' AND u.is_banned = 0
+      LEFT JOIN leaderboard l ON l.user_id = u.id
+      GROUP BY ug.id
+    )
+    SELECT id, name, description, member_count, total_points, exact_results, avg_points
+    FROM group_stats
+    ORDER BY avg_points_raw DESC, avg_exact_raw DESC, name ASC`
 
   // Cached queries (global data, same for all users)
   let entries = await getCached<LeaderboardEntry[]>(CACHE_KEYS.LEADERBOARD_ALL)

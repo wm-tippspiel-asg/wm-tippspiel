@@ -25,12 +25,24 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
   const [liveMatch, setLiveMatch] = useState<Match | null>(null)
   const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map())
 
-  // Refresh group standings in background
+  // Refresh group standings in background every 30 seconds
   useEffect(() => {
-    fetch('/api/leaderboard?view=groups')
-      .then((r) => r.json() as Promise<{ success: boolean; data: { standings: GroupStanding[] } }>)
-      .then((d) => { if (d.success) setGroupStandings(d.data.standings) })
-      .catch(() => {})
+    async function refreshGroupStandings() {
+      try {
+        const res = await fetch('/api/leaderboard?view=groups')
+        const d = await res.json() as { success: boolean; data?: { standings: GroupStanding[] } }
+        if (d.success && d.data) setGroupStandings(d.data.standings)
+      } catch {
+        // silently fail on refresh
+      }
+    }
+    
+    // Initial fetch
+    refreshGroupStandings()
+    
+    // Poll every 30 seconds
+    const id = setInterval(refreshGroupStandings, 30_000)
+    return () => clearInterval(id)
   }, [])
 
   // Load live match and predictions
