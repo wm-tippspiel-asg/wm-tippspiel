@@ -81,12 +81,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
          LEFT JOIN leaderboard l ON l.user_id = u.id
          GROUP BY ug.id
        )
-       SELECT id, name, description, member_count, total_points, exact_results, avg_points
+       SELECT id, name, description, member_count, total_points, exact_results, avg_points, avg_points_raw, avg_exact_raw
        FROM group_stats
        ORDER BY avg_points_raw DESC, avg_exact_raw DESC, name ASC`,
     )
-    await setCached(CACHE_KEYS.LEADERBOARD_GROUPS, standings)
-    return NextResponse.json({ success: true, data: { standings, currentUserId: userId } })
+    
+    // Return only the fields needed by frontend
+    const result = standings.map(({ id, name, description, member_count, total_points, exact_results, avg_points }) => ({
+      id, name, description, member_count, total_points, exact_results, avg_points
+    }))
+    await setCached(CACHE_KEYS.LEADERBOARD_GROUPS, result)
+    return NextResponse.json({ success: true, data: { standings: result, currentUserId: userId } })
   }
 
   // --- Einzelwertung gefiltert nach Gruppe (kein Cache — gruppenspezifisch) ---
