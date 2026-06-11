@@ -37,22 +37,12 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
   useEffect(() => {
     async function loadLiveMatch() {
       try {
-        const res = await fetch('/api/matches?status=live')
-        const d = await res.json() as { success: boolean; data?: Match[] }
-        if (d.success && d.data && d.data.length > 0) {
-          const match = d.data[0]
-          setLiveMatch(match)
-          
-          // Fetch all predictions for this match
-          const predRes = await fetch(`/api/predictions?match_id=${match.id}`)
-          const predData = await predRes.json() as { success: boolean; data?: Prediction[] }
-          if (predData.success && predData.data) {
-            const predMap = new Map(predData.data.map(p => [p.user_id, p]))
-            setPredictions(predMap)
-          }
-        } else {
-          setLiveMatch(null)
-          setPredictions(new Map())
+        const res = await fetch('/api/leaderboard-live')
+        const d = await res.json() as { success: boolean; data?: { liveMatch: Match | null; predictions: Prediction[] } }
+        if (d.success && d.data) {
+          setLiveMatch(d.data.liveMatch)
+          const predMap = new Map(d.data.predictions.map(p => [p.user_id, p]))
+          setPredictions(predMap)
         }
       } catch {
         setLiveMatch(null)

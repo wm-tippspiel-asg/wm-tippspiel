@@ -54,6 +54,7 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
       CACHE_KEYS.LEADERBOARD_GROUPS,
       'cache:leaderboard:top5',
       'cache:leaderboard:ranking',
+      'cache:leaderboard:live',
       CACHE_KEYS.MATCHES_UPCOMING,
     )
 
