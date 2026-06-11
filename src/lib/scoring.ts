@@ -68,7 +68,12 @@ export async function recalculateMatchPoints(matchId: string): Promise<void> {
     status: string
   }>(db, 'SELECT home_score, away_score, status FROM matches WHERE id = ?', [matchId])
 
-  if (!match || match.status !== 'finished' || match.home_score === null || match.away_score === null) {
+  if (!match || match.home_score === null || match.away_score === null) {
+    return
+  }
+  
+  // Recalculate for both 'finished' and 'live' matches if they have scores
+  if (match.status !== 'finished' && match.status !== 'live') {
     return
   }
 

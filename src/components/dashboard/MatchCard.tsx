@@ -20,6 +20,7 @@ export function MatchCard({ match, prediction, showPredictionForm = true }: Prop
   const st = statusConfig[match.status] ?? statusConfig['scheduled']!
   const isLive = match.status === 'live'
   const isDone = match.status === 'finished' && match.home_score !== null
+  const hasScore = match.home_score !== null && match.away_score !== null
 
   return (
     <div className="wm-card" style={{ display: 'grid', gap: 0 }}>
@@ -56,8 +57,8 @@ export function MatchCard({ match, prediction, showPredictionForm = true }: Prop
 
         {/* score */}
         <div style={{ display: 'grid', placeItems: 'center', minWidth: 100 }}>
-          {isDone ? (
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
+          {hasScore ? (
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: isLive ? '#ef4444' : 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>
               {match.home_score} : {match.away_score}
             </span>
           ) : (

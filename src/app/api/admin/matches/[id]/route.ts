@@ -45,15 +45,17 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
       [home_score, away_score, matchStatus, id],
     )
 
-    if (matchStatus === 'finished') {
-      await recalculateMatchPoints(id)
-      await invalidateCache(
-        CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
-        'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
-      )
-    } else {
-      await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
-    }
+    // Recalculate points whenever scores are updated (for both live and finished matches)
+    await recalculateMatchPoints(id)
+    
+    // Always invalidate leaderboard caches when scores change
+    await invalidateCache(
+      CACHE_KEYS.LEADERBOARD_ALL,
+      CACHE_KEYS.LEADERBOARD_GROUPS,
+      'cache:leaderboard:top5',
+      'cache:leaderboard:ranking',
+      CACHE_KEYS.MATCHES_UPCOMING,
+    )
 
     await audit({
       actorId,
