@@ -219,17 +219,13 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                   <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                     <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{g.name}</span>
                     <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--muted)' }}>
-                      {g.member_count} Mitglied{g.member_count !== 1 ? 'er' : ''}
+                      {g.member_count} Mitglied{g.member_count !== 1 ? 'er' : ''} · {g.total_points} Pkt. gesamt
                     </span>
                   </div>
 
-                  <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginRight: 6, flexShrink: 0, textAlign: 'right' }}>
-                    {g.total_points} Pkt.<br />gesamt
-                  </span>
-
                   <span style={{
                     fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
-                    width: 76, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0,
+                    textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0,
                     color: i === 0 ? 'var(--good)' : 'var(--ink)',
                   }}>
                     Ø {g.avg_points}
