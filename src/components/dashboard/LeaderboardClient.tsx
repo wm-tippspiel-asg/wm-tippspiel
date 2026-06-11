@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Trophy, Medal, Target, Users, ArrowLeft, ChevronRight } from 'lucide-react'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { StatsCard } from '@/components/dashboard/StatsCard'
-import type { LeaderboardEntry, GroupStanding } from '@/types'
+import type { LeaderboardEntry, GroupStanding, Match, Prediction } from '@/types'
 
 interface Props {
   initialEntries: LeaderboardEntry[]
@@ -22,6 +22,8 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
   const [drillEntries, setDrillEntries] = useState<LeaderboardEntry[]>([])
   const [drillLoading, setDrillLoading] = useState(false)
   const [groupStandings, setGroupStandings] = useState(initialGroupStandings)
+  const [liveMatch, setLiveMatch] = useState<Match | null>(null)
+  const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map())
 
   // Refresh group standings in background
   useEffect(() => {
@@ -29,6 +31,37 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
       .then((r) => r.json() as Promise<{ success: boolean; data: { standings: GroupStanding[] } }>)
       .then((d) => { if (d.success) setGroupStandings(d.data.standings) })
       .catch(() => {})
+  }, [])
+
+  // Load live match and predictions
+  useEffect(() => {
+    async function loadLiveMatch() {
+      try {
+        const res = await fetch('/api/matches?status=live')
+        const d = await res.json() as { success: boolean; data?: Match[] }
+        if (d.success && d.data && d.data.length > 0) {
+          const match = d.data[0]
+          setLiveMatch(match)
+          
+          // Fetch all predictions for this match
+          const predRes = await fetch(`/api/predictions?match_id=${match.id}`)
+          const predData = await predRes.json() as { success: boolean; data?: Prediction[] }
+          if (predData.success && predData.data) {
+            const predMap = new Map(predData.data.map(p => [p.user_id, p]))
+            setPredictions(predMap)
+          }
+        } else {
+          setLiveMatch(null)
+          setPredictions(new Map())
+        }
+      } catch {
+        setLiveMatch(null)
+        setPredictions(new Map())
+      }
+    }
+    loadLiveMatch()
+    const id = setInterval(loadLiveMatch, 30_000)
+    return () => clearInterval(id)
   }, [])
 
   // Load group drill-down
@@ -110,7 +143,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
               Exakt=5 Pkt. · Differenz=3 Pkt. · Gewinner=2 Pkt.
             </p>
           </div>
-          <LeaderboardTable entries={rankedEntries} currentUserId={currentUserId} />
+          <LeaderboardTable entries={rankedEntries} currentUserId={currentUserId} liveMatch={liveMatch} predictions={predictions} />
         </div>
       </div>
 
@@ -148,7 +181,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                       style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
                   </div>
                 )
-                : <LeaderboardTable entries={drillEntries} currentUserId={currentUserId} />}
+                : <LeaderboardTable entries={drillEntries} currentUserId={currentUserId} liveMatch={liveMatch} predictions={predictions} />}
             </div>
           </>
         ) : (

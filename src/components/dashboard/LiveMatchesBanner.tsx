@@ -53,10 +53,9 @@ function ScoreCard({ match }: { match: Match }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
         {/* Home */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1, minWidth: 0 }}>
-          {homeFlag
-            ? <img src={homeFlag} alt="" style={{ width: 32, height: 24, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--border)' }} />
-            : <div style={{ width: 32, height: 24, background: 'var(--surface-2)', borderRadius: 3 }} />
-          }
+          <span style={{ fontSize: 32 }}>
+            {homeFlag ?? '🏳️'}
+          </span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }}>
             {match.home_team}
           </span>
@@ -78,10 +77,9 @@ function ScoreCard({ match }: { match: Match }) {
 
         {/* Away */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1, minWidth: 0 }}>
-          {awayFlag
-            ? <img src={awayFlag} alt="" style={{ width: 32, height: 24, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--border)' }} />
-            : <div style={{ width: 32, height: 24, background: 'var(--surface-2)', borderRadius: 3 }} />
-          }
+          <span style={{ fontSize: 32 }}>
+            {awayFlag ?? '🏳️'}
+          </span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }}>
             {match.away_team}
           </span>

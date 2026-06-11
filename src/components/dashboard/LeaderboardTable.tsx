@@ -1,13 +1,15 @@
-import type { LeaderboardEntry } from '@/types'
+import type { LeaderboardEntry, Match, Prediction } from '@/types'
 
 interface Props {
   entries: LeaderboardEntry[]
   currentUserId: string
+  liveMatch?: Match | null
+  predictions?: Map<string, Prediction>
 }
 
 const medals = ['🥇', '🥈', '🥉']
 
-export function LeaderboardTable({ entries, currentUserId }: Props) {
+export function LeaderboardTable({ entries, currentUserId, liveMatch, predictions }: Props) {
   if (entries.length === 0) {
     return (
       <p style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 15 }}>
@@ -21,6 +23,7 @@ export function LeaderboardTable({ entries, currentUserId }: Props) {
       {entries.map((e, i) => {
         const isMe = e.user_id === currentUserId
         const rank = e.rank ?? i + 1
+        const prediction = predictions?.get(e.user_id)
 
         return (
           <div key={e.user_id} style={{
@@ -43,13 +46,20 @@ export function LeaderboardTable({ entries, currentUserId }: Props) {
               background: rank === 1 ? 'var(--gold)' : rank === 2 ? 'var(--silver)' : rank === 3 ? 'var(--bronze)' : 'var(--surface-3)',
             }} />
 
-            {/* name */}
-            <span style={{ flex: 1, fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 15 }}>
-              {e.username}
-              {isMe && (
-                <span className="wm-chip wm-chip-open" style={{ marginLeft: 8, fontSize: 10, padding: '2px 7px', verticalAlign: 'middle' }}>Du</span>
+            {/* name + prediction */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 15 }}>
+                {e.username}
+                {isMe && (
+                  <span className="wm-chip wm-chip-open" style={{ marginLeft: 8, fontSize: 10, padding: '2px 7px', verticalAlign: 'middle' }}>Du</span>
+                )}
+              </span>
+              {liveMatch && prediction && (
+                <span style={{ marginLeft: 10, fontSize: 12, color: 'var(--muted)', fontWeight: 500, fontFamily: 'var(--font-display)' }}>
+                  Tipp: {prediction.home_score}:{prediction.away_score}
+                </span>
               )}
-            </span>
+            </div>
 
             {/* stats */}
             <span style={{ fontSize: 12.5, color: 'var(--muted)', fontWeight: 600, display: 'none', alignItems: 'center', gap: 4 }}

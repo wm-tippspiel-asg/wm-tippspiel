@@ -11,8 +11,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const userId = request.headers.get('x-user-id')
   if (!userId) return NextResponse.json({ success: false, error: 'Nicht angemeldet' }, { status: 401 })
 
+  const { searchParams } = new URL(request.url)
+  const matchId = searchParams.get('match_id')
   const db = getDb()
 
+  // If match_id is provided, fetch all predictions for that match
+  if (matchId) {
+    const predictions = await queryAll<Prediction>(
+      db,
+      `SELECT * FROM predictions WHERE match_id = ?`,
+      [matchId],
+    )
+    return NextResponse.json({ success: true, data: predictions })
+  }
+
+  // Otherwise fetch all predictions for the current user (original behavior)
   const predictions = await queryAll<Prediction & {
     match_home_team: string
     match_away_team: string
