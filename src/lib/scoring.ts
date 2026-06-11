@@ -111,7 +111,7 @@ export async function rebuildLeaderboard(): Promise<void> {
       COUNT(CASE WHEN p.points = (SELECT value FROM scoring_config WHERE key = 'correct_winner') THEN 1 END) AS correct_winner,
       COUNT(p.id) AS total_tips
     FROM users u
-    LEFT JOIN predictions p ON p.user_id = u.id AND p.points IS NOT NULL
+    LEFT JOIN predictions p ON p.user_id = u.id
     WHERE u.role = 'user'
     GROUP BY u.id, u.username
   `)

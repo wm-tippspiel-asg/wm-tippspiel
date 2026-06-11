@@ -53,7 +53,7 @@ export default async function LeaderboardPage() {
       LEFT JOIN leaderboard l ON l.user_id = u.id
       GROUP BY ug.id
     )
-    SELECT id, name, description, member_count, total_points, exact_results, avg_points
+    SELECT id, name, description, member_count, total_points, exact_results, avg_points, avg_points_raw, avg_exact_raw
     FROM group_stats
     ORDER BY avg_points_raw DESC, avg_exact_raw DESC, name ASC`
 
