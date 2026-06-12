@@ -1,4 +1,5 @@
 import { fetchFootballStandings } from '@/lib/football-api'
+import { getKv } from '@/lib/db'
 
 interface Team {
   position: number
@@ -21,7 +22,9 @@ export async function GroupStandingsServer() {
   let error = ''
 
   try {
-    const data = await fetchFootballStandings()
+    let kv: KVNamespace | undefined
+    try { kv = getKv() } catch { kv = undefined }
+    const data = await fetchFootballStandings(kv)
     standings = data ?? []
   } catch (e) {
     error = e instanceof Error ? e.message : 'Fehler beim Laden'

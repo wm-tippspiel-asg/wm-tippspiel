@@ -1,10 +1,14 @@
 import { fetchFootballMatches, fetchFootballStandings } from '@/lib/football-api'
+import { getKv } from '@/lib/db'
 import Link from 'next/link'
 
 export default async function LandingPage() {
+  let kv: KVNamespace | undefined
+  try { kv = getKv() } catch { kv = undefined }
+
   const [matchResult, standingsResult] = await Promise.allSettled([
-    fetchFootballMatches(),
-    fetchFootballStandings(),
+    fetchFootballMatches(kv),
+    fetchFootballStandings(kv),
   ])
 
   const matchData: any[] = matchResult.status === 'fulfilled' && Array.isArray(matchResult.value) ? matchResult.value : []
