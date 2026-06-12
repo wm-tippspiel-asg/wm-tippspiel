@@ -43,11 +43,16 @@ export interface FootballMatch {
   external_id: number
 }
 
-export async function fetchFootballMatches(kv?: KVNamespace): Promise<FootballMatch[] | null> {
+export async function fetchFootballMatches(
+  kv?: KVNamespace,
+  options?: { fresh?: boolean },
+): Promise<FootballMatch[] | null> {
   const cacheKey = 'wm2026_matches'
   if (kv) {
-    const cached = await kv.get<FootballMatch[]>(cacheKey, 'json')
-    if (cached) return cached
+    if (!options?.fresh) {
+      const cached = await kv.get<FootballMatch[]>(cacheKey, 'json')
+      if (cached) return cached
+    }
     if (await isRateLimited(kv)) {
       console.warn('football-data.org: rate limited, skipping request')
       return null

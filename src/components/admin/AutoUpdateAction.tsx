@@ -14,9 +14,21 @@ export function AutoUpdateAction() {
     setIsError(false)
     try {
       const res = await fetch('/api/admin/auto-update-scores', { method: 'POST' })
-      const d = await res.json() as { success: boolean; data?: { updated: number }; error?: string }
+      const d = await res.json() as {
+        success: boolean
+        data?: { updated: number; liveUpdated?: number; pointsRecalculated?: number }
+        error?: string
+      }
       if (d.success) {
-        setMsg(d.data?.updated ? `${d.data.updated} Spiel(e) aktualisiert ✓` : 'Keine neuen Ergebnisse')
+        const total = (d.data?.updated ?? 0) + (d.data?.liveUpdated ?? 0)
+        if (total > 0) {
+          const parts = []
+          if (d.data?.liveUpdated) parts.push(`${d.data.liveUpdated} live`)
+          if (d.data?.updated) parts.push(`${d.data.updated} beendet`)
+          setMsg(`${parts.join(', ')} — Punkte berechnet ✓`)
+        } else {
+          setMsg('Keine neuen Ergebnisse')
+        }
       } else {
         setIsError(true)
         setMsg(d.error ?? 'Fehler beim Abrufen')

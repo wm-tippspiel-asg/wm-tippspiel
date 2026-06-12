@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb, getKv, queryOne, execute } from '@/lib/db'
-import { rebuildLeaderboard } from '@/lib/scoring'
+import { rebuildLeaderboard, recalculateMatchPoints } from '@/lib/scoring'
 import { audit } from '@/lib/audit'
 import { fetchFootballMatches } from '@/lib/football-api'
 import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
@@ -8,6 +8,7 @@ import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
 export const runtime = 'edge'
 
 // Maps football-data.org English team names → German names stored in DB
+// Includes common API variants (FIFA names, old/new spellings)
 const EN_TO_DE: Record<string, string> = {
   'Algeria': 'Algerien',
   'Argentina': 'Argentinien',
@@ -15,14 +16,21 @@ const EN_TO_DE: Record<string, string> = {
   'Austria': 'Österreich',
   'Belgium': 'Belgien',
   'Bosnia-Herzegovina': 'Bosnien-Herzegowina',
+  'Bosnia and Herzegovina': 'Bosnien-Herzegowina',
+  'Bosnia Herzegovina': 'Bosnien-Herzegowina',
   'Brazil': 'Brasilien',
+  'Cabo Verde': 'Kap Verde',
   'Canada': 'Kanada',
+  'Cape Verde': 'Kap Verde',
   'Cape Verde Islands': 'Kap Verde',
   'Colombia': 'Kolumbien',
   'Congo DR': 'DR Kongo',
+  'DR Congo': 'DR Kongo',
   'Croatia': 'Kroatien',
   'Curaçao': 'Curaçao',
+  'Czech Republic': 'Tschechien',
   'Czechia': 'Tschechien',
+  "Côte d'Ivoire": 'Elfenbeinküste',
   'Ecuador': 'Ecuador',
   'Egypt': 'Ägypten',
   'England': 'England',
@@ -35,6 +43,9 @@ const EN_TO_DE: Record<string, string> = {
   'Ivory Coast': 'Elfenbeinküste',
   'Japan': 'Japan',
   'Jordan': 'Jordanien',
+  'Korea Republic': 'Südkorea',
+  'Republic of Korea': 'Südkorea',
+  'South Korea': 'Südkorea',
   'Mexico': 'Mexiko',
   'Morocco': 'Marokko',
   'Netherlands': 'Niederlande',
@@ -48,15 +59,19 @@ const EN_TO_DE: Record<string, string> = {
   'Scotland': 'Schottland',
   'Senegal': 'Senegal',
   'South Africa': 'Südafrika',
-  'South Korea': 'Südkorea',
   'Spain': 'Spanien',
   'Sweden': 'Schweden',
   'Switzerland': 'Schweiz',
   'Tunisia': 'Tunesien',
   'Turkey': 'Türkei',
+  'Türkiye': 'Türkei',
   'United States': 'USA',
   'Uruguay': 'Uruguay',
   'Uzbekistan': 'Usbekistan',
+}
+
+function toGermanTeam(name: string): string {
+  return EN_TO_DE[name] ?? name
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -73,53 +88,78 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
   let kv: KVNamespace | undefined
   try { kv = getKv() } catch { kv = undefined }
 
-  const apiMatches = await fetchFootballMatches(kv)
+  // Always fetch fresh data — cron runs every 5 min, cache TTL is 15 min
+  const apiMatches = await fetchFootballMatches(kv, { fresh: true })
   if (!apiMatches) {
     return NextResponse.json({ success: false, error: 'Football-API nicht erreichbar' }, { status: 503 })
   }
 
   let updated = 0
   let liveUpdated = 0
+  let pointsRecalculated = 0
+  let unmatched = 0
 
   for (const apiMatch of apiMatches) {
     if (apiMatch.status === 'scheduled') continue
+    if (apiMatch.home_score === null || apiMatch.away_score === null) continue
 
-    const homeDe = EN_TO_DE[apiMatch.home_team] ?? apiMatch.home_team
-    const existing = await queryOne<{ id: string; home_score: number | null; status: string }>(
+    const homeDe = toGermanTeam(apiMatch.home_team)
+    const awayDe = toGermanTeam(apiMatch.away_team)
+
+    const existing = await queryOne<{
+      id: string
+      home_score: number | null
+      away_score: number | null
+      status: string
+    }>(
       db,
-      `SELECT id, home_score, status FROM matches WHERE match_time = ? AND home_team = ?`,
-      [apiMatch.match_time, homeDe]
+      `SELECT id, home_score, away_score, status FROM matches WHERE home_team = ? AND away_team = ?`,
+      [homeDe, awayDe],
     )
-    if (!existing) continue
-
-    if (apiMatch.status === 'live' && existing.status !== 'live') {
-      await execute(
-        db,
-        `UPDATE matches SET status = 'live', updated_at = datetime('now') WHERE id = ?`,
-        [existing.id]
-      )
-      liveUpdated++
+    if (!existing) {
+      unmatched++
+      continue
     }
 
-    if (apiMatch.status === 'finished' && apiMatch.home_score !== null && apiMatch.away_score !== null && existing.home_score === null) {
-      await execute(
-        db,
-        `UPDATE matches SET home_score = ?, away_score = ?, status = 'finished', updated_at = datetime('now') WHERE id = ?`,
-        [apiMatch.home_score, apiMatch.away_score, existing.id]
-      )
-      updated++
-    }
+    const targetStatus = apiMatch.status === 'finished' ? 'finished' : 'live'
+    const scoresChanged =
+      existing.home_score !== apiMatch.home_score ||
+      existing.away_score !== apiMatch.away_score
+    const statusChanged = existing.status !== targetStatus
+
+    if (!scoresChanged && !statusChanged) continue
+
+    await execute(
+      db,
+      `UPDATE matches SET home_score = ?, away_score = ?, status = ?, updated_at = datetime('now') WHERE id = ?`,
+      [apiMatch.home_score, apiMatch.away_score, targetStatus, existing.id],
+    )
+
+    await recalculateMatchPoints(existing.id, { skipRebuild: true })
+    pointsRecalculated++
+
+    if (targetStatus === 'live') liveUpdated++
+    else updated++
   }
 
-  if (updated > 0) {
+  if (pointsRecalculated > 0) {
     await rebuildLeaderboard()
-    await audit({ actorId, actorName, action: 'leaderboard.recalculated', details: { auto_updated: updated } })
+    await audit({
+      actorId,
+      actorName,
+      action: 'leaderboard.recalculated',
+      details: { auto_updated: updated, live_updated: liveUpdated, points_recalculated: pointsRecalculated },
+    })
   }
 
   if (updated > 0 || liveUpdated > 0) {
     await invalidateCache(
-      CACHE_KEYS.LEADERBOARD_ALL, CACHE_KEYS.LEADERBOARD_GROUPS,
-      'cache:leaderboard:top5', CACHE_KEYS.MATCHES_UPCOMING,
+      CACHE_KEYS.LEADERBOARD_ALL,
+      CACHE_KEYS.LEADERBOARD_GROUPS,
+      'cache:leaderboard:top5',
+      'cache:leaderboard:ranking',
+      'cache:leaderboard:live',
+      CACHE_KEYS.MATCHES_UPCOMING,
     )
   }
 
@@ -128,5 +168,8 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
     `DELETE FROM audit_logs WHERE action IN ('prediction.created', 'prediction.updated') AND created_at < datetime('now', '-24 hours')`,
   )
 
-  return NextResponse.json({ success: true, data: { updated, liveUpdated } })
+  return NextResponse.json({
+    success: true,
+    data: { updated, liveUpdated, pointsRecalculated, unmatched },
+  })
 }

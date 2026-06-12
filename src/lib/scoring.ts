@@ -59,7 +59,10 @@ export function calculatePoints(
 }
 
 // Recalculate all points after a match result is set
-export async function recalculateMatchPoints(matchId: string): Promise<void> {
+export async function recalculateMatchPoints(
+  matchId: string,
+  options?: { skipRebuild?: boolean },
+): Promise<void> {
   const db = getDb()
 
   const match = await queryOne<{
@@ -91,6 +94,23 @@ export async function recalculateMatchPoints(matchId: string): Promise<void> {
     await execute(db, `UPDATE predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`, [points, pred.id])
   }
 
+  if (!options?.skipRebuild) {
+    await rebuildLeaderboard()
+  }
+}
+
+// Recalculate prediction points for all matches with scores, then rebuild leaderboard
+export async function recalculateAllMatchPoints(): Promise<void> {
+  const db = getDb()
+  const matches = await queryAll<{ id: string }>(
+    db,
+    `SELECT id FROM matches
+     WHERE status IN ('finished', 'live')
+       AND home_score IS NOT NULL AND away_score IS NOT NULL`,
+  )
+  for (const m of matches) {
+    await recalculateMatchPoints(m.id, { skipRebuild: true })
+  }
   await rebuildLeaderboard()
 }
 
