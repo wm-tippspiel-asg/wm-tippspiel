@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { getDb, queryAll, queryOne } from '@/lib/db'
 import { getCached, setCached, CACHE_KEYS } from '@/lib/cache'
 import { LeaderboardClient } from '@/components/dashboard/LeaderboardClient'
-import type { LeaderboardEntry, UserGroup, GroupStanding } from '@/types'
+import type { LeaderboardEntry, UserGroup, GroupStanding, Match } from '@/types'
 import type { Metadata } from 'next'
 
 export const runtime = 'edge'
@@ -70,6 +70,19 @@ export default async function LeaderboardPage() {
     await setCached(CACHE_KEYS.LEADERBOARD_GROUPS, groupStandings)
   }
 
+  // Non-scheduled matches + all their predictions (shown as columns)
+  const visibleMatches = await queryAll<Match>(db,
+    `SELECT * FROM matches WHERE status != 'scheduled' ORDER BY match_time ASC`)
+
+  type PredRow = { user_id: string; match_id: string; home_score: number; away_score: number; points: number | null }
+  const allPredictions = visibleMatches.length > 0
+    ? await queryAll<PredRow>(db,
+        `SELECT p.user_id, p.match_id, p.home_score, p.away_score, p.points
+         FROM predictions p
+         JOIN matches m ON m.id = p.match_id
+         WHERE m.status != 'scheduled'`)
+    : []
+
   // User-specific queries (not cached)
   const [myEntry, groups] = await Promise.all([
     queryOne<LeaderboardEntry>(
@@ -99,6 +112,8 @@ export default async function LeaderboardPage() {
       currentUserId={user.id}
       groups={groups}
       initialGroupStandings={groupStandings}
+      visibleMatches={visibleMatches}
+      allPredictions={allPredictions}
     />
   )
 }

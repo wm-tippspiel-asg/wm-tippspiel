@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
-import { Trophy, Medal, Target, Users, ArrowLeft, ChevronRight, X } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Trophy, Medal, Target, Users, ArrowLeft, ChevronRight } from 'lucide-react'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { StatsCard } from '@/components/dashboard/StatsCard'
-import { formatTime } from '@/lib/utils'
 import type { LeaderboardEntry, GroupStanding, Match, Prediction } from '@/types'
 
-type PredictionWithUser = Prediction & { username: string }
+type PredRow = { user_id: string; match_id: string; home_score: number; away_score: number; points: number | null }
 
 function abbr(name: string): string {
   const words = name.trim().split(/\s+/)
@@ -15,53 +14,20 @@ function abbr(name: string): string {
   return name.slice(0, 3).toUpperCase()
 }
 
-function MatchChip({ match, selected, onClick }: { match: Match; selected: boolean; onClick: () => void }) {
-  const isLive = match.status === 'live'
-  const hasScore = match.home_score !== null
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flexShrink: 0,
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 2, padding: '6px 8px', borderRadius: 10, border: 'none', cursor: 'pointer',
-        background: selected ? 'var(--accent)' : isLive ? 'var(--surface-2)' : 'var(--surface)',
-        color: selected ? '#fff' : 'var(--ink)',
-        minWidth: 56, transition: 'background .15s',
-        outline: isLive && !selected ? '2px solid var(--accent)' : 'none',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 16, lineHeight: 1 }}>
-        <span>{match.home_team_flag ?? '🏳'}</span>
-        <span style={{ fontSize: 11, fontWeight: 700, opacity: selected ? 1 : .6, minWidth: 28, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-          {hasScore ? `${match.home_score}:${match.away_score}` : isLive ? '●' : '–:–'}
-        </span>
-        <span>{match.away_team_flag ?? '🏳'}</span>
-      </div>
-      <div style={{ display: 'flex', gap: 4, fontSize: 9, fontWeight: 700, letterSpacing: '.02em', opacity: selected ? .9 : .55, textTransform: 'uppercase' }}>
-        <span>{abbr(match.home_team)}</span>
-        <span style={{ opacity: .4 }}>·</span>
-        <span>{abbr(match.away_team)}</span>
-      </div>
-      {!hasScore && !isLive && (
-        <div style={{ fontSize: 9, opacity: .5, marginTop: 1 }}>{formatTime(match.match_time)}</div>
-      )}
-    </button>
-  )
-}
-
 interface Props {
   initialEntries: LeaderboardEntry[]
   myEntry: LeaderboardEntry | null
   currentUserId: string
-  groups: unknown[]  // no longer used in UI, kept for compat
+  groups: unknown[]
   initialGroupStandings: GroupStanding[]
+  visibleMatches: Match[]
+  allPredictions: PredRow[]
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export function LeaderboardClient({ initialEntries, myEntry, currentUserId, initialGroupStandings }: Props) {
-  const [mainTab, setMainTab]         = useState<'einzel' | 'gruppen'>('einzel')
+export function LeaderboardClient({ initialEntries, myEntry, currentUserId, initialGroupStandings, visibleMatches, allPredictions }: Props) {
+  const [mainTab, setMainTab] = useState<'einzel' | 'gruppen'>('einzel')
   const [drillGroupId, setDrillGroupId] = useState<string | null>(null)
   const [drillEntries, setDrillEntries] = useState<LeaderboardEntry[]>([])
   const [drillLoading, setDrillLoading] = useState(false)
@@ -69,34 +35,19 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
   const [liveMatch, setLiveMatch] = useState<Match | null>(null)
   const [predictions, setPredictions] = useState<Map<string, Prediction>>(new Map())
 
-  // Match strip
-  const [matches, setMatches] = useState<Match[]>([])
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
-  const [matchPredictions, setMatchPredictions] = useState<PredictionWithUser[]>([])
-  const [predLoading, setPredLoading] = useState(false)
-  const stripRef = useRef<HTMLDivElement>(null)
-
-  // Refresh group standings in background every 30 seconds
   useEffect(() => {
     async function refreshGroupStandings() {
       try {
         const res = await fetch('/api/leaderboard?view=groups')
         const d = await res.json() as { success: boolean; data?: { standings: GroupStanding[] } }
         if (d.success && d.data) setGroupStandings(d.data.standings)
-      } catch {
-        // silently fail on refresh
-      }
+      } catch { /* silent */ }
     }
-    
-    // Initial fetch
     refreshGroupStandings()
-    
-    // Poll every 30 seconds
     const id = setInterval(refreshGroupStandings, 30_000)
     return () => clearInterval(id)
   }, [])
 
-  // Load live match and predictions
   useEffect(() => {
     async function loadLiveMatch() {
       try {
@@ -104,8 +55,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
         const d = await res.json() as { success: boolean; data?: { liveMatch: Match | null; predictions: Prediction[] } }
         if (d.success && d.data) {
           setLiveMatch(d.data.liveMatch)
-          const predMap = new Map(d.data.predictions.map(p => [p.user_id, p]))
-          setPredictions(predMap)
+          setPredictions(new Map(d.data.predictions.map(p => [p.user_id, p])))
         }
       } catch {
         setLiveMatch(null)
@@ -117,38 +67,12 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
     return () => clearInterval(id)
   }, [])
 
-  // Load all matches for the strip
-  useEffect(() => {
-    fetch('/api/matches')
-      .then((r) => r.json() as Promise<{ success: boolean; data: Match[] }>)
-      .then((d) => { if (d.success) setMatches(d.data) })
-      .catch(() => {})
-  }, [])
-
-  async function selectMatch(match: Match) {
-    if (selectedMatch?.id === match.id) { setSelectedMatch(null); return }
-    setSelectedMatch(match)
-    setMatchPredictions([])
-    if (match.status === 'scheduled') return
-    setPredLoading(true)
-    try {
-      const res = await fetch(`/api/predictions?match_id=${match.id}`)
-      const d = await res.json() as { success: boolean; data: PredictionWithUser[] }
-      if (d.success) setMatchPredictions(d.data)
-    } finally {
-      setPredLoading(false)
-    }
-  }
-
-  // Load group drill-down
   useEffect(() => {
     if (!drillGroupId) { setDrillEntries([]); return }
     setDrillLoading(true)
     fetch(`/api/leaderboard?group_id=${drillGroupId}`)
       .then((r) => r.json() as Promise<{ success: boolean; data: { entries: LeaderboardEntry[] } }>)
-      .then((d) => {
-        if (d.success) setDrillEntries(d.data.entries.map((e, i) => ({ ...e, rank: i + 1 })))
-      })
+      .then((d) => { if (d.success) setDrillEntries(d.data.entries.map((e, i) => ({ ...e, rank: i + 1 }))) })
       .catch(() => {})
       .finally(() => setDrillLoading(false))
   }, [drillGroupId])
@@ -167,6 +91,13 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
     () => groupStandings.find((g) => g.id === drillGroupId),
     [groupStandings, drillGroupId],
   )
+
+  // userId:matchId → prediction
+  const predMap = useMemo(() => {
+    const m = new Map<string, PredRow>()
+    allPredictions.forEach(p => m.set(`${p.user_id}:${p.match_id}`, p))
+    return m
+  }, [allPredictions])
 
   function switchTab(tab: 'einzel' | 'gruppen') {
     setMainTab(tab)
@@ -187,112 +118,6 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
               : `${groupStandings.length} Klassen`}
         </p>
       </div>
-
-      {/* ── Match Strip ── */}
-      {matches.length > 0 && (
-        <div style={{ display: 'grid', gap: 8 }}>
-          <div
-            ref={stripRef}
-            style={{
-              display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4,
-              scrollbarWidth: 'thin',
-            }}
-          >
-            {matches.map((m) => (
-              <MatchChip key={m.id} match={m} selected={selectedMatch?.id === m.id} onClick={() => selectMatch(m)} />
-            ))}
-          </div>
-
-          {selectedMatch && (
-            <div style={{
-              background: 'var(--surface)', borderRadius: 12,
-              border: '1px solid var(--border)', overflow: 'hidden',
-            }}>
-              {/* Panel header */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 14px', borderBottom: '1px solid var(--border)',
-              }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>
-                  {selectedMatch.home_team_flag} {selectedMatch.home_team}
-                  <span style={{ color: 'var(--muted)', fontWeight: 400, margin: '0 6px' }}>vs</span>
-                  {selectedMatch.away_team} {selectedMatch.away_team_flag}
-                  {selectedMatch.home_score !== null && (
-                    <span style={{ marginLeft: 8, fontVariantNumeric: 'tabular-nums', color: 'var(--accent)' }}>
-                      {selectedMatch.home_score}:{selectedMatch.away_score}
-                    </span>
-                  )}
-                </div>
-                <button onClick={() => setSelectedMatch(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--muted)' }}>
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Panel body */}
-              {selectedMatch.status === 'scheduled' ? (
-                <p style={{ padding: '20px 14px', textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
-                  Tipps werden nach Anpfiff sichtbar ({formatTime(selectedMatch.match_time)} Uhr)
-                </p>
-              ) : predLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-                  <div className="h-5 w-5 border-2 border-t-transparent rounded-full animate-spin"
-                    style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
-                </div>
-              ) : matchPredictions.length === 0 ? (
-                <p style={{ padding: '20px 14px', textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
-                  Noch keine Tipps abgegeben.
-                </p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                        <th style={{ padding: '7px 14px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)', fontSize: 11, width: 32 }}>#</th>
-                        <th style={{ padding: '7px 8px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)', fontSize: 11 }}>Name</th>
-                        <th style={{ padding: '7px 8px', textAlign: 'center', fontWeight: 600, color: 'var(--muted)', fontSize: 11 }}>Tipp</th>
-                        {selectedMatch.status === 'finished' && (
-                          <th style={{ padding: '7px 14px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)', fontSize: 11 }}>Pkt.</th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rankedEntries
-                        .map((entry) => {
-                          const pred = matchPredictions.find((p) => p.user_id === entry.user_id)
-                          return pred ? { entry, pred } : null
-                        })
-                        .filter((x): x is { entry: typeof rankedEntries[0]; pred: PredictionWithUser } => x !== null)
-                        .map(({ entry, pred }) => (
-                          <tr key={pred.user_id} style={{
-                            borderTop: '1px solid var(--border)',
-                            background: pred.user_id === currentUserId ? 'var(--surface-2)' : 'transparent',
-                          }}>
-                            <td style={{ padding: '8px 14px', color: 'var(--muted)', fontWeight: 600, fontSize: 12 }}>
-                              {entry.rank}
-                            </td>
-                            <td style={{ padding: '8px 8px', fontWeight: pred.user_id === currentUserId ? 700 : 500, color: 'var(--ink)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {entry.username}
-                              {pred.user_id === currentUserId && <span style={{ marginLeft: 4, fontSize: 10, color: 'var(--accent)' }}>●</span>}
-                            </td>
-                            <td style={{ padding: '8px 8px', textAlign: 'center', fontWeight: 700, fontVariantNumeric: 'tabular-nums', fontFamily: 'var(--font-mono, monospace)' }}>
-                              {pred.home_score}:{pred.away_score}
-                            </td>
-                            {selectedMatch.status === 'finished' && (
-                              <td style={{ padding: '8px 14px', textAlign: 'right', fontWeight: 700,
-                                color: pred.points && pred.points > 0 ? 'var(--good)' : 'var(--muted)' }}>
-                                {pred.points ?? 0}
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── Tab switcher ── */}
       <div className="lb-tab-group flex gap-1 p-1 rounded-lg w-fit">
@@ -318,37 +143,98 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
           </div>
         )}
 
-        <div className="card">
+        <div className="card" style={{ overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
             <h2 className="section-title">Gesamtrangliste</h2>
             <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
               Exakt=5 Pkt. · Differenz=3 Pkt. · Gewinner=2 Pkt.
             </p>
           </div>
-          <LeaderboardTable entries={rankedEntries} currentUserId={currentUserId} liveMatch={liveMatch} predictions={predictions} />
+
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+            <table style={{ borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <th style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', padding: '8px 4px 8px 16px', width: 36, textAlign: 'center', fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>#</th>
+                  <th style={{ position: 'sticky', left: 36, zIndex: 2, background: 'var(--surface)', padding: '8px 12px 8px 4px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'left', minWidth: 110 }}>Name</th>
+                  <th style={{ padding: '8px 16px 8px 8px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>Pkt</th>
+                  {visibleMatches.map(m => (
+                    <th key={m.id} style={{ padding: '6px 6px', textAlign: 'center', minWidth: 44, verticalAlign: 'bottom' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 700, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.home_team)}</span>
+                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 700, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.away_team)}</span>
+                        {m.home_score !== null && (
+                          <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', marginTop: 2, lineHeight: 1 }}>
+                            {m.home_score}:{m.away_score}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rankedEntries.map((entry, i) => {
+                  const isMe = entry.user_id === currentUserId
+                  const rank = entry.rank ?? i + 1
+                  const bg = isMe ? 'var(--accent-soft)' : 'var(--surface)'
+                  return (
+                    <tr key={entry.user_id} style={{ borderTop: '1px solid var(--border)' }}>
+                      {/* sticky rank */}
+                      <td style={{ position: 'sticky', left: 0, zIndex: 1, background: bg, padding: '10px 4px 10px 16px', textAlign: 'center', width: 36 }}>
+                        {rank <= 3
+                          ? <span style={{ fontSize: 16 }}>{MEDALS[rank - 1]}</span>
+                          : <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>{rank}</span>}
+                      </td>
+                      {/* sticky name */}
+                      <td style={{ position: 'sticky', left: 36, zIndex: 1, background: bg, padding: '10px 12px 10px 4px', fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 14, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {entry.username}
+                        {isMe && <span style={{ marginLeft: 5, fontSize: 9, background: 'var(--accent)', color: '#fff', borderRadius: 4, padding: '1px 4px', fontWeight: 700, verticalAlign: 'middle' }}>Du</span>}
+                      </td>
+                      {/* points */}
+                      <td style={{ padding: '10px 16px 10px 8px', textAlign: 'right', fontWeight: 700, fontSize: 15, fontVariantNumeric: 'tabular-nums', color: rank === 1 ? 'var(--good)' : 'var(--ink)', whiteSpace: 'nowrap' }}>
+                        {entry.total_points}
+                      </td>
+                      {/* per-match predictions */}
+                      {visibleMatches.map(m => {
+                        const pred = predMap.get(`${entry.user_id}:${m.id}`)
+                        const finished = m.status === 'finished'
+                        let color = 'var(--ink)'
+                        if (finished && pred) {
+                          const pts = pred.points ?? 0
+                          if (pts >= 5) color = 'var(--good)'
+                          else if (pts > 0) color = '#f59e0b'
+                          else color = 'var(--muted)'
+                        } else if (!pred) {
+                          color = 'var(--muted)'
+                        }
+                        return (
+                          <td key={m.id} style={{ padding: '10px 6px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color, whiteSpace: 'nowrap' }}>
+                            {pred ? `${pred.home_score}:${pred.away_score}` : '–'}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* ── KLASSENWERTUNG ── */}
       <div className={`lb-panel${mainTab === 'gruppen' ? ' lb-panel--active' : ''}`}>
-
         {drillGroupId ? (
-          /* ─ Drill-down: Einzelrangliste einer Klasse ─ */
           <>
             <button
               onClick={() => setDrillGroupId(null)}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                border: 0, background: 'transparent', color: 'var(--muted)',
-                cursor: 'pointer', fontSize: 14, fontWeight: 600, padding: '4px 0',
-                transition: 'color .12s',
-              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: 0, background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 14, fontWeight: 600, padding: '4px 0', transition: 'color .12s' }}
               className="lb-back-btn"
             >
               <ArrowLeft size={15} />
               Zurück zu Klassen
             </button>
-
             <div className="card">
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
                 <h2 className="section-title">{drillGroup?.name}</h2>
@@ -357,17 +243,11 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                 </p>
               </div>
               {drillLoading
-                ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
-                    <div className="h-6 w-6 border-2 border-t-transparent rounded-full animate-spin"
-                      style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
-                  </div>
-                )
+                ? <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}><div className="h-6 w-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} /></div>
                 : <LeaderboardTable entries={drillEntries} currentUserId={currentUserId} liveMatch={liveMatch} predictions={predictions} />}
             </div>
           </>
         ) : (
-          /* ─ Klassenliste ─ */
           <div className="card">
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -380,49 +260,19 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
             </div>
             <div>
               {groupStandings.length === 0 ? (
-                <p style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 15 }}>
-                  Noch keine Klassen angelegt.
-                </p>
+                <p style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: 15 }}>Noch keine Klassen angelegt.</p>
               ) : groupStandings.map((g, i) => (
-                <button
-                  key={g.id}
-                  onClick={() => setDrillGroupId(g.id)}
-                  className="lb-group-row"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 14,
-                    padding: '14px 20px', width: '100%',
-                    borderTop: i > 0 ? '1px solid var(--border)' : 'none',
-                    border: i > 0 ? undefined : 'none',
-                    borderLeft: 'none', borderRight: 'none', borderBottom: 'none',
-                    background: 'transparent', cursor: 'pointer', textAlign: 'left',
-                  }}
-                >
+                <button key={g.id} onClick={() => setDrillGroupId(g.id)} className="lb-group-row"
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', width: '100%', borderTop: i > 0 ? '1px solid var(--border)' : 'none', border: i > 0 ? undefined : 'none', borderLeft: 'none', borderRight: 'none', borderBottom: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
                   <div style={{ width: 28, textAlign: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, flexShrink: 0 }}>
-                    {i < 3
-                      ? <span style={{ fontSize: 20 }}>{MEDALS[i]}</span>
-                      : <span style={{ fontSize: 14, color: 'var(--muted)' }}>{i + 1}</span>}
+                    {i < 3 ? <span style={{ fontSize: 20 }}>{MEDALS[i]}</span> : <span style={{ fontSize: 14, color: 'var(--muted)' }}>{i + 1}</span>}
                   </div>
-
-                  <span style={{
-                    width: 9, height: 9, borderRadius: 99, flexShrink: 0,
-                    background: i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--surface-3)',
-                  }} />
-
+                  <span style={{ width: 9, height: 9, borderRadius: 99, flexShrink: 0, background: i === 0 ? 'var(--gold)' : i === 1 ? 'var(--silver)' : i === 2 ? 'var(--bronze)' : 'var(--surface-3)' }} />
                   <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                     <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{g.name}</span>
-                    <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--muted)' }}>
-                      {g.member_count} Mitglied{g.member_count !== 1 ? 'er' : ''} · {g.total_points} Pkt. gesamt
-                    </span>
+                    <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--muted)' }}>{g.member_count} Mitglied{g.member_count !== 1 ? 'er' : ''} · {g.total_points} Pkt. gesamt</span>
                   </div>
-
-                  <span style={{
-                    fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18,
-                    textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0,
-                    color: i === 0 ? 'var(--good)' : 'var(--ink)',
-                  }}>
-                    Ø {g.avg_points}
-                  </span>
-
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, textAlign: 'right', fontVariantNumeric: 'tabular-nums', flexShrink: 0, color: i === 0 ? 'var(--good)' : 'var(--ink)' }}>Ø {g.avg_points}</span>
                   <ChevronRight size={16} style={{ color: 'var(--muted)', flexShrink: 0 }} />
                 </button>
               ))}
