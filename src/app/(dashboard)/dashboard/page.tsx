@@ -59,8 +59,19 @@ export default async function DashboardPage() {
               COALESCE(SUM(points),0) AS total_points,
               COUNT(CASE WHEN points=(SELECT value FROM scoring_config WHERE key='exact_result') THEN 1 END) AS exact_results
        FROM predictions WHERE user_id = ?`, [user.id]),
-    queryOne<{ rank: number | null }>(db,
-      `SELECT rank FROM leaderboard WHERE user_id = ?`, [user.id]),
+    queryOne<{ rank: number }>(db,
+      `SELECT COUNT(*) + 1 AS rank
+       FROM users u2
+       LEFT JOIN leaderboard l2 ON l2.user_id = u2.id
+       WHERE u2.role = 'user' AND u2.is_banned = 0
+         AND (
+           COALESCE(l2.total_points, 0) > COALESCE((SELECT total_points FROM leaderboard WHERE user_id = ?1), 0)
+           OR (COALESCE(l2.total_points, 0) = COALESCE((SELECT total_points FROM leaderboard WHERE user_id = ?1), 0)
+               AND COALESCE(l2.exact_results, 0) > COALESCE((SELECT exact_results FROM leaderboard WHERE user_id = ?1), 0))
+           OR (COALESCE(l2.total_points, 0) = COALESCE((SELECT total_points FROM leaderboard WHERE user_id = ?1), 0)
+               AND COALESCE(l2.exact_results, 0) = COALESCE((SELECT exact_results FROM leaderboard WHERE user_id = ?1), 0)
+               AND u2.username < (SELECT username FROM users WHERE id = ?1))
+         )`, [user.id]),
   ])
 
   const [totalParticipants, groupStandings] = await Promise.all([
@@ -162,7 +173,7 @@ export default async function DashboardPage() {
         <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
           <div className="wm-stat" style={{ cursor: 'pointer' }}>
             <div className="k">Dein Rang</div>
-            <div className="v" style={{ fontSize: 28 }}>{userRank?.rank ? `${userRank.rank}.` : '–'}</div>
+            <div className="v" style={{ fontSize: 28 }}>{userRank ? `${userRank.rank}.` : '–'}</div>
             <div className="sub">von {totalParticipants?.count ?? 0} Teilnehmern</div>
           </div>
         </Link>
