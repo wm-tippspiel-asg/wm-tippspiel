@@ -178,11 +178,11 @@ function MatchRow({ match }: { match: any }) {
         ) : (
           <>
             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink-2)', display: 'block' }}>
-              {date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+              {date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Berlin' })}
             </span>
             {!isFinished && (
               <span style={{ fontSize: 11, color: 'var(--muted)', display: 'block' }}>
-                {date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                {date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' })}
               </span>
             )}
           </>

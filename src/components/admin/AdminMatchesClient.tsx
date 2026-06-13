@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmModal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
-import { formatDateTime, getRoundLabel } from '@/lib/utils'
+import { formatDateTime, getRoundLabel, toDateTimeLocalBerlin, fromDateTimeLocalBerlin } from '@/lib/utils'
 import type { Match, MatchRound } from '@/types'
 
 const ROUNDS: MatchRound[] = ['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'final']
@@ -65,7 +65,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
       away_team: match.away_team,
       home_team_flag: match.home_team_flag ?? '',
       away_team_flag: match.away_team_flag ?? '',
-      match_time: match.match_time.slice(0, 16),
+      match_time: toDateTimeLocalBerlin(match.match_time),
       round: match.round,
       group_name: match.group_name ?? '',
       venue: match.venue ?? '',
@@ -88,7 +88,7 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
 
     const payload = {
       ...form,
-      match_time: new Date(form.match_time).toISOString(),
+      match_time: fromDateTimeLocalBerlin(form.match_time),
       home_team_flag: form.home_team_flag || null,
       away_team_flag: form.away_team_flag || null,
       group_name: form.group_name || null,

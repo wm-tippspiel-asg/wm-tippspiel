@@ -32,7 +32,33 @@ export function formatTime(dateString: string): string {
   return date.toLocaleTimeString('de-DE', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Berlin',
   })
+}
+
+export function toDateTimeLocalBerlin(dateString: string): string {
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(dateString)).replace(' ', 'T')
+}
+
+export function fromDateTimeLocalBerlin(berlinLocalStr: string): string {
+  const asUTC = new Date(berlinLocalStr + 'Z')
+  const berlinOfUTC = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(asUTC).replace(' ', 'T')
+  const offsetMs = new Date(berlinOfUTC + 'Z').getTime() - asUTC.getTime()
+  return new Date(asUTC.getTime() - offsetMs).toISOString()
 }
 
 export function getRoundLabel(round: MatchRound): string {
