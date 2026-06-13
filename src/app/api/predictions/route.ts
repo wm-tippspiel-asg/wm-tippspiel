@@ -15,11 +15,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const matchId = searchParams.get('match_id')
   const db = getDb()
 
-  // If match_id is provided, fetch all predictions for that match
+  // If match_id is provided, fetch all predictions for that match (with username)
   if (matchId) {
-    const predictions = await queryAll<Prediction>(
+    const predictions = await queryAll<Prediction & { username: string }>(
       db,
-      `SELECT * FROM predictions WHERE match_id = ?`,
+      `SELECT p.*, u.username
+       FROM predictions p
+       JOIN users u ON u.id = p.user_id
+       WHERE p.match_id = ?`,
       [matchId],
     )
     return NextResponse.json({ success: true, data: predictions })
