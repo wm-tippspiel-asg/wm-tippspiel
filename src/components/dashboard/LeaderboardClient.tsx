@@ -173,7 +173,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                     </button>
                   </th>
                   {windowMatches.map(m => (
-                    <th key={m.id} style={{ padding: '6px 4px', textAlign: 'center', width: `${Math.floor(60 / WINDOW)}%`, verticalAlign: 'bottom' }}>
+                    <th key={m.id} style={{ padding: '4px 2px', textAlign: 'center', width: `${Math.floor(60 / WINDOW)}%`, verticalAlign: 'bottom' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                         <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.home_team)}</span>
                         <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.away_team)}</span>
@@ -221,7 +221,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                       {windowMatches.map(m => {
                         const pred = predMap.get(`${entry.user_id}:${m.id}`)
                         return (
-                          <td key={m.id} style={{ padding: '10px 4px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 12, fontWeight: 500, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                          <td key={m.id} style={{ padding: '10px 2px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 11, fontWeight: 500, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                             {pred ? `${pred.home_score}:${pred.away_score}` : '–'}
                           </td>
                         )
