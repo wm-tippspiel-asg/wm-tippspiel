@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Trophy, Medal, Target, Users, ArrowLeft, ChevronRight } from 'lucide-react'
+import { Trophy, Medal, Target, Users, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { LeaderboardTable } from '@/components/dashboard/LeaderboardTable'
 import { StatsCard } from '@/components/dashboard/StatsCard'
 import type { LeaderboardEntry, GroupStanding, Match, Prediction } from '@/types'
@@ -92,6 +92,10 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
     [groupStandings, drillGroupId],
   )
 
+  const WINDOW = 3
+  const [matchStart, setMatchStart] = useState(() => Math.max(0, visibleMatches.length - WINDOW))
+  const windowMatches = visibleMatches.slice(matchStart, matchStart + WINDOW)
+
   // userId:matchId → prediction
   const predMap = useMemo(() => {
     const m = new Map<string, PredRow>()
@@ -151,26 +155,46 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
             </p>
           </div>
 
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
-            <table style={{ borderCollapse: 'collapse', width: 'max-content', minWidth: '100%' }}>
+          <div>
+            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
                   <th style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--surface)', padding: '8px 4px 8px 16px', width: 36, textAlign: 'center', fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>#</th>
-                  <th style={{ position: 'sticky', left: 36, zIndex: 2, background: 'var(--surface)', padding: '8px 12px 8px 4px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'left', minWidth: 110 }}>Name</th>
-                  <th style={{ padding: '8px 16px 8px 8px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>Pkt</th>
-                  {visibleMatches.map(m => (
-                    <th key={m.id} style={{ padding: '6px 6px', textAlign: 'center', minWidth: 44, verticalAlign: 'bottom' }}>
+                  <th style={{ position: 'sticky', left: 36, zIndex: 2, background: 'var(--surface)', padding: '8px 8px 8px 4px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'left' }}>Name</th>
+                  <th style={{ padding: '8px 12px 8px 8px', fontSize: 11, color: 'var(--muted)', fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>Pkt</th>
+                  {/* prev arrow */}
+                  <th style={{ width: 28, textAlign: 'center', padding: '0 2px' }}>
+                    <button
+                      onClick={() => setMatchStart(s => Math.max(0, s - WINDOW))}
+                      disabled={matchStart === 0}
+                      style={{ background: 'none', border: 'none', cursor: matchStart === 0 ? 'default' : 'pointer', color: matchStart === 0 ? 'var(--border)' : 'var(--muted)', padding: 2, display: 'flex', alignItems: 'center' }}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                  </th>
+                  {windowMatches.map(m => (
+                    <th key={m.id} style={{ padding: '6px 4px', textAlign: 'center', width: `${Math.floor(60 / WINDOW)}%`, verticalAlign: 'bottom' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 700, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.home_team)}</span>
-                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 700, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.away_team)}</span>
+                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.home_team)}</span>
+                        <span style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 600, letterSpacing: '.03em', lineHeight: 1.3 }}>{abbr(m.away_team)}</span>
                         {m.home_score !== null && (
-                          <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', marginTop: 2, lineHeight: 1 }}>
+                          <span style={{ fontSize: 9, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums', marginTop: 2, lineHeight: 1 }}>
                             {m.home_score}:{m.away_score}
                           </span>
                         )}
                       </div>
                     </th>
                   ))}
+                  {/* next arrow */}
+                  <th style={{ width: 28, textAlign: 'center', padding: '0 2px' }}>
+                    <button
+                      onClick={() => setMatchStart(s => Math.min(visibleMatches.length - WINDOW, s + WINDOW))}
+                      disabled={matchStart + WINDOW >= visibleMatches.length}
+                      style={{ background: 'none', border: 'none', cursor: matchStart + WINDOW >= visibleMatches.length ? 'default' : 'pointer', color: matchStart + WINDOW >= visibleMatches.length ? 'var(--border)' : 'var(--muted)', padding: 2, display: 'flex', alignItems: 'center' }}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -180,40 +204,30 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
                   const bg = isMe ? 'var(--accent-soft)' : 'var(--surface)'
                   return (
                     <tr key={entry.user_id} style={{ borderTop: '1px solid var(--border)' }}>
-                      {/* sticky rank */}
                       <td style={{ position: 'sticky', left: 0, zIndex: 1, background: bg, padding: '10px 4px 10px 16px', textAlign: 'center', width: 36 }}>
                         {rank <= 3
                           ? <span style={{ fontSize: 16 }}>{MEDALS[rank - 1]}</span>
                           : <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 600 }}>{rank}</span>}
                       </td>
-                      {/* sticky name */}
-                      <td style={{ position: 'sticky', left: 36, zIndex: 1, background: bg, padding: '10px 12px 10px 4px', fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 14, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td style={{ position: 'sticky', left: 36, zIndex: 1, background: bg, padding: '10px 8px 10px 4px', fontWeight: 700, color: isMe ? 'var(--accent-strong)' : 'var(--ink)', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {entry.username}
                         {isMe && <span style={{ marginLeft: 5, fontSize: 9, background: 'var(--accent)', color: '#fff', borderRadius: 4, padding: '1px 4px', fontWeight: 700, verticalAlign: 'middle' }}>Du</span>}
                       </td>
-                      {/* points */}
-                      <td style={{ padding: '10px 16px 10px 8px', textAlign: 'right', fontWeight: 700, fontSize: 15, fontVariantNumeric: 'tabular-nums', color: rank === 1 ? 'var(--good)' : 'var(--ink)', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '10px 12px 10px 8px', textAlign: 'right', fontWeight: 700, fontSize: 15, fontVariantNumeric: 'tabular-nums', color: rank === 1 ? 'var(--good)' : 'var(--ink)', whiteSpace: 'nowrap' }}>
                         {entry.total_points}
                       </td>
-                      {/* per-match predictions */}
-                      {visibleMatches.map(m => {
+                      {/* prev arrow spacer */}
+                      <td />
+                      {windowMatches.map(m => {
                         const pred = predMap.get(`${entry.user_id}:${m.id}`)
-                        const finished = m.status === 'finished'
-                        let color = 'var(--ink)'
-                        if (finished && pred) {
-                          const pts = pred.points ?? 0
-                          if (pts >= 5) color = 'var(--good)'
-                          else if (pts > 0) color = '#f59e0b'
-                          else color = 'var(--muted)'
-                        } else if (!pred) {
-                          color = 'var(--muted)'
-                        }
                         return (
-                          <td key={m.id} style={{ padding: '10px 6px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 12, fontWeight: 600, color, whiteSpace: 'nowrap' }}>
+                          <td key={m.id} style={{ padding: '10px 4px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace', fontSize: 12, fontWeight: 500, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                             {pred ? `${pred.home_score}:${pred.away_score}` : '–'}
                           </td>
                         )
                       })}
+                      {/* next arrow spacer */}
+                      <td />
                     </tr>
                   )
                 })}
