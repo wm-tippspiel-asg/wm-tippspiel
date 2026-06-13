@@ -92,7 +92,7 @@ export function LeaderboardClient({ initialEntries, myEntry, currentUserId, init
     [groupStandings, drillGroupId],
   )
 
-  const WINDOW = 3
+  const WINDOW = 6
   const [matchStart, setMatchStart] = useState(() => Math.max(0, visibleMatches.length - WINDOW))
   const windowMatches = visibleMatches.slice(matchStart, matchStart + WINDOW)
 
