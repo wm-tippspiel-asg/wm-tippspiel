@@ -1,4 +1,4 @@
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, flagEmojiToCountryCode } from '@/lib/utils'
 import { PredictionForm } from './PredictionForm'
 import type { Match, Prediction } from '@/types'
 
@@ -14,6 +14,14 @@ const statusConfig: Record<string, { label: string; chipClass: string }> = {
   finished:   { label: 'Beendet', chipClass: 'wm-chip wm-chip-done' },
   locked:     { label: 'Gesperrt',chipClass: 'wm-chip' },
   cancelled:  { label: 'Abgesagt',chipClass: 'wm-chip' },
+}
+
+function FlagImg({ emoji, size }: { emoji?: string | null; size: number }) {
+  const code = emoji ? flagEmojiToCountryCode(emoji) : null
+  if (code) {
+    return <img src={`https://flagcdn.com/w40/${code}.png`} alt={code.toUpperCase()} style={{ width: size, height: size * 0.67, objectFit: 'cover', borderRadius: 3 }} />
+  }
+  return <span style={{ fontSize: size * 0.9, lineHeight: 1 }}>{emoji ?? '🏳️'}</span>
 }
 
 export function MatchCard({ match, prediction, showPredictionForm = true }: Props) {
@@ -49,7 +57,7 @@ export function MatchCard({ match, prediction, showPredictionForm = true }: Prop
       <div style={{ padding: '20px 18px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 12 }}>
         {/* home */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <span style={{ fontSize: 32 }}>{match.home_team_flag ?? '🏳️'}</span>
+          <FlagImg emoji={match.home_team_flag} size={36} />
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, textAlign: 'right', color: 'var(--ink)', lineHeight: 1.2 }}>
             {match.home_team}
           </span>
@@ -68,7 +76,7 @@ export function MatchCard({ match, prediction, showPredictionForm = true }: Prop
 
         {/* away */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-          <span style={{ fontSize: 32 }}>{match.away_team_flag ?? '🏳️'}</span>
+          <FlagImg emoji={match.away_team_flag} size={36} />
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, textAlign: 'left', color: 'var(--ink)', lineHeight: 1.2 }}>
             {match.away_team}
           </span>

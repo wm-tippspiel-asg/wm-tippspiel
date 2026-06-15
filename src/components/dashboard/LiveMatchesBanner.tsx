@@ -1,7 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { flagEmojiToCountryCode } from '@/lib/utils'
 import type { Match } from '@/types'
+
+function FlagImg({ emoji, size }: { emoji?: string | null; size: number }) {
+  const code = emoji ? flagEmojiToCountryCode(emoji) : null
+  if (code) {
+    return <img src={`https://flagcdn.com/w40/${code}.png`} alt={code.toUpperCase()} style={{ width: size, height: size * 0.67, objectFit: 'cover', borderRadius: 3 }} />
+  }
+  return <span style={{ fontSize: size * 0.9, lineHeight: 1 }}>{emoji ?? '🏳️'}</span>
+}
 
 function LiveDot() {
   return (
@@ -53,9 +62,7 @@ function ScoreCard({ match }: { match: Match }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
         {/* Home */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 32 }}>
-            {homeFlag ?? '🏳️'}
-          </span>
+          <FlagImg emoji={homeFlag} size={32} />
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }}>
             {match.home_team}
           </span>
@@ -77,9 +84,7 @@ function ScoreCard({ match }: { match: Match }) {
 
         {/* Away */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 32 }}>
-            {awayFlag ?? '🏳️'}
-          </span>
+          <FlagImg emoji={awayFlag} size={32} />
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 72 }}>
             {match.away_team}
           </span>

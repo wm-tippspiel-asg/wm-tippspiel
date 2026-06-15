@@ -109,3 +109,19 @@ export function truncate(str: string, maxLength: number): string {
 export function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural
 }
+
+export function flagEmojiToCountryCode(emoji: string): string | null {
+  if (!emoji) return null
+  const chars = [...emoji]
+  if (chars.length < 2) return null
+  try {
+    const code = chars.slice(0, 2).map(c => {
+      const cp = c.codePointAt(0)
+      if (!cp || cp < 0x1F1E6 || cp > 0x1F1FF) return null
+      return String.fromCharCode(cp - 0x1F1A5)
+    }).join('')
+    return code.length === 2 && /^[A-Z]{2}$/.test(code) ? code.toLowerCase() : null
+  } catch {
+    return null
+  }
+}
