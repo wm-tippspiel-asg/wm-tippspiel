@@ -208,7 +208,13 @@ function computeStandings(matches: Array<{
   }
 
   return Object.entries(groupMap)
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => {
+      const suffix = (s: string) => s.replace('GROUP_', '')
+      const sA = suffix(a), sB = suffix(b)
+      const nA = parseInt(sA, 10), nB = parseInt(sB, 10)
+      if (!isNaN(nA) && !isNaN(nB)) return nA - nB
+      return sA.localeCompare(sB)
+    })
     .map(([group, teamsMap]) => ({
       group,
       teams: Object.values(teamsMap)

@@ -15,7 +15,9 @@ export default async function LandingPage() {
   const standingsData: any[] = standingsResult.status === 'fulfilled' && Array.isArray(standingsResult.value) ? standingsResult.value : []
 
   const liveMatches = matchData.filter((m: any) => m.status === 'live')
-  const recentMatches = matchData.filter((m: any) => m.status === 'finished').slice(-5).reverse()
+  const recentMatches = matchData.filter((m: any) => m.status === 'finished')
+    .sort((a: any, b: any) => new Date(a.match_time).getTime() - new Date(b.match_time).getTime())
+    .slice(-5).reverse()
   const upcomingMatches = matchData.filter((m: any) => m.status === 'scheduled').slice(0, 6)
 
   return (
