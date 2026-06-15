@@ -91,6 +91,8 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
      data.match_time, data.round, data.group_name ?? null, data.venue ?? null, id],
   )
 
+  await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
+
   await audit({
     actorId,
     actorName,
