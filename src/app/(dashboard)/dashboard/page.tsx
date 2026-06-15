@@ -82,16 +82,20 @@ export default async function DashboardPage() {
       `WITH group_stats AS (
          SELECT ug.id, ug.name, ug.description,
                 COUNT(DISTINCT u.id) AS member_count,
-                COALESCE(SUM(l.total_points), 0) AS total_points,
-                COALESCE(SUM(l.exact_results), 0) AS exact_results,
-                CASE WHEN COUNT(DISTINCT u.id) > 0
-                     THEN CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id)
+                COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END), 0) AS total_points,
+                COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END), 0) AS exact_results,
+                CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                     THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                          / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
                      ELSE 0 END AS avg_points_raw,
-                CASE WHEN COUNT(DISTINCT u.id) > 0
-                     THEN CAST(COALESCE(SUM(l.exact_results), 0) AS REAL) / COUNT(DISTINCT u.id)
+                CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                     THEN CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.exact_results ELSE 0 END),0) AS REAL)
+                          / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END)
                      ELSE 0 END AS avg_exact_raw,
-                CASE WHEN COUNT(DISTINCT u.id) > 0
-                     THEN ROUND(CAST(COALESCE(SUM(l.total_points), 0) AS REAL) / COUNT(DISTINCT u.id), 1)
+                CASE WHEN COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END) > 0
+                     THEN ROUND(
+                       CAST(COALESCE(SUM(CASE WHEN COALESCE(l.total_tips,0)>0 THEN l.total_points ELSE 0 END),0) AS REAL)
+                       / COUNT(CASE WHEN COALESCE(l.total_tips,0)>0 THEN 1 END), 1)
                      ELSE 0 END AS avg_points
          FROM user_groups ug
          LEFT JOIN user_group_members ugm ON ugm.group_id = ug.id
