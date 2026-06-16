@@ -89,9 +89,14 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
   try { kv = getKv() } catch { kv = undefined }
 
   // Always fetch fresh data — cron runs every 5 min, cache TTL is 15 min
-  const apiMatches = await fetchFootballMatches(kv, { fresh: true })
+  // skipRateLimit: admin trigger should always try the API regardless of rate-limit flag
+  const apiMatches = await fetchFootballMatches(kv, { fresh: true, skipRateLimit: true })
   if (!apiMatches) {
-    return NextResponse.json({ success: false, error: 'Football-API nicht erreichbar' }, { status: 503 })
+    const hasKey = !!process.env.FOOTBALL_API_KEY
+    return NextResponse.json({
+      success: false,
+      error: hasKey ? 'Football-API nicht erreichbar (Netzwerkfehler oder 429)' : 'FOOTBALL_API_KEY nicht gesetzt',
+    }, { status: 503 })
   }
 
   let updated = 0
