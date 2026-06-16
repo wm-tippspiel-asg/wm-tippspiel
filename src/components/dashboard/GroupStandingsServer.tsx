@@ -21,17 +21,26 @@ export async function GroupStandingsServer() {
   let standings: Group[] = []
   let error = ''
 
+  let dataNull = false
   try {
     let kv: KVNamespace | undefined
     try { kv = getKv() } catch { kv = undefined }
     const data = await fetchFootballStandings(kv)
-    standings = data ?? []
+    if (data === null) {
+      dataNull = true
+    } else {
+      standings = (data as Group[]) ?? []
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Fehler beim Laden'
   }
 
   if (error) {
     return <div className="text-center py-8 text-red-500">{error}</div>
+  }
+
+  if (dataNull) {
+    return <div className="text-center py-8 text-gray-500">Gruppen-Tabelle vorübergehend nicht verfügbar — bitte später nochmal versuchen.</div>
   }
 
   if (standings.length === 0) {

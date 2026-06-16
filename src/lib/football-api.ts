@@ -112,8 +112,8 @@ export async function fetchFootballMatches(
 export async function fetchFootballStandings(kv?: KVNamespace) {
   const cacheKey = 'wm2026_standings'
   if (kv) {
-    const cached = await kv.get(cacheKey, 'json')
-    if (cached) return cached
+    const cached = await kv.get<unknown[]>(cacheKey, 'json')
+    if (cached && cached.length > 0) return cached
     if (await isRateLimited(kv)) {
       console.warn('football-data.org: rate limited, skipping standings request')
       return null
@@ -146,8 +146,10 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 
     const standings = computeStandings(data.matches)
 
-    const ttl = ttlFromHeaders(res)
-    if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl })
+    if (standings.length > 0) {
+      const ttl = ttlFromHeaders(res)
+      if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl })
+    }
     return standings
   } catch (e) {
     console.error('Football API standings error:', e)
