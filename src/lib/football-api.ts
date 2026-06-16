@@ -109,14 +109,16 @@ export async function fetchFootballMatches(
   }
 }
 
-export async function fetchFootballStandings(kv?: KVNamespace) {
+export async function fetchFootballStandings(kv?: KVNamespace, options?: { skipRateLimit?: boolean }) {
   const cacheKey = 'wm2026_standings'
+  const staleKey = 'wm2026_standings_stale'
+
   if (kv) {
     const cached = await kv.get<unknown[]>(cacheKey, 'json')
     if (cached && cached.length > 0) return cached
-    if (await isRateLimited(kv)) {
-      console.warn('football-data.org: rate limited, skipping standings request')
-      return null
+    if (!options?.skipRateLimit && await isRateLimited(kv)) {
+      console.warn('football-data.org: rate limited, returning stale standings')
+      return await kv.get<unknown[]>(staleKey, 'json')
     }
   }
 
@@ -129,7 +131,8 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
     if (res.status === 429) {
       const retryAfter = parseInt(res.headers.get('Retry-After') ?? '60', 10)
       if (kv) await setRateLimited(kv, retryAfter)
-      return null
+      // Return stale data so the page still shows something
+      return kv ? await kv.get<unknown[]>(staleKey, 'json') : null
     }
 
     if (!res.ok) throw new Error(`API error: ${res.status}`)
@@ -146,14 +149,18 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 
     const standings = computeStandings(data.matches)
 
-    if (standings.length > 0) {
+    if (standings.length > 0 && kv) {
       const ttl = ttlFromHeaders(res)
-      if (kv) await kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl })
+      // Short-lived cache triggers refresh; permanent stale cache is fallback
+      await Promise.all([
+        kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl }),
+        kv.put(staleKey, JSON.stringify(standings)),
+      ])
     }
     return standings
   } catch (e) {
     console.error('Football API standings error:', e)
-    return null
+    return kv ? await kv.get<unknown[]>(staleKey, 'json') : null
   }
 }
 
