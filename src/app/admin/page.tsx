@@ -1,7 +1,8 @@
 import { getDb, queryOne, queryAll } from '@/lib/db'
 import { RecalculateAction } from '@/components/admin/RecalculateAction'
 import { AutoUpdateAction } from '@/components/admin/AutoUpdateAction'
-import { Users, Trophy, Key, FileText, Download, RefreshCcw, TrendingUp, Activity, Radio, LogIn, Pencil } from 'lucide-react'
+import { ClearCacheAction } from '@/components/admin/ClearCacheAction'
+import { Users, Trophy, Key, FileText, Download, RefreshCcw, TrendingUp, Activity, Radio, LogIn, Pencil, Trash2 } from 'lucide-react'
 import type { AuditLog } from '@/types'
 import type { Metadata } from 'next'
 import { formatDateTime } from '@/lib/utils'
@@ -161,6 +162,16 @@ export default async function AdminDashboard() {
                 <div className="admin-action-title">Rangliste neu berechnen</div>
                 <div className="admin-action-desc">Alle Punkte neu auswerten</div>
                 <RecalculateAction />
+              </div>
+            </div>
+            <div className="admin-action-card">
+              <div className="admin-action-icon" style={{ background: '#fee2e2', color: '#dc2626' }}>
+                <Trash2 size={18} />
+              </div>
+              <div className="admin-action-body">
+                <div className="admin-action-title">Football-Cache leeren</div>
+                <div className="admin-action-desc">KV-Cache für Gruppen-Tabelle zurücksetzen</div>
+                <ClearCacheAction />
               </div>
             </div>
           </div>
