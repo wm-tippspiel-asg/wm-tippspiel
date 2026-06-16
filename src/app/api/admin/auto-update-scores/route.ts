@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb, getKv, queryOne, execute } from '@/lib/db'
 import { rebuildLeaderboard, recalculateMatchPoints } from '@/lib/scoring'
 import { audit } from '@/lib/audit'
-import { fetchFootballMatches, fetchFootballStandings } from '@/lib/football-api'
+import { fetchFootballMatches, refreshFootballStandings } from '@/lib/football-api'
 import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
 
 export const runtime = 'edge'
@@ -173,8 +173,8 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
     `DELETE FROM audit_logs WHERE action IN ('prediction.created', 'prediction.updated') AND created_at < datetime('now', '-24 hours')`,
   )
 
-  // Warm the standings cache so user page-loads don't hit the API directly
-  await fetchFootballStandings(kv, { skipRateLimit: true })
+  // Warm the standings cache so user page-loads never hit the API directly
+  if (kv) await refreshFootballStandings(kv)
 
   return NextResponse.json({
     success: true,

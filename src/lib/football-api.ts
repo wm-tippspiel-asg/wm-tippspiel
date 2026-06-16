@@ -109,18 +109,10 @@ export async function fetchFootballMatches(
   }
 }
 
-export async function fetchFootballStandings(kv?: KVNamespace, options?: { skipRateLimit?: boolean }) {
+// Called only by cron/admin — actually fetches from football-data.org and warms KV cache
+export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean> {
   const cacheKey = 'wm2026_standings'
   const staleKey = 'wm2026_standings_stale'
-
-  if (kv) {
-    const cached = await kv.get<unknown[]>(cacheKey, 'json')
-    if (cached && cached.length > 0) return cached
-    if (!options?.skipRateLimit && await isRateLimited(kv)) {
-      console.warn('football-data.org: rate limited, returning stale standings')
-      return await kv.get<unknown[]>(staleKey, 'json')
-    }
-  }
 
   try {
     const res = await fetch(
@@ -130,9 +122,8 @@ export async function fetchFootballStandings(kv?: KVNamespace, options?: { skipR
 
     if (res.status === 429) {
       const retryAfter = parseInt(res.headers.get('Retry-After') ?? '60', 10)
-      if (kv) await setRateLimited(kv, retryAfter)
-      // Return stale data so the page still shows something
-      return kv ? await kv.get<unknown[]>(staleKey, 'json') : null
+      await setRateLimited(kv, retryAfter)
+      return false
     }
 
     if (!res.ok) throw new Error(`API error: ${res.status}`)
@@ -148,20 +139,27 @@ export async function fetchFootballStandings(kv?: KVNamespace, options?: { skipR
     }
 
     const standings = computeStandings(data.matches)
-
-    if (standings.length > 0 && kv) {
+    if (standings.length > 0) {
       const ttl = ttlFromHeaders(res)
-      // Short-lived cache triggers refresh; permanent stale cache is fallback
       await Promise.all([
         kv.put(cacheKey, JSON.stringify(standings), { expirationTtl: ttl }),
         kv.put(staleKey, JSON.stringify(standings)),
       ])
     }
-    return standings
+    return standings.length > 0
   } catch (e) {
     console.error('Football API standings error:', e)
-    return kv ? await kv.get<unknown[]>(staleKey, 'json') : null
+    return false
   }
+}
+
+// Called by user-facing pages — reads only from KV, never calls the API
+export async function fetchFootballStandings(kv?: KVNamespace) {
+  if (!kv) return null
+  const cached = await kv.get<unknown[]>('wm2026_standings', 'json')
+  if (cached && cached.length > 0) return cached
+  // Fall back to permanent stale cache (populated by cron)
+  return await kv.get<unknown[]>('wm2026_standings_stale', 'json')
 }
 
 function computeStandings(matches: Array<{
