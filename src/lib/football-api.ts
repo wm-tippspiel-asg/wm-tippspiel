@@ -119,7 +119,7 @@ export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean
 
   try {
     const res = await fetch(
-      `${API_BASE}/competitions/WC/matches?season=2026&stage=GROUP_STAGE`,
+      `${API_BASE}/competitions/WC/matches?season=2026`,
       { headers: headers() }
     )
 
@@ -133,7 +133,7 @@ export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean
 
     const data = (await res.json()) as {
       matches: Array<{
-        group: string
+        group: string | null
         status: string
         homeTeam: { id: number; name: string; crest: string }
         awayTeam: { id: number; name: string; crest: string }
@@ -166,7 +166,7 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 }
 
 function computeStandings(matches: Array<{
-  group: string
+  group: string | null
   status: string
   homeTeam: { id: number; name: string; crest: string }
   awayTeam: { id: number; name: string; crest: string }
