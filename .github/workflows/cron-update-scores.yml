@@ -1,0 +1,23 @@
+name: Update Match Scores
+
+on:
+  schedule:
+    # Every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Trigger score update
+        run: |
+          response=$(curl -sf -o response.json -w "%{http_code}" \
+            "https://wm-tippspiel.pages.dev/api/cron/update-scores?secret=${{ secrets.CRON_SECRET }}")
+          echo "HTTP $response"
+          cat response.json
+          if [ "$response" != "200" ]; then
+            echo "Update failed with HTTP $response"
+            exit 1
+          fi
