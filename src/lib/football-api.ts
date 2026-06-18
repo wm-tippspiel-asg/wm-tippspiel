@@ -84,6 +84,8 @@ export async function fetchFootballMatches(
         awayTeam: { name: string }
         score: {
           fullTime: { home: number | null; away: number | null }
+          halfTime?: { home: number | null; away: number | null }
+          regularTime?: { home: number | null; away: number | null }
         }
       }>
     }
@@ -92,8 +94,9 @@ export async function fetchFootballMatches(
       id: m.id,
       home_team: m.homeTeam.name,
       away_team: m.awayTeam.name,
-      home_score: m.score.fullTime.home,
-      away_score: m.score.fullTime.away,
+      // fullTime is null during live play — fall back to regularTime or halfTime
+      home_score: m.score.fullTime.home ?? m.score.regularTime?.home ?? m.score.halfTime?.home ?? null,
+      away_score: m.score.fullTime.away ?? m.score.regularTime?.away ?? m.score.halfTime?.away ?? null,
       match_time: m.utcDate,
       status: mapStatus(m.status),
       group: m.group,

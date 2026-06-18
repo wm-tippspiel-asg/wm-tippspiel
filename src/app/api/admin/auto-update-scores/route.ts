@@ -106,7 +106,6 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
 
   for (const apiMatch of apiMatches) {
     if (apiMatch.status === 'scheduled') continue
-    if (apiMatch.home_score === null || apiMatch.away_score === null) continue
 
     const homeDe = toGermanTeam(apiMatch.home_team)
     const awayDe = toGermanTeam(apiMatch.away_team)
@@ -127,21 +126,33 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
     }
 
     const targetStatus = apiMatch.status === 'finished' ? 'finished' : 'live'
+    const scoresAvailable = apiMatch.home_score !== null && apiMatch.away_score !== null
     const scoresChanged =
-      existing.home_score !== apiMatch.home_score ||
-      existing.away_score !== apiMatch.away_score
+      scoresAvailable &&
+      (existing.home_score !== apiMatch.home_score || existing.away_score !== apiMatch.away_score)
     const statusChanged = existing.status !== targetStatus
 
     if (!scoresChanged && !statusChanged) continue
 
-    await execute(
-      db,
-      `UPDATE matches SET home_score = ?, away_score = ?, status = ?, updated_at = datetime('now') WHERE id = ?`,
-      [apiMatch.home_score, apiMatch.away_score, targetStatus, existing.id],
-    )
+    if (scoresAvailable) {
+      await execute(
+        db,
+        `UPDATE matches SET home_score = ?, away_score = ?, status = ?, updated_at = datetime('now') WHERE id = ?`,
+        [apiMatch.home_score, apiMatch.away_score, targetStatus, existing.id],
+      )
+    } else {
+      // Match is live but fullTime scores not yet available — update status only
+      await execute(
+        db,
+        `UPDATE matches SET status = ?, updated_at = datetime('now') WHERE id = ?`,
+        [targetStatus, existing.id],
+      )
+    }
 
-    await recalculateMatchPoints(existing.id, { skipRebuild: true })
-    pointsRecalculated++
+    if (scoresChanged) {
+      await recalculateMatchPoints(existing.id, { skipRebuild: true })
+      pointsRecalculated++
+    }
 
     if (targetStatus === 'live') liveUpdated++
     else updated++
