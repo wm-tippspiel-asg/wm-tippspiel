@@ -2,6 +2,10 @@ name = "wm-tippspiel-cron"
 main = "index.js"
 compatibility_date = "2024-09-23"
 
+[vars]
+APP_URL = "https://wm-tippspiel.pages.dev"
+# CRON_SECRET is a secret — set via: wrangler secret put CRON_SECRET
+
 [triggers]
 # 13:00–23:59 UTC und 00:00–05:59 UTC (Spielzeiten WM 2026)
 # Achtelfinale/K.o.-Runde meist 17:00 und 21:00 UTC — ebenfalls abgedeckt
