@@ -8,6 +8,15 @@ import { toGermanTeam } from '@/lib/team-names'
 
 export const runtime = 'edge'
 
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const role = request.headers.get('x-user-role')
+  const actorId = request.headers.get('x-user-id')
+  const actorName = request.headers.get('x-username') ?? 'admin'
+  if (role !== 'admin') return NextResponse.json({ success: false, error: 'Kein Zugriff' }, { status: 403 })
+
+  return runUpdate(actorId, actorName)
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const role = request.headers.get('x-user-role')
   const actorId = request.headers.get('x-user-id')
