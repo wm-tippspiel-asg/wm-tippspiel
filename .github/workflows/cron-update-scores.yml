@@ -14,7 +14,7 @@ jobs:
       - name: Trigger score update
         run: |
           response=$(curl -sf -o response.json -w "%{http_code}" \
-            "https://wm-tippspiel.pages.dev/api/cron/update-scores?secret=${{ secrets.CRON_SECRET }}")
+            "https://wm-tippspiel-cz0.pages.dev/api/cron/update-scores?secret=${{ secrets.CRON_SECRET }}")
           echo "HTTP $response"
           cat response.json
           if [ "$response" != "200" ]; then

@@ -3,7 +3,7 @@ main = "index.js"
 compatibility_date = "2024-09-23"
 
 [vars]
-APP_URL = "https://wm-tippspiel.pages.dev"
+APP_URL = "https://wm-tippspiel-cz0.pages.dev"
 # CRON_SECRET is a secret — set via: wrangler secret put CRON_SECRET
 
 [triggers]
