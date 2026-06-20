@@ -3,18 +3,15 @@ const CACHE_TTL_DEFAULT = 900   // 15 min
 const CACHE_TTL_THROTTLED = 300 // 5 min when rate limit is tight
 const RATE_LIMIT_KV_KEY = 'football_rate_limit_until'
 
-function headers() {
-  const key = process.env.FOOTBALL_API_KEY
-  if (!key) throw new Error('FOOTBALL_API_KEY not set')
-  return { 'X-Auth-Token': key }
+function buildHeaders(apiKey: string): Record<string, string> {
+  return { 'X-Auth-Token': apiKey }
 }
 
 // Returns the TTL to use based on remaining requests this minute.
-// Extends cache when quota is low to avoid burning the limit.
 function ttlFromHeaders(res: Response): number {
   const available = parseInt(res.headers.get('X-Requests-Available-Minute') ?? '100', 10)
-  if (available <= 2) return 3600   // 1 h — almost exhausted
-  if (available <= 5) return 600    // 10 min — getting tight
+  if (available <= 2) return 3600
+  if (available <= 5) return 600
   if (available <= 10) return CACHE_TTL_THROTTLED
   return CACHE_TTL_DEFAULT
 }
@@ -45,8 +42,14 @@ export interface FootballMatch {
 
 export async function fetchFootballMatches(
   kv?: KVNamespace,
-  options?: { fresh?: boolean; skipRateLimit?: boolean },
+  options?: { fresh?: boolean; skipRateLimit?: boolean; apiKey?: string },
 ): Promise<FootballMatch[] | null> {
+  const apiKey = options?.apiKey ?? process.env.FOOTBALL_API_KEY
+  if (!apiKey) {
+    console.error('Football API: FOOTBALL_API_KEY not configured')
+    return null
+  }
+
   const cacheKey = 'wm2026_matches'
   if (kv) {
     if (!options?.fresh) {
@@ -54,7 +57,7 @@ export async function fetchFootballMatches(
       if (cached) return cached
     }
     if (!options?.skipRateLimit && await isRateLimited(kv)) {
-      console.warn('football-data.org: rate limited, skipping request')
+      console.warn('football-data.org: skipping — rate limited')
       return null
     }
   }
@@ -62,19 +65,35 @@ export async function fetchFootballMatches(
   try {
     const res = await fetch(
       `${API_BASE}/competitions/WC/matches?season=2026`,
-      { headers: headers() }
+      { headers: buildHeaders(apiKey) }
     )
 
     if (res.status === 429) {
       const retryAfter = parseInt(res.headers.get('Retry-After') ?? '60', 10)
       if (kv) await setRateLimited(kv, retryAfter)
+      console.error(`Football API: 429 rate limited, retry after ${retryAfter}s`)
       return null
     }
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    if (res.status === 403) {
+      const body = await res.text()
+      console.error(`Football API: 403 Forbidden — API key wrong or plan does not include WC 2026. Body: ${body.slice(0, 400)}`)
+      return null
+    }
+
+    if (res.status === 404) {
+      console.error('Football API: 404 — WC competition not found for season=2026')
+      return null
+    }
+
+    if (!res.ok) {
+      const body = await res.text()
+      console.error(`Football API: HTTP ${res.status} error. Body: ${body.slice(0, 400)}`)
+      return null
+    }
 
     const data = (await res.json()) as {
-      matches: Array<{
+      matches?: Array<{
         id: number
         utcDate: string
         status: string
@@ -88,6 +107,11 @@ export async function fetchFootballMatches(
           regularTime?: { home: number | null; away: number | null }
         }
       }>
+    }
+
+    if (!Array.isArray(data.matches)) {
+      console.error('Football API: response has no matches array', JSON.stringify(data).slice(0, 300))
+      return null
     }
 
     const matches = data.matches.map((m) => ({
@@ -107,20 +131,26 @@ export async function fetchFootballMatches(
     if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: ttl })
     return matches
   } catch (e) {
-    console.error('Football API error:', e)
+    console.error('Football API network/parse error:', e)
     return null
   }
 }
 
-// Called only by cron/admin — actually fetches from football-data.org and warms KV cache
-export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean> {
+// Called only by cron/admin — fetches from football-data.org and warms KV cache
+export async function refreshFootballStandings(kv: KVNamespace, apiKey?: string): Promise<boolean> {
+  const resolvedKey = apiKey ?? process.env.FOOTBALL_API_KEY
+  if (!resolvedKey) {
+    console.error('Football API standings: FOOTBALL_API_KEY not configured')
+    return false
+  }
+
   const cacheKey = 'wm2026_standings'
   const staleKey = 'wm2026_standings_stale'
 
   try {
     const res = await fetch(
       `${API_BASE}/competitions/WC/matches?season=2026`,
-      { headers: headers() }
+      { headers: buildHeaders(resolvedKey) }
     )
 
     if (res.status === 429) {
@@ -129,10 +159,13 @@ export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean
       return false
     }
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    if (!res.ok) {
+      console.error(`Football API standings: HTTP ${res.status}`)
+      return false
+    }
 
     const data = (await res.json()) as {
-      matches: Array<{
+      matches?: Array<{
         group: string | null
         status: string
         homeTeam: { id: number; name: string; crest: string }
@@ -140,6 +173,8 @@ export async function refreshFootballStandings(kv: KVNamespace): Promise<boolean
         score: { fullTime: { home: number | null; away: number | null } }
       }>
     }
+
+    if (!Array.isArray(data.matches)) return false
 
     const standings = computeStandings(data.matches)
     if (standings.length > 0) {
@@ -161,7 +196,6 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
   if (!kv) return null
   const cached = await kv.get<unknown[]>('wm2026_standings', 'json')
   if (cached && cached.length > 0) return cached
-  // Fall back to permanent stale cache (populated by cron)
   return await kv.get<unknown[]>('wm2026_standings_stale', 'json')
 }
 

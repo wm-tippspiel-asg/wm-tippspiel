@@ -1,5 +1,5 @@
 import { fetchFootballMatches } from '@/lib/football-api'
-import { getKv } from '@/lib/db'
+import { getKv, getApiKey } from '@/lib/db'
 
 export const runtime = 'edge'
 
@@ -7,7 +7,8 @@ export async function GET(request: Request) {
   try {
     let kv: KVNamespace | undefined
     try { kv = getKv() } catch { kv = undefined }
-    const matches = await fetchFootballMatches(kv)
+    const apiKey = getApiKey()
+    const matches = await fetchFootballMatches(kv, { apiKey })
 
     if (!matches) {
       return Response.json({ success: false, error: 'Failed to fetch matches' }, { status: 503 })

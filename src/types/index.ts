@@ -178,6 +178,8 @@ export interface CloudflareEnv {
   DB: D1Database
   RATE_LIMIT: KVNamespace
   SESSION_SECRET: string
+  FOOTBALL_API_KEY?: string
+  CRON_SECRET?: string
   NODE_ENV?: string
   NEXT_PUBLIC_APP_URL?: string
 }

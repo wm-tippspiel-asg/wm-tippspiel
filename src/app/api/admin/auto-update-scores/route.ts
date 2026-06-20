@@ -1,78 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, getKv, queryOne, execute } from '@/lib/db'
+import { getDb, getKv, getApiKey, queryOne, execute } from '@/lib/db'
 import { rebuildLeaderboard, recalculateMatchPoints } from '@/lib/scoring'
 import { audit } from '@/lib/audit'
 import { fetchFootballMatches, refreshFootballStandings } from '@/lib/football-api'
 import { invalidateCache, CACHE_KEYS } from '@/lib/cache'
+import { toGermanTeam } from '@/lib/team-names'
 
 export const runtime = 'edge'
-
-// Maps football-data.org English team names → German names stored in DB
-// Includes common API variants (FIFA names, old/new spellings)
-const EN_TO_DE: Record<string, string> = {
-  'Algeria': 'Algerien',
-  'Argentina': 'Argentinien',
-  'Australia': 'Australien',
-  'Austria': 'Österreich',
-  'Belgium': 'Belgien',
-  'Bosnia-Herzegovina': 'Bosnien-Herzegowina',
-  'Bosnia and Herzegovina': 'Bosnien-Herzegowina',
-  'Bosnia Herzegovina': 'Bosnien-Herzegowina',
-  'Brazil': 'Brasilien',
-  'Cabo Verde': 'Kap Verde',
-  'Canada': 'Kanada',
-  'Cape Verde': 'Kap Verde',
-  'Cape Verde Islands': 'Kap Verde',
-  'Colombia': 'Kolumbien',
-  'Congo DR': 'DR Kongo',
-  'DR Congo': 'DR Kongo',
-  'Croatia': 'Kroatien',
-  'Curaçao': 'Curaçao',
-  'Czech Republic': 'Tschechien',
-  'Czechia': 'Tschechien',
-  "Côte d'Ivoire": 'Elfenbeinküste',
-  'Ecuador': 'Ecuador',
-  'Egypt': 'Ägypten',
-  'England': 'England',
-  'France': 'Frankreich',
-  'Germany': 'Deutschland',
-  'Ghana': 'Ghana',
-  'Haiti': 'Haiti',
-  'Iran': 'Iran',
-  'Iraq': 'Irak',
-  'Ivory Coast': 'Elfenbeinküste',
-  'Japan': 'Japan',
-  'Jordan': 'Jordanien',
-  'Korea Republic': 'Südkorea',
-  'Republic of Korea': 'Südkorea',
-  'South Korea': 'Südkorea',
-  'Mexico': 'Mexiko',
-  'Morocco': 'Marokko',
-  'Netherlands': 'Niederlande',
-  'New Zealand': 'Neuseeland',
-  'Norway': 'Norwegen',
-  'Panama': 'Panama',
-  'Paraguay': 'Paraguay',
-  'Portugal': 'Portugal',
-  'Qatar': 'Katar',
-  'Saudi Arabia': 'Saudi-Arabien',
-  'Scotland': 'Schottland',
-  'Senegal': 'Senegal',
-  'South Africa': 'Südafrika',
-  'Spain': 'Spanien',
-  'Sweden': 'Schweden',
-  'Switzerland': 'Schweiz',
-  'Tunisia': 'Tunesien',
-  'Turkey': 'Türkei',
-  'Türkiye': 'Türkei',
-  'United States': 'USA',
-  'Uruguay': 'Uruguay',
-  'Uzbekistan': 'Usbekistan',
-}
-
-function toGermanTeam(name: string): string {
-  return EN_TO_DE[name] ?? name
-}
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const role = request.headers.get('x-user-role')
@@ -88,24 +22,34 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
   let kv: KVNamespace | undefined
   try { kv = getKv() } catch { kv = undefined }
 
-  // Always fetch fresh data — cron runs every 5 min, cache TTL is 15 min
-  // skipRateLimit: admin trigger should always try the API regardless of rate-limit flag
-  const apiMatches = await fetchFootballMatches(kv, { fresh: true, skipRateLimit: true })
-  if (!apiMatches) {
-    const hasKey = !!process.env.FOOTBALL_API_KEY
+  const apiKey = getApiKey()
+  if (!apiKey) {
     return NextResponse.json({
       success: false,
-      error: hasKey ? 'Football-API nicht erreichbar (Netzwerkfehler oder 429)' : 'FOOTBALL_API_KEY nicht gesetzt',
+      error: 'FOOTBALL_API_KEY nicht gesetzt — trage ihn in den Cloudflare Pages Environment Variables (Production) ein',
+    }, { status: 503 })
+  }
+
+  // Always fetch fresh data; skipRateLimit so cron always tries regardless of cached limit flag
+  const apiMatches = await fetchFootballMatches(kv, { fresh: true, skipRateLimit: true, apiKey })
+  if (!apiMatches) {
+    return NextResponse.json({
+      success: false,
+      error: 'Football-API nicht erreichbar — prüfe die Cloudflare Worker Logs für den genauen HTTP-Status (403/404/429/Netzwerkfehler)',
     }, { status: 503 })
   }
 
   let updated = 0
   let liveUpdated = 0
   let pointsRecalculated = 0
-  let unmatched = 0
+  let skippedScheduled = 0
+  const unmatchedTeams: string[] = []
 
   for (const apiMatch of apiMatches) {
-    if (apiMatch.status === 'scheduled') continue
+    if (apiMatch.status === 'scheduled') {
+      skippedScheduled++
+      continue
+    }
 
     const homeDe = toGermanTeam(apiMatch.home_team)
     const awayDe = toGermanTeam(apiMatch.away_team)
@@ -121,7 +65,7 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
       [homeDe, awayDe],
     )
     if (!existing) {
-      unmatched++
+      unmatchedTeams.push(`${apiMatch.home_team} vs ${apiMatch.away_team} → ${homeDe} vs ${awayDe}`)
       continue
     }
 
@@ -141,7 +85,6 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
         [apiMatch.home_score, apiMatch.away_score, targetStatus, existing.id],
       )
     } else {
-      // Match is live but fullTime scores not yet available — update status only
       await execute(
         db,
         `UPDATE matches SET status = ?, updated_at = datetime('now') WHERE id = ?`,
@@ -184,11 +127,11 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
     `DELETE FROM audit_logs WHERE action IN ('prediction.created', 'prediction.updated') AND created_at < datetime('now', '-24 hours')`,
   )
 
-  // Warm the standings cache so user page-loads never hit the API directly
-  if (kv) await refreshFootballStandings(kv)
+  // Warm standings cache
+  if (kv) await refreshFootballStandings(kv, apiKey)
 
   return NextResponse.json({
     success: true,
-    data: { updated, liveUpdated, pointsRecalculated, unmatched },
+    data: { updated, liveUpdated, pointsRecalculated, skippedScheduled, unmatched: unmatchedTeams.length, unmatchedTeams },
   })
 }

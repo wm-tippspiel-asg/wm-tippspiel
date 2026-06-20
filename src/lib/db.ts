@@ -18,6 +18,17 @@ export function getSecret(): string {
   return secret
 }
 
+// Reads FOOTBALL_API_KEY from Cloudflare context (same as other secrets).
+// Falls back to process.env for local dev.
+export function getApiKey(): string | undefined {
+  try {
+    const ctx = getRequestContext<CloudflareEnv>()
+    return ctx.env.FOOTBALL_API_KEY ?? process.env.FOOTBALL_API_KEY
+  } catch {
+    return process.env.FOOTBALL_API_KEY
+  }
+}
+
 // Typed D1 query helpers
 export async function queryOne<T>(
   db: D1Database,
