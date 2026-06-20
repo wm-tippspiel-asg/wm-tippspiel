@@ -99,8 +99,9 @@ export async function fetchFootballMatches(
         status: string
         stage: string
         group: string | null
-        homeTeam: { name: string }
-        awayTeam: { name: string }
+        // homeTeam/awayTeam can be null for knockout matches where teams are not yet determined
+        homeTeam: { name: string | null } | null
+        awayTeam: { name: string | null } | null
         score: {
           fullTime: { home: number | null; away: number | null }
           halfTime?: { home: number | null; away: number | null }
@@ -116,8 +117,9 @@ export async function fetchFootballMatches(
 
     const matches = data.matches.map((m) => ({
       id: m.id,
-      home_team: m.homeTeam.name,
-      away_team: m.awayTeam.name,
+      // homeTeam/awayTeam are null for TBD knockout matches — use empty string as sentinel
+      home_team: m.homeTeam?.name ?? '',
+      away_team: m.awayTeam?.name ?? '',
       // fullTime is null during live play — fall back to regularTime or halfTime
       home_score: m.score.fullTime.home ?? m.score.regularTime?.home ?? m.score.halfTime?.home ?? null,
       away_score: m.score.fullTime.away ?? m.score.regularTime?.away ?? m.score.halfTime?.away ?? null,
@@ -127,8 +129,13 @@ export async function fetchFootballMatches(
       external_id: m.id,
     }))
 
-    const ttl = ttlFromHeaders(res)
-    if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: ttl })
+    // Cache write is best-effort — don't let a KV failure abort the update
+    try {
+      const ttl = ttlFromHeaders(res)
+      if (kv) await kv.put(cacheKey, JSON.stringify(matches), { expirationTtl: ttl })
+    } catch (cacheErr) {
+      console.warn('Football API: KV cache write failed (non-fatal):', cacheErr)
+    }
     return matches
   } catch (e) {
     console.error('Football API network/parse error:', e)
@@ -168,8 +175,8 @@ export async function refreshFootballStandings(kv: KVNamespace, apiKey?: string)
       matches?: Array<{
         group: string | null
         status: string
-        homeTeam: { id: number; name: string; crest: string }
-        awayTeam: { id: number; name: string; crest: string }
+        homeTeam: { id: number; name: string; crest: string } | null
+        awayTeam: { id: number; name: string; crest: string } | null
         score: { fullTime: { home: number | null; away: number | null } }
       }>
     }
@@ -202,8 +209,8 @@ export async function fetchFootballStandings(kv?: KVNamespace) {
 function computeStandings(matches: Array<{
   group: string | null
   status: string
-  homeTeam: { id: number; name: string; crest: string }
-  awayTeam: { id: number; name: string; crest: string }
+  homeTeam: { id: number; name: string; crest: string } | null
+  awayTeam: { id: number; name: string; crest: string } | null
   score: { fullTime: { home: number | null; away: number | null } }
 }>) {
   type TeamStats = {
@@ -230,6 +237,9 @@ function computeStandings(matches: Array<{
       }
       return groupMap[group]![team.id]!
     }
+
+    // Skip TBD knockout matches where teams are not yet determined
+    if (!m.homeTeam || !m.awayTeam) continue
 
     const home = ensureTeam(m.homeTeam)
     const away = ensureTeam(m.awayTeam)

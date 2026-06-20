@@ -55,6 +55,9 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
   const unmatchedTeams: string[] = []
 
   for (const apiMatch of apiMatches) {
+    // Skip TBD knockout matches (homeTeam/awayTeam null → mapped to '')
+    if (!apiMatch.home_team || !apiMatch.away_team) continue
+
     if (apiMatch.status === 'scheduled') {
       skippedScheduled++
       continue
