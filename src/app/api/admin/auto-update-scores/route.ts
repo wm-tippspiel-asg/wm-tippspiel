@@ -104,7 +104,7 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
       )
     }
 
-    if (scoresChanged) {
+    if (scoresChanged || (statusChanged && targetStatus === 'finished')) {
       await recalculateMatchPoints(existing.id, { skipRebuild: true })
       pointsRecalculated++
     }
