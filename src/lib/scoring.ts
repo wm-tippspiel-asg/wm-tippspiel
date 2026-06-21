@@ -58,6 +58,13 @@ export function calculatePoints(
   return 0
 }
 
+async function batchExecute(db: D1Database, stmts: D1PreparedStatement[]): Promise<void> {
+  // D1 batch is limited to 100 statements per call
+  for (let i = 0; i < stmts.length; i += 100) {
+    await db.batch(stmts.slice(i, i + 100))
+  }
+}
+
 // Recalculate all points after a match result is set
 export async function recalculateMatchPoints(
   matchId: string,
@@ -74,8 +81,7 @@ export async function recalculateMatchPoints(
   if (!match || match.home_score === null || match.away_score === null) {
     return
   }
-  
-  // Recalculate for both 'finished' and 'live' matches if they have scores
+
   if (match.status !== 'finished' && match.status !== 'live') {
     return
   }
@@ -89,9 +95,13 @@ export async function recalculateMatchPoints(
     away_score: number
   }>(db, 'SELECT id, user_id, home_score, away_score FROM predictions WHERE match_id = ?', [matchId])
 
-  for (const pred of predictions) {
-    const points = calculatePoints(pred.home_score, pred.away_score, match.home_score, match.away_score, scoring)
-    await execute(db, `UPDATE predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`, [points, pred.id])
+  if (predictions.length > 0) {
+    const stmts = predictions.map(pred => {
+      const points = calculatePoints(pred.home_score, pred.away_score, match.home_score!, match.away_score!, scoring)
+      return db.prepare(`UPDATE predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`)
+        .bind(points, pred.id)
+    })
+    await batchExecute(db, stmts)
   }
 
   if (!options?.skipRebuild) {
@@ -99,18 +109,40 @@ export async function recalculateMatchPoints(
   }
 }
 
-// Recalculate prediction points for all matches with scores, then rebuild leaderboard
+// Recalculate prediction points for ALL matches in a single pass, then rebuild leaderboard
 export async function recalculateAllMatchPoints(): Promise<void> {
   const db = getDb()
-  const matches = await queryAll<{ id: string }>(
-    db,
-    `SELECT id FROM matches
-     WHERE status IN ('finished', 'live')
-       AND home_score IS NOT NULL AND away_score IS NOT NULL`,
-  )
-  for (const m of matches) {
-    await recalculateMatchPoints(m.id, { skipRebuild: true })
+  const scoring = await getScoringConfig()
+
+  // Single query: all predictions joined with their match scores
+  const rows = await queryAll<{
+    prediction_id: string
+    pred_home: number
+    pred_away: number
+    actual_home: number
+    actual_away: number
+  }>(db, `
+    SELECT
+      p.id        AS prediction_id,
+      p.home_score AS pred_home,
+      p.away_score AS pred_away,
+      m.home_score AS actual_home,
+      m.away_score AS actual_away
+    FROM predictions p
+    JOIN matches m ON m.id = p.match_id
+    WHERE m.status IN ('finished', 'live')
+      AND m.home_score IS NOT NULL AND m.away_score IS NOT NULL
+  `)
+
+  if (rows.length > 0) {
+    const stmts = rows.map(row => {
+      const points = calculatePoints(row.pred_home, row.pred_away, row.actual_home, row.actual_away, scoring)
+      return db.prepare(`UPDATE predictions SET points = ?, updated_at = datetime('now') WHERE id = ?`)
+        .bind(points, row.prediction_id)
+    })
+    await batchExecute(db, stmts)
   }
+
   await rebuildLeaderboard()
 }
 
@@ -136,7 +168,7 @@ export async function rebuildLeaderboard(): Promise<void> {
     GROUP BY u.id, u.username
   `)
 
-  // Assign ranks
+  // Assign ranks — batch all updates in one roundtrip
   const entries = await queryAll<{ user_id: string; total_points: number }>(
     db,
     'SELECT user_id, total_points FROM leaderboard ORDER BY total_points DESC',
@@ -145,6 +177,7 @@ export async function rebuildLeaderboard(): Promise<void> {
   let rank = 1
   let lastPoints = -1
   let skip = 0
+  const rankStmts: D1PreparedStatement[] = []
 
   for (const entry of entries) {
     if (entry.total_points !== lastPoints) {
@@ -154,6 +187,12 @@ export async function rebuildLeaderboard(): Promise<void> {
     } else {
       skip++
     }
-    await execute(db, `UPDATE leaderboard SET rank = ? WHERE user_id = ?`, [rank, entry.user_id])
+    rankStmts.push(
+      db.prepare(`UPDATE leaderboard SET rank = ? WHERE user_id = ?`).bind(rank, entry.user_id)
+    )
+  }
+
+  if (rankStmts.length > 0) {
+    await batchExecute(db, rankStmts)
   }
 }
