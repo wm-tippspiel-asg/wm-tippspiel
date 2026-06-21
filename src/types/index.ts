@@ -54,6 +54,7 @@ export interface Match {
   away_score: number | null
   status: MatchStatus
   locked_at: string | null
+  score_locked: number
   created_at: string
   updated_at: string
 }

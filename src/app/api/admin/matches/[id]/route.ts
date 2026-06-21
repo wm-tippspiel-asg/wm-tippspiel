@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: Params): Promise<Nex
     const { home_score, away_score, status: matchStatus } = parsed.data
     await execute(
       db,
-      `UPDATE matches SET home_score = ?, away_score = ?, status = ?, updated_at = datetime('now') WHERE id = ?`,
+      `UPDATE matches SET home_score = ?, away_score = ?, status = ?, score_locked = 1, updated_at = datetime('now') WHERE id = ?`,
       [home_score, away_score, matchStatus, id],
     )
 
@@ -141,6 +141,15 @@ export async function PATCH(request: NextRequest, { params }: Params): Promise<N
     )
     await invalidateCache(CACHE_KEYS.MATCHES_UPCOMING)
     return NextResponse.json({ success: true, message: 'Spiel entsperrt.' })
+  }
+
+  if (action === 'unlock_score') {
+    await execute(
+      db,
+      `UPDATE matches SET score_locked = 0, updated_at = datetime('now') WHERE id = ?`,
+      [id],
+    )
+    return NextResponse.json({ success: true, message: 'Score-Sperre aufgehoben.' })
   }
 
   return NextResponse.json({ success: false, error: 'Unbekannte Aktion.' }, { status: 400 })

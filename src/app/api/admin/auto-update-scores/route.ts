@@ -71,15 +71,18 @@ export async function runUpdate(actorId: string | null, actorName: string): Prom
       home_score: number | null
       away_score: number | null
       status: string
+      score_locked: number
     }>(
       db,
-      `SELECT id, home_score, away_score, status FROM matches WHERE home_team = ? AND away_team = ?`,
+      `SELECT id, home_score, away_score, status, score_locked FROM matches WHERE home_team = ? AND away_team = ?`,
       [homeDe, awayDe],
     )
     if (!existing) {
       unmatchedTeams.push(`${apiMatch.home_team} vs ${apiMatch.away_team} → ${homeDe} vs ${awayDe}`)
       continue
     }
+
+    if (existing.score_locked) continue
 
     const targetStatus = apiMatch.status === 'finished' ? 'finished' : 'live'
     const scoresAvailable = apiMatch.home_score !== null && apiMatch.away_score !== null

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Edit2, Trash2, Check, Lock, Unlock } from 'lucide-react'
+import { Plus, Edit2, Trash2, Check, Lock, Unlock, ShieldCheck, ShieldOff } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmModal } from '@/components/ui/Modal'
@@ -157,6 +157,16 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
     if (all.success) setMatches(all.data)
   }
 
+  async function unlockScore(match: Match) {
+    await fetch(`/api/admin/matches/${match.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'unlock_score' }),
+    })
+    const all = await fetch('/api/admin/matches').then((r) => r.json()) as { success: boolean; data: Match[] }
+    if (all.success) setMatches(all.data)
+  }
+
   async function doDelete() {
     if (!deleteMatch) return
     setDeleteLoading(true)
@@ -214,9 +224,14 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
                     {formatDateTime(match.match_time)}
                   </td>
                   <td className="px-4 py-3 text-center font-mono font-semibold">
-                    {match.home_score !== null
-                      ? `${match.home_score}:${match.away_score}`
-                      : '–:–'}
+                    <span className="inline-flex items-center gap-1">
+                      {match.home_score !== null
+                        ? `${match.home_score}:${match.away_score}`
+                        : '–:–'}
+                      {match.score_locked ? (
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" title="Score manuell gesperrt (Auto-Update übersprungen)" />
+                      ) : null}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={statusVariant[match.status] ?? 'slate'}>
@@ -225,6 +240,15 @@ export function AdminMatchesClient({ initialMatches }: AdminMatchesClientProps) 
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      {match.score_locked ? (
+                        <button
+                          title="Score-Sperre aufheben (Auto-Update greift wieder)"
+                          onClick={() => unlockScore(match)}
+                          className="p-1.5 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                        >
+                          <ShieldOff className="h-4 w-4" />
+                        </button>
+                      ) : null}
                       <button
                         title="Ergebnis eintragen"
                         onClick={() => {
