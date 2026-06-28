@@ -68,6 +68,7 @@ export function getRoundLabel(round: MatchRound): string {
     round_of_8: 'Achtelfinale',
     quarter_final: 'Viertelfinale',
     semi_final: 'Halbfinale',
+    third_place: 'Spiel um Platz 3',
     final: 'Finale',
   }
   return labels[round]

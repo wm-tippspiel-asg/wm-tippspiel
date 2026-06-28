@@ -4,7 +4,7 @@
 
 export type UserRole = 'admin' | 'user'
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'cancelled' | 'locked'
-export type MatchRound = 'group' | 'round_of_16' | 'round_of_8' | 'quarter_final' | 'semi_final' | 'final'
+export type MatchRound = 'group' | 'round_of_16' | 'round_of_8' | 'quarter_final' | 'semi_final' | 'third_place' | 'final'
 
 export interface User {
   id: string

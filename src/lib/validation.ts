@@ -44,7 +44,7 @@ export const matchSchema = z.object({
   home_team_flag: z.string().max(10).optional().nullable(),
   away_team_flag: z.string().max(10).optional().nullable(),
   match_time: z.string().datetime({ message: 'Ungültiges Datum' }),
-  round: z.enum(['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'final']),
+  round: z.enum(['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'third_place', 'final']),
   group_name: z.string().max(5).optional().nullable(),
   venue: z.string().max(200).optional().nullable(),
 })

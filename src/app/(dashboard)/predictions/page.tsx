@@ -20,7 +20,7 @@ export default async function PredictionsPage() {
     queryAll<Prediction>(db, 'SELECT * FROM predictions WHERE user_id = ?', [user.id]),
   ])
 
-  const rounds: MatchRound[] = ['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'final']
+  const rounds: MatchRound[] = ['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'third_place', 'final']
   const grouped: { round: MatchRound; label: string; matches: Match[] }[] = rounds
     .map((round) => ({ round, label: getRoundLabel(round), matches: matches.filter((m) => m.round === round) }))
     .filter((g) => g.matches.length > 0)

@@ -913,3 +913,16 @@ button { font-family: inherit; cursor: pointer; }
   .stats-chart-svg { height: 130px; }
   .stats-dist-legend { grid-template-columns: 1fr 1fr; }
 }
+
+/* ============================================================
+   Tournament Bracket
+   ============================================================ */
+
+/* Desktop: show horizontal bracket, hide mobile list */
+.bracket-wrap   { display: block; }
+.bracket-mobile { display: none; }
+
+@media (max-width: 900px) {
+  .bracket-wrap   { display: none; }
+  .bracket-mobile { display: block; }
+}

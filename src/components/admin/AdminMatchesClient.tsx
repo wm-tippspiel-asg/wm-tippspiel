@@ -10,7 +10,7 @@ import { Alert } from '@/components/ui/Alert'
 import { formatDateTime, getRoundLabel, toDateTimeLocalBerlin, fromDateTimeLocalBerlin } from '@/lib/utils'
 import type { Match, MatchRound } from '@/types'
 
-const ROUNDS: MatchRound[] = ['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'final']
+const ROUNDS: MatchRound[] = ['group', 'round_of_16', 'round_of_8', 'quarter_final', 'semi_final', 'third_place', 'final']
 
 type MatchFormData = {
   home_team: string
